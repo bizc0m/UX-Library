@@ -2,7 +2,7 @@
 
 Version 1.0 · Revue documentaire du 7 septembre 2026.
 
-**48 fiches, 4 patterns projets, 19 dossiers renseignés.** Socle documentaire utilisable pour concevoir et auditer ; aucune application n’a été certifiée ou testée à travers ce catalogue.
+**48 fiches, 4 patterns projets, 19 dossiers renseignés, 1 répertoire effets CodePen.** Socle documentaire utilisable pour concevoir et auditer ; aucune application n’a été certifiée ou testée à travers ce catalogue.
 
 ## Commencer par une tâche
 
@@ -34,6 +34,7 @@ Choisir les fiches pertinentes, adapter l’exemple aux données du projet, exé
 - [15_Confiance-Securite](15_Confiance-Securite/INDEX.md)
 - [90_Patterns-Projets](90_Patterns-Projets/INDEX.md)
 - [91_References-Sources](91_References-Sources/INDEX.md)
+- [92_Effets-CodePen](92_Effets-CodePen/INDEX.md)
 - [99_Templates](99_Templates/INDEX.md)
 
 ## Toutes les fiches
@@ -103,6 +104,7 @@ Choisir les fiches pertinentes, adapter l’exemple aux données du projet, exé
 | accessibilité, WCAG, contraste, zoom | UX-023 à UX-027, UX-047 |
 | design tokens, composants, réutilisation | UX-034 à UX-036 |
 | KPI, métrique, provenance, dashboard | UX-028 à UX-033 |
+| CodePen, effets, micro-interactions, thèmes, animations | 92_Effets-CodePen, UX-011, UX-020, UX-027, UX-043 à UX-045 |
 
 ## Usage et limites
 
