@@ -1,0 +1,317 @@
+{
+  "date": "2026-09-07",
+  "sections": 19,
+  "fiches": 48,
+  "patterns": 4,
+  "templates": 2,
+  "markdown_files": 75,
+  "sources": 48,
+  "internal_links_broken": [],
+  "duplicate_ids": 0,
+  "duplicate_titles": 0,
+  "duplicate_rules": 0,
+  "destination_import": "Non effectué : Library non localisée",
+  "external_sources": "Consultation documentaire, détails dans le registre ; pas de garantie future de disponibilité",
+  "files": [
+    {
+      "path": "00_Principes/INDEX.md",
+      "sha256": "699af3861574e172459d175076b369672a3eaa5f308148cc47592504f0af597f"
+    },
+    {
+      "path": "00_Principes/UX-001.md",
+      "sha256": "925e28ceca9cec437853038a3d26d9f121d7ddda07e8d22db523c729cd455c20"
+    },
+    {
+      "path": "00_Principes/UX-002.md",
+      "sha256": "293ad36decef9aa97253d208cdd92e5e88bb7e13ba880f85dfd2b906c9b08b0c"
+    },
+    {
+      "path": "00_Principes/UX-003.md",
+      "sha256": "70f6d88a71b8e34432e94b590e6c8ac6d64bd2f47d6a54f20a4e078473d8e84f"
+    },
+    {
+      "path": "01_Navigation/INDEX.md",
+      "sha256": "713ac23655410de3380aca213b48f0c2587b7c29e0b0371365f9f3b7357ae282"
+    },
+    {
+      "path": "01_Navigation/UX-004.md",
+      "sha256": "2dce826b7f1d30fe7d5a4986cd28b454b206b3ca84810efebcfed7216f98f5ce"
+    },
+    {
+      "path": "01_Navigation/UX-005.md",
+      "sha256": "3957948c3c7b010fa7aed59976c7a27893d7f520c9f3b51628ac8a7212e0ce6f"
+    },
+    {
+      "path": "01_Navigation/UX-006.md",
+      "sha256": "11b2b36cd6d26eb0369f7e42bf30afa6944ae5601b2e8948582d2e3e4b032758"
+    },
+    {
+      "path": "02_Architecture-Information/INDEX.md",
+      "sha256": "f82e0611305a8d0d2e471e35d698744f458cb529db18e8a227e57f3aeb9be8c4"
+    },
+    {
+      "path": "02_Architecture-Information/UX-007.md",
+      "sha256": "c2df3108438af3f5deb23f0bfb5711f530c0d3469c47bbf3a5d5ca170304e550"
+    },
+    {
+      "path": "02_Architecture-Information/UX-008.md",
+      "sha256": "a83baf8b0e2ed59d09ebf5e23cecc204610d5cb984eb8b489eebe5d39dda1510"
+    },
+    {
+      "path": "02_Architecture-Information/UX-009.md",
+      "sha256": "9f5747c9b54fc4498d149f7fcb539467b74eea021c55b511e27ebda8b7b625c8"
+    },
+    {
+      "path": "03_Interactions/INDEX.md",
+      "sha256": "880dc5b7c90b6fd5a9dba4080c7a53c06ed324bfa207e3d14724552e59779c6a"
+    },
+    {
+      "path": "03_Interactions/UX-010.md",
+      "sha256": "6a10132d13669ec4299438e8baa6b73c315a06029a0763d06a2fd7bb6696b8bc"
+    },
+    {
+      "path": "03_Interactions/UX-011.md",
+      "sha256": "7b3d627b70dcb99ec5b2e2005cbeaf68dde81565842156bad1b5014c7ab74848"
+    },
+    {
+      "path": "03_Interactions/UX-012.md",
+      "sha256": "41ab23f3d3f104ff4f7b01aabe3714bff256fb5539232828f02d6af6ea164eeb"
+    },
+    {
+      "path": "04_Formulaires/INDEX.md",
+      "sha256": "cdd7b5289986b169517ddd2a091286d2d869e6f062b2137d58e0b45bc5b70e0d"
+    },
+    {
+      "path": "04_Formulaires/UX-013.md",
+      "sha256": "b5ff2f7fd453a9c25ce676eb54c5431c49871ce85f2c93b024e333ea0df8e5c8"
+    },
+    {
+      "path": "04_Formulaires/UX-014.md",
+      "sha256": "a48a7538171661c78f4e15f2493e918597d227f7e2752e5b6327d64c3903f502"
+    },
+    {
+      "path": "04_Formulaires/UX-015.md",
+      "sha256": "fd6e4e0ce93f28d758fa98b9780807eee3b2b336717e036ea69fd85ca98a06aa"
+    },
+    {
+      "path": "05_Recherche-Filtres/INDEX.md",
+      "sha256": "7701b1825dcde573dd09664e4b7e82526f914c8c7f001bdf6263f8a9379539ce"
+    },
+    {
+      "path": "05_Recherche-Filtres/UX-016.md",
+      "sha256": "7803a1e9c1d5e3a9cb164b3e8d58e9c3ae105ac89f94ebd5f59b4f6b36a270de"
+    },
+    {
+      "path": "05_Recherche-Filtres/UX-017.md",
+      "sha256": "1cfba5ca75b73bc00fd94362168e16202d94eff4f99415c0d4acb530402a8e01"
+    },
+    {
+      "path": "05_Recherche-Filtres/UX-018.md",
+      "sha256": "24ce7ef45ad5b73d756b3ad4daae96189b84f4eb2db1cc16de0e7ea084d89c79"
+    },
+    {
+      "path": "06_Feedback-Etats-Erreurs/INDEX.md",
+      "sha256": "c4544b5df4bb1bbce4a025440d272f3195f42bc9466f462f291356aa7dcb351a"
+    },
+    {
+      "path": "06_Feedback-Etats-Erreurs/UX-019.md",
+      "sha256": "203484791e72ec15d41d44256b14b3c71006f8ae8b118e554c362d751efbd998"
+    },
+    {
+      "path": "06_Feedback-Etats-Erreurs/UX-020.md",
+      "sha256": "618dd1566269c5a2436e0b110f4bcad5bed2aa47a523e0bd718f13341eee99d9"
+    },
+    {
+      "path": "06_Feedback-Etats-Erreurs/UX-021.md",
+      "sha256": "0f255b894cbcbd06129b50e261d5dd851fb433a2c0348a21372e0e9c9169b376"
+    },
+    {
+      "path": "07_Mobile-Responsive/INDEX.md",
+      "sha256": "418674bd9f812df7e50622180f7982ae9f346e60feb8ad248af56325143bd8d6"
+    },
+    {
+      "path": "07_Mobile-Responsive/UX-022.md",
+      "sha256": "35e6888d51ee94b3fb61b30345a86275a21ff19151d9b3293328b2e39b37516a"
+    },
+    {
+      "path": "07_Mobile-Responsive/UX-023.md",
+      "sha256": "93c21ae2c94938a5da21d53c7be158c32b7add7205e64af648a2106fa50556ef"
+    },
+    {
+      "path": "07_Mobile-Responsive/UX-024.md",
+      "sha256": "06a9346916486e3e78fbd7e3ff4224d473ee1b79f636b34ea0ac5f1d1c483b58"
+    },
+    {
+      "path": "08_Accessibilite/INDEX.md",
+      "sha256": "6c08309bd4d4bd35eb87c3059769064f141b1bc079fe374990e89fb858b0b58b"
+    },
+    {
+      "path": "08_Accessibilite/UX-025.md",
+      "sha256": "176d3c8dc903151987f2c4dded52c5098e5503a44d9af4980408bb6cef3410c7"
+    },
+    {
+      "path": "08_Accessibilite/UX-026.md",
+      "sha256": "eb15979d224b1f7cc775cc88cfbda23c50186c1643e263d87e1fc09d42325b1b"
+    },
+    {
+      "path": "08_Accessibilite/UX-027.md",
+      "sha256": "8c480c41c3fef0abd2cc2bf3b4dd2b9bb0784c339bdaa26f29c8e089f6f1ee0f"
+    },
+    {
+      "path": "09_DataViz/INDEX.md",
+      "sha256": "8869f9dcc865dfda7333134a6ec325ba5e534aa4dba32c100b8ecdd57febb649"
+    },
+    {
+      "path": "09_DataViz/UX-028.md",
+      "sha256": "ddabba9a5a817b09d5f6af0bd6e0a3b17c67ade2d3fa2d980b543801bc09c7f9"
+    },
+    {
+      "path": "09_DataViz/UX-029.md",
+      "sha256": "8638d27a8b28939040db926b48db90398749323e94ad3e71810b91cfa2a481c5"
+    },
+    {
+      "path": "09_DataViz/UX-030.md",
+      "sha256": "67351f7b401c9e1054e7dd676b651ff9abadecba5dcbd684bb9eb87e397dda59"
+    },
+    {
+      "path": "10_Dashboards/INDEX.md",
+      "sha256": "97e6693bfe5010d2cb1626b5daa7f5e3b640cefd8eea908f27f7eca5780144a8"
+    },
+    {
+      "path": "10_Dashboards/UX-031.md",
+      "sha256": "0563ec6896917d359124e2e5a5d68d474e38604d358ddf0c4335df056b3f10a1"
+    },
+    {
+      "path": "10_Dashboards/UX-032.md",
+      "sha256": "19b8d54d43a410af6ab2feadcc6bff447a510bf1c5ab57885706ebe675c8ab4f"
+    },
+    {
+      "path": "10_Dashboards/UX-033.md",
+      "sha256": "ad9ff57f9899f0e93a4e7966b4380de2fa30964857f4d8e3b3b98b3cde3409a0"
+    },
+    {
+      "path": "11_Design-System/INDEX.md",
+      "sha256": "66093d4eb87cb36ead73e225f98ee03694c87752a4baa8ab2ed3baafa6bd42b2"
+    },
+    {
+      "path": "11_Design-System/UX-034.md",
+      "sha256": "79e93a3f626c14f07990c848539f4740d31b89f32a61b91fbb18b78aa89e3f22"
+    },
+    {
+      "path": "11_Design-System/UX-035.md",
+      "sha256": "fc323de65ef0e54c5f54d52d820db1e46c48f542090b3f50ca08783ec90d04cd"
+    },
+    {
+      "path": "11_Design-System/UX-036.md",
+      "sha256": "11a3708ec63f0644028d8f69c35e25c461d83d4af8380f9604dca4dd5556642c"
+    },
+    {
+      "path": "12_AntiPatterns/INDEX.md",
+      "sha256": "3574c917e39af4a49f021992b25ca1a03a0405b2987310f006339b50d0bbd8e6"
+    },
+    {
+      "path": "12_AntiPatterns/UX-037.md",
+      "sha256": "9d4cbcf65a5e67bb3fc811df531396400b16b4480c520d67fb02d471a8367731"
+    },
+    {
+      "path": "12_AntiPatterns/UX-038.md",
+      "sha256": "8f7b7ad5de6d0ee727fac82b88f9443ae89f9f67fa00efdf5fa7bd27b8b41838"
+    },
+    {
+      "path": "12_AntiPatterns/UX-039.md",
+      "sha256": "77b62f195f75ea2d41659623418b72b2be737c3d9fa232713f0568dd7a4c62d3"
+    },
+    {
+      "path": "13_Onboarding/INDEX.md",
+      "sha256": "413e45feb3cde0e17c0eae19f6963040fed77146aa7277dbf7de990725db325f"
+    },
+    {
+      "path": "13_Onboarding/UX-040.md",
+      "sha256": "b12aaab7adc74c1b07587bb9d06a772d8e79a9e697e365dabb302f39bf229b92"
+    },
+    {
+      "path": "13_Onboarding/UX-041.md",
+      "sha256": "2c57cdfc7377f83e27235b1b3194ad11ed7723f48bf7c3541ed1031d923f734e"
+    },
+    {
+      "path": "13_Onboarding/UX-042.md",
+      "sha256": "6d0fe4c4e75430838ccdb40750a127f861606737e4b6582ca184321443b6898f"
+    },
+    {
+      "path": "14_Performance-Perception/INDEX.md",
+      "sha256": "ad925f276906cbb1aa9c87767f8e342b0d9df62d5580960366e92f2d1f7d8267"
+    },
+    {
+      "path": "14_Performance-Perception/UX-043.md",
+      "sha256": "a45fd3fd4253e12666422091a3b48bbf30f9039e90b28e0ae45593c1fa8b8fa4"
+    },
+    {
+      "path": "14_Performance-Perception/UX-044.md",
+      "sha256": "cda65acfb4daa82073755e425e416f358933d9b3c44714119f3e2d09ddb0eeb9"
+    },
+    {
+      "path": "14_Performance-Perception/UX-045.md",
+      "sha256": "65fc3a27d3315c4845eaa4eb567ae2445de56e7911cb40e7d95bc50ebcfc9a9e"
+    },
+    {
+      "path": "15_Confiance-Securite/INDEX.md",
+      "sha256": "e512446a82c1c7d83fb2c2ca487652263fbf107a7a65fc8bc9a8f076d6bb554e"
+    },
+    {
+      "path": "15_Confiance-Securite/UX-046.md",
+      "sha256": "2bdd66f7567bdd674a0117e689fcda890824e6e615e95e9865740302b02be666"
+    },
+    {
+      "path": "15_Confiance-Securite/UX-047.md",
+      "sha256": "b0f6fa8b96b1cb2e1a9ee8e1d7a653fa32feb19412013b0345c901ecd424de23"
+    },
+    {
+      "path": "15_Confiance-Securite/UX-048.md",
+      "sha256": "9ff8069cbe32f98e4c275a97b552ea0284f94e1eb4a854a877ae84cc19dd7d55"
+    },
+    {
+      "path": "90_Patterns-Projets/INDEX.md",
+      "sha256": "c6b7d1552975e0f32b1f5cde5cc8aed4da1ebf01296880bfe894a849470744be"
+    },
+    {
+      "path": "90_Patterns-Projets/PAT-001.md",
+      "sha256": "f9b8d9d78c1101af18779671ac7e66911579e870455b61d7bfa0f3294742950b"
+    },
+    {
+      "path": "90_Patterns-Projets/PAT-002.md",
+      "sha256": "2a71c29e9b32f506908422ef422a1d015eb7546de710fc34c128b2c45ff80c31"
+    },
+    {
+      "path": "90_Patterns-Projets/PAT-003.md",
+      "sha256": "4b690888dd69147e47f9e530d3ead10d4491c27b96cce115f0adbb249d19cf76"
+    },
+    {
+      "path": "90_Patterns-Projets/PAT-004.md",
+      "sha256": "91fcae2ed339451d5b52f0ef97cf3a410428c34ccb1df94aebf4267405705477"
+    },
+    {
+      "path": "91_References-Sources/INDEX.md",
+      "sha256": "49a8c8257b6ebeb2689b0134bc3f38b2ab73c473617617c49cc5f791205fa8e0"
+    },
+    {
+      "path": "91_References-Sources/METHODE.md",
+      "sha256": "1f6e4a0f672ead9d6ebce6757b2fab8bfe23165fc17b0a0f503fe172b02ca414"
+    },
+    {
+      "path": "99_Templates/FICHE-BP.md",
+      "sha256": "1b00b2960b7f931e24ff7214d9ac59d6a00bbfae0b197a65c3138ec822bcae39"
+    },
+    {
+      "path": "99_Templates/INDEX.md",
+      "sha256": "4ccefc94425e05c88b96c083f905a5b8fc47186d0a833dc9bb251e88d0f91145"
+    },
+    {
+      "path": "99_Templates/RECETTE-UX.md",
+      "sha256": "1c5906db884a6770071386b20e6d03e47f6561ace0d998cd8919a29388b74975"
+    },
+    {
+      "path": "INDEX.md",
+      "sha256": "c82dc6dd7d79b059855aec31ec016e476d80d2234e68aa524a69b78f93ad6b46"
+    }
+  ]
+}
