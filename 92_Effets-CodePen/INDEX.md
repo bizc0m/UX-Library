@@ -6,6 +6,10 @@ Repertoire de depot pour les effets CodePen, prototypes CSS/JS et micro-interact
 
 Un effet n'entre ici que si son role produit un gain utilisable : orientation, feedback, perception de vitesse, hierarchie visuelle, manipulation directe ou lisibilite. Un effet purement decoratif doit etre marque `exploration` tant qu'il n'est pas relie a un usage projet.
 
+## Sources de depart
+
+- [SOURCES-CODE.md](SOURCES-CODE.md) liste les GitHub, OpenCode, CodePen et autres plateformes ou chercher des effets et composants.
+
 ## Classement recommande
 
 | Dossier | Usage | Exemples |
