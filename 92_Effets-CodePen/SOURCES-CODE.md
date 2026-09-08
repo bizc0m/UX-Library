@@ -61,6 +61,8 @@ Liste de depots et plateformes ou recuperer des effets, composants, animations e
 | [GitHub Topics - ui-components](https://github.com/topics/ui-components) | Index GitHub | Rechercher bibliotheques UI | Verifier issues, releases, licence. |
 | [GitHub Topics - codepen](https://github.com/topics/codepen) | Index GitHub | Trouver collections de Pens exportes | Qualite tres variable. |
 
+Les sources agents, scraping et recherche de projets sont maintenant detaillees dans [93_Agents-LLM](../93_Agents-LLM/INDEX.md), [94_Scraping-Crawlers](../94_Scraping-Crawlers/INDEX.md), [95_Repos-Projets-Code](../95_Repos-Projets-Code/INDEX.md) et [96_Queries-Recherche](../96_Queries-Recherche/INDEX.md).
+
 ## Requetes de recherche utiles
 
 | Besoin | Requete |

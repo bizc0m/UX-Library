@@ -2,7 +2,7 @@
 
 Version 1.0 · Revue documentaire du 7 septembre 2026.
 
-**48 fiches, 4 patterns projets, 19 dossiers renseignés, 1 répertoire effets CodePen.** Socle documentaire utilisable pour concevoir et auditer ; aucune application n’a été certifiée ou testée à travers ce catalogue.
+**48 fiches, 4 patterns projets, 19 dossiers UX, 5 répertoires de sources code/effets/agents/scraping.** Socle documentaire utilisable pour concevoir, auditer et sélectionner des briques techniques ; aucune application n’a été certifiée ou testée à travers ce catalogue.
 
 ## Commencer par une tâche
 
@@ -35,6 +35,10 @@ Choisir les fiches pertinentes, adapter l’exemple aux données du projet, exé
 - [90_Patterns-Projets](90_Patterns-Projets/INDEX.md)
 - [91_References-Sources](91_References-Sources/INDEX.md)
 - [92_Effets-CodePen](92_Effets-CodePen/INDEX.md)
+- [93_Agents-LLM](93_Agents-LLM/INDEX.md)
+- [94_Scraping-Crawlers](94_Scraping-Crawlers/INDEX.md)
+- [95_Repos-Projets-Code](95_Repos-Projets-Code/INDEX.md)
+- [96_Queries-Recherche](96_Queries-Recherche/INDEX.md)
 - [99_Templates](99_Templates/INDEX.md)
 
 ## Toutes les fiches
@@ -105,6 +109,9 @@ Choisir les fiches pertinentes, adapter l’exemple aux données du projet, exé
 | design tokens, composants, réutilisation | UX-034 à UX-036 |
 | KPI, métrique, provenance, dashboard | UX-028 à UX-033 |
 | CodePen, effets, micro-interactions, thèmes, animations | 92_Effets-CodePen, UX-011, UX-020, UX-027, UX-043 à UX-045 |
+| agent LLM, OpenCode, LangGraph, CrewAI, OpenHands | 93_Agents-LLM |
+| scraping, crawler, Playwright, Scrapy, Crawl4AI | 94_Scraping-Crawlers |
+| repo code, GitHub, Sourcegraph, starter, template | 95_Repos-Projets-Code, 96_Queries-Recherche |
 
 ## Usage et limites
 
