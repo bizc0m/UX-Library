@@ -13,7 +13,7 @@ Bibliothèque transversale de bonnes pratiques UX/UI pour concevoir et auditer l
 
 ## Contenu
 
-Le socle comprend **48 fiches UX**, **4 patterns projets proposés** et **19 sections UX**, avec problèmes, règles, explications, actions, exceptions, exemples originaux, checklists et sources.
+Le socle comprend **48 fiches UX**, **5 patterns projets (4 propositions et 1 design documenté)** et **19 sections UX**, avec problèmes, règles, explications, actions, exceptions, exemples originaux, checklists et sources.
 
 Les sections `00` à `15` couvrent les principes, la navigation, l’architecture de l’information, les interactions, les formulaires, la recherche et les filtres, les états et erreurs, le responsive, l’accessibilité, la visualisation de données, les dashboards, les design systems, les anti-patterns, l’onboarding, la performance perçue et la confiance.
 
@@ -29,6 +29,12 @@ Des répertoires complémentaires recensent aussi des ressources techniques :
 - [95 — Dépôts et projets de code](95_Repos-Projets-Code/INDEX.md)
 - [96 — Requêtes de recherche](96_Queries-Recherche/INDEX.md)
 
+Design de référence : [NoteCortex — cockpit blanc](90_Patterns-Projets/PAT-005.md), avec capture, mécaniques repérées et liens vers le code.
+
+## Prototype multi-documents
+
+[Nyx Documents](97_Prototypes/Nyx-Documents/README.md) : prototype HTML, sources, tests de logique, maquettes et direction de migration vers Nyx2. Validation des gestes dans le navigateur encore incomplète.
+
 ## Utilisation
 
 1. Choisir un parcours dans l’index et lire les fiches associées.
@@ -42,6 +48,6 @@ Avant tout ajout, rechercher une fiche équivalente dans l’index. Conserver le
 
 Ce dépôt reprend le catalogue produit dans le Work associé à la conversation « Dossier bibliothèque UX ». La revue documentaire du socle est datée du **7 septembre 2026** ; les dates et statuts de consultation figurent dans les fiches et le registre. La publication Git ne constitue pas une nouvelle vérification des sources.
 
-Les checklists décrivent des tests à réaliser. Les patterns projets sont des propositions ; ils ne prouvent aucune implémentation ou conformité des applications concernées. Les ressources tierces restent soumises à leurs propres licences et conditions ; leur référencement ne vaut pas autorisation de réutiliser leur code ou contenu.
+Les checklists décrivent des tests à réaliser. Quatre patterns projets sont des propositions ; la fiche NoteCortex documente une capture et du code lu. Aucune fiche ne prouve la conformité ou le fonctionnement testé des applications concernées. Les ressources tierces restent soumises à leurs propres licences et conditions ; leur référencement ne vaut pas autorisation de réutiliser leur code ou contenu.
 
 Le catalogue est conservé dans un dépôt dédié : [bizc0m/UX-Library](https://github.com/bizc0m/UX-Library).

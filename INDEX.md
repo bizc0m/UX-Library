@@ -2,7 +2,7 @@
 
 Version 1.0 · Revue documentaire du 7 septembre 2026.
 
-**48 fiches, 4 patterns projets, 19 dossiers UX, 5 répertoires de sources code/effets/agents/scraping.** Socle documentaire utilisable pour concevoir, auditer et sélectionner des briques techniques ; aucune application n’a été certifiée ou testée à travers ce catalogue.
+**48 fiches, 5 patterns projets, 19 dossiers UX, 5 répertoires de sources code/effets/agents/scraping.** Socle documentaire utilisable pour concevoir, auditer et sélectionner des briques techniques ; aucune application n’a été certifiée ou testée à travers ce catalogue.
 
 ## Commencer par une tâche
 
@@ -39,7 +39,10 @@ Choisir les fiches pertinentes, adapter l’exemple aux données du projet, exé
 - [94_Scraping-Crawlers](94_Scraping-Crawlers/INDEX.md)
 - [95_Repos-Projets-Code](95_Repos-Projets-Code/INDEX.md)
 - [96_Queries-Recherche](96_Queries-Recherche/INDEX.md)
+- [97_Prototypes](97_Prototypes/INDEX.md)
 - [99_Templates](99_Templates/INDEX.md)
+
+Design documenté : [NoteCortex — cockpit blanc à quatre colonnes](90_Patterns-Projets/PAT-005.md), capture, style, mécaniques et source SwiftUI.
 
 ## Toutes les fiches
 
