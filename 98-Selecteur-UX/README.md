@@ -28,3 +28,8 @@ KM Search est la première entrée. « Ouvrir l’application » lance l’outil
 La grille affiche directement les interfaces réelles dans des miniatures isolées, chargées à la demande, ainsi que les captures existantes. Le bouton Agrandir ouvre le grand aperçu. Les interfaces qui ne peuvent pas afficher de contenu sont signalées comme indisponibles. KM Search a été vérifié en aperçu, en sélection de fonctions et dans le composeur. Les autres sources historiques ne sont pas toutes revalidées. Les chemins de provenance désignent le Mac d’origine ; les fichiers embarqués sont chargés depuis ce dossier. Certaines fonctions dépendent d’un serveur ou de ressources non disponibles. Les valeurs ressemblant à des identifiants secrets ont été retirées de trois copies publiées ; les originaux locaux sont conservés. Les empreintes du rapport désignent les sources inventoriées.
 
 Les cinq sites d’inspiration sont accessibles en haut du sélecteur.
+
+
+## Réutiliser une interface
+
+Cliquer sur sa vignette ouvre un grand aperçu dans une popup. Choisir une variante si nécessaire, puis utiliser **Copier le code** ou **Télécharger HTML**. **Voir le code** permet aussi une copie manuelle. La touche Échap ferme la popup et conserve la galerie. Les ressources externes restent liées à leur emplacement publié ; le code ne supprime pas les dépendances métier des outils.
