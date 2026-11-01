@@ -2,7 +2,11 @@
 
 **39 applications ou familles, 211 interfaces et variantes.** Les vrais fichiers HTML, styles, scripts et ressources retrouvés sont inclus dans `references/`.
 
-## Ouvrir
+## Ouvrir en ligne
+
+**https://bizc0m.github.io/UX-Library/** — sans serveur à installer.
+
+## Copie locale facultative
 
 Télécharger le dépôt, puis lancer depuis sa racine :
 
