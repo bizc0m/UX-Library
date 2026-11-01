@@ -1,0 +1,296 @@
+/* =====================================================================
+   Night Intel — Skins
+   Three theme variants applied via [data-skin="..."] on .app
+   Each overrides the design-system tokens.
+   ===================================================================== */
+
+/* ===== NUIT (default) — Night Intel stock dark + neon pink ===== */
+[data-skin="nuit"] {
+  --ink-0: #07070B;
+  --ink-1: #0F0F15;
+  --ink-2: #16161E;
+  --ink-3: #1F1F2A;
+  --ink-4: #2C2C3A;
+  --bone-0: #F5F0E4;
+  --bone-1: #C9C2B6;
+  --bone-2: #7A7589;
+  --bone-3: #48455A;
+  --neon-pink: #FF2D6F;
+  --neon-pink-glow: #FF6FA3;
+  --neon-pink-deep: #B81550;
+  --neon-pink-soft: rgba(255, 45, 111, 0.12);
+  --acid: #C2FF3D;
+  --electric: #5BCFFF;
+  --amber: #FFB13D;
+  --blood: #FF4D4D;
+  --violet: #B47BFF;
+  --bg-noise:
+    radial-gradient(80% 50% at 12% 0%, rgba(255,45,111,0.06), transparent 65%),
+    radial-gradient(60% 40% at 100% 100%, rgba(91,207,255,0.04), transparent 65%);
+  --shadow-glow-px: rgba(255,45,111,0.5);
+  --topbar-bg: rgba(15,15,21,0.82);
+  color-scheme: dark;
+}
+
+/* ===== PAPER INK — sand & terracotta editorial ===== */
+[data-skin="paper"] {
+  --ink-0: #EFE2C8;
+  --ink-1: #F3E9D2;
+  --ink-2: #FBF2DB;
+  --ink-3: #E4D4B0;
+  --ink-4: #B9A073;
+  --bone-0: #2B1B0D;
+  --bone-1: #5C4329;
+  --bone-2: #978057;
+  --bone-3: #B9A073;
+  --neon-pink: #C8482E;
+  --neon-pink-glow: #DE6948;
+  --neon-pink-deep: #8E2A18;
+  --neon-pink-soft: rgba(200, 72, 46, 0.12);
+  --acid: #5C7B22;
+  --electric: #2C5E7C;
+  --amber: #C28013;
+  --blood: #A02418;
+  --violet: #7E4B8E;
+  --bg-noise:
+    radial-gradient(80% 50% at 12% 0%, rgba(200,72,46,0.06), transparent 65%),
+    radial-gradient(60% 40% at 100% 100%, rgba(44,94,124,0.05), transparent 65%);
+  --shadow-glow-px: rgba(200, 72, 46, 0.3);
+  --topbar-bg: rgba(243,233,210,0.92);
+  color-scheme: light;
+}
+
+/* ===== GIRLY — sugar-pink, lavender accents, sparkle ===== */
+[data-skin="girly"] {
+  --ink-0: #FFF0F7;
+  --ink-1: #FFE7F0;
+  --ink-2: #FFFFFF;
+  --ink-3: #FFD2E3;
+  --ink-4: #FFA8C7;
+  --bone-0: #36082B;
+  --bone-1: #6D1E4D;
+  --bone-2: #A85D88;
+  --bone-3: #D69AB8;
+  --neon-pink: #FF1F7F;
+  --neon-pink-glow: #FF7AB0;
+  --neon-pink-deep: #B8004F;
+  --neon-pink-soft: rgba(255, 31, 127, 0.12);
+  --acid: #2EB67D;
+  --electric: #A076FF;
+  --amber: #F59E48;
+  --blood: #E0245E;
+  --violet: #C26EFF;
+  --bg-noise:
+    radial-gradient(80% 50% at 12% 0%, rgba(255,31,127,0.08), transparent 65%),
+    radial-gradient(60% 40% at 100% 100%, rgba(160,118,255,0.06), transparent 65%);
+  --shadow-glow-px: rgba(255, 31, 127, 0.45);
+  --topbar-bg: rgba(255,231,240,0.88);
+  color-scheme: light;
+}
+
+/* ===== Light-skin specific overrides (paper + girly) ===== */
+[data-skin="paper"] .ev-name,
+[data-skin="paper"] .ev[data-cat] .ev-name,
+[data-skin="girly"] .ev-name,
+[data-skin="girly"] .ev[data-cat] .ev-name {
+  color: var(--bone-0);
+}
+
+/* Category chip text should be readable on light skins (dark text on bright bg already
+   works because chips use --ink-0 as foreground; let's keep that). */
+
+/* Category chips on light skins — white text reads cleanly on saturated bg */
+[data-skin="paper"] .cat-chip[data-cat="afterwork"],
+[data-skin="paper"] .cat-chip[data-cat="danse"],
+[data-skin="paper"] .cat-chip[data-cat="social"],
+[data-skin="paper"] .cat-chip[data-cat="soiree"],
+[data-skin="paper"] .cat-chip[data-cat="rencontres"],
+[data-skin="paper"] .cat-chip[data-cat="sport"],
+[data-skin="paper"] .cat-chip[data-cat="karaoke"] {
+  color: #FBF6E6;
+  font-weight: 700;
+}
+
+[data-skin="girly"] .cat-chip[data-cat="afterwork"],
+[data-skin="girly"] .cat-chip[data-cat="danse"],
+[data-skin="girly"] .cat-chip[data-cat="social"],
+[data-skin="girly"] .cat-chip[data-cat="soiree"],
+[data-skin="girly"] .cat-chip[data-cat="rencontres"],
+[data-skin="girly"] .cat-chip[data-cat="sport"],
+[data-skin="girly"] .cat-chip[data-cat="karaoke"] {
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+/* Tier and source tags — slightly stronger backgrounds on light skins */
+[data-skin="paper"] .tag,
+[data-skin="paper"] .ev-tier-mini,
+[data-skin="paper"] .tier {
+  background: var(--ink-1);
+  border-color: var(--ink-4);
+}
+[data-skin="paper"] .ev-verified {
+  background: rgba(74,122,26,0.18);
+}
+[data-skin="girly"] .ev-verified {
+  background: rgba(46,182,125,0.18);
+}
+
+/* On Paper Ink, the connexion CTA & primary button want a slightly darker pink text */
+[data-skin="paper"] .btn-primary,
+[data-skin="paper"] .btn-scan,
+[data-skin="girly"] .btn-primary,
+[data-skin="girly"] .btn-scan {
+  color: #FFFFFF;
+}
+
+/* Girly: rounder corners + more playful shadows */
+[data-skin="girly"] .city-pill,
+[data-skin="girly"] .mode-btn,
+[data-skin="girly"] .size-seg,
+[data-skin="girly"] .ico-btn,
+[data-skin="girly"] .search,
+[data-skin="girly"] .sort-pill,
+[data-skin="girly"] .btn-primary,
+[data-skin="girly"] .field,
+[data-skin="girly"] .btn-ghost-line,
+[data-skin="girly"] .btn-scan,
+[data-skin="girly"] .frow,
+[data-skin="girly"] .dchip,
+[data-skin="girly"] .safety-btn,
+[data-skin="girly"] .ev,
+[data-skin="girly"] .ev-full,
+[data-skin="girly"] .hero,
+[data-skin="girly"] .scanner,
+[data-skin="girly"] .cta,
+[data-skin="girly"] .radar-card {
+  border-radius: 14px;
+}
+[data-skin="girly"] .cat-chip,
+[data-skin="girly"] .tag,
+[data-skin="girly"] .tier,
+[data-skin="girly"] .checkbox,
+[data-skin="girly"] .foot-pill,
+[data-skin="girly"] .boost,
+[data-skin="girly"] .badge-slot {
+  border-radius: 999px;
+}
+[data-skin="girly"] .ev:hover,
+[data-skin="girly"] .ev-full:hover,
+[data-skin="girly"] .cta:hover {
+  box-shadow: 0 4px 18px -6px rgba(255, 31, 127, 0.35);
+}
+
+/* Paper Ink — more serif-y and rule-driven */
+[data-skin="paper"] .hero,
+[data-skin="paper"] .scanner,
+[data-skin="paper"] .radar-card,
+[data-skin="paper"] .cta,
+[data-skin="paper"] .ev,
+[data-skin="paper"] .ev-full {
+  border-radius: 2px;
+  box-shadow: none;
+  background: var(--ink-2);
+}
+[data-skin="paper"] .city-pill,
+[data-skin="paper"] .mode-btn,
+[data-skin="paper"] .size-seg,
+[data-skin="paper"] .ico-btn,
+[data-skin="paper"] .search,
+[data-skin="paper"] .sort-pill,
+[data-skin="paper"] .btn-primary,
+[data-skin="paper"] .field,
+[data-skin="paper"] .btn-ghost-line,
+[data-skin="paper"] .btn-scan,
+[data-skin="paper"] .frow,
+[data-skin="paper"] .dchip,
+[data-skin="paper"] .safety-btn,
+[data-skin="paper"] .cat-chip,
+[data-skin="paper"] .tag,
+[data-skin="paper"] .tier {
+  border-radius: 2px;
+}
+
+/* Pulse glow on .btn-primary uses hardcoded shadow color — override per skin */
+.app .btn-primary:hover { box-shadow: 0 0 18px -4px var(--shadow-glow-px); }
+.app .btn-scan:hover { box-shadow: 0 0 18px -4px var(--shadow-glow-px); }
+.app .safety-btn:hover { box-shadow: 0 0 18px -4px var(--shadow-glow-px); }
+
+/* Topbar bg follows skin */
+.app .topbar { background: var(--topbar-bg); }
+
+/* App background follows skin */
+.app { background: var(--bg-noise), var(--ink-0); }
+
+/* Live strip color flip for light skins */
+[data-skin="paper"] .live-strip,
+[data-skin="girly"] .live-strip {
+  color: var(--acid);
+}
+
+/* "Live scrap" dot glow */
+.app .live-strip .dot { box-shadow: 0 0 8px currentColor; }
+
+/* Acid badge text needs to stay light-readable */
+[data-skin="paper"] .dehors-badge {
+  background: rgba(79,126,26,0.10);
+  color: var(--acid);
+}
+[data-skin="girly"] .dehors-badge {
+  background: rgba(46,182,125,0.12);
+  color: var(--acid);
+}
+
+/* Selected event row background on light skins */
+[data-skin="paper"] .ev-full.selected,
+[data-skin="girly"] .ev-full.selected {
+  background: var(--neon-pink-soft);
+}
+
+/* Sidebar bg on light skins */
+[data-skin="paper"] .sidebar { background: var(--ink-1); }
+[data-skin="girly"] .sidebar { background: var(--ink-1); }
+
+/* Tier color tweaks for light skins (acid green dot becomes olive) */
+[data-skin="paper"] .tier.a { color: var(--acid); border-color: var(--acid); }
+[data-skin="paper"] .tier.b { color: var(--electric); border-color: var(--electric); }
+
+/* Skin selector pill (in topbar) */
+.skin-seg {
+  display: inline-flex;
+  border: 1px solid var(--ink-4);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--ink-2);
+  height: 26px;
+}
+.skin-seg button {
+  background: transparent;
+  border: none;
+  color: var(--bone-2);
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 120ms var(--ease-enter);
+  white-space: nowrap;
+}
+.skin-seg button:hover { color: var(--bone-0); background: var(--ink-3); }
+.skin-seg button.active {
+  background: var(--neon-pink-soft);
+  color: var(--neon-pink-glow);
+}
+.skin-seg .swatch {
+  width: 8px; height: 8px;
+  border-radius: 999px;
+  border: 1px solid var(--ink-4);
+}
+.skin-seg .swatch.nuit  { background: #FF2D6F; border-color: #FF6FA3; }
+.skin-seg .swatch.paper { background: #C7264E; border-color: #14110A; }
+.skin-seg .swatch.girly { background: #FF1F7F; border-color: #A076FF; }

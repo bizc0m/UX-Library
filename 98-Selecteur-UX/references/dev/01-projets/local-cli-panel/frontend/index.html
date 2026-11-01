@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panneau CLI local</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Panneau CLI local</h1>
+    <div id="status" class="status">connexion…</div>
+  </header>
+
+  <main>
+    <section id="tasks">
+      <h2>Commandes</h2>
+      <div id="task-grid" class="task-grid"><p>Chargement…</p></div>
+    </section>
+
+    <section id="terminal">
+      <h2>Sortie</h2>
+      <div id="output" class="output">Prêt.</div>
+    </section>
+
+    <section id="history">
+      <h2>Historique</h2>
+      <ul id="history-list" class="history-list"></ul>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,637 @@
+<div id="control-deck-iconography">
+  <style>
+    #control-deck-iconography {
+      --bg: #101314;
+      --panel: #1a1e20;
+      --panel-2: #22272a;
+      --line: rgba(255,255,255,.13);
+      --text: #f0f3f2;
+      --muted: #9ca5aa;
+      --blue: #159cff;
+      --green: #35d36b;
+      --red: #ff4055;
+      --orange: #ff9b2f;
+      --purple: #b84dff;
+      --pink: #ff4778;
+      --cyan: #14d6c8;
+      --icon-s: 18px;
+      --icon-m: 28px;
+      --icon-xl: 36px;
+      --icon-col: 52px;
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #171b1d 0%, var(--bg) 100%);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    #control-deck-iconography * {
+      box-sizing: border-box;
+    }
+
+    #control-deck-iconography .top {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: flex-end;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 18px;
+      margin-bottom: 22px;
+    }
+
+    #control-deck-iconography h2 {
+      margin: 0 0 6px;
+      font-size: 28px;
+      letter-spacing: 0;
+      line-height: 1.08;
+    }
+
+    #control-deck-iconography .sub {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    #control-deck-iconography .tokens {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(64px, 1fr));
+      gap: 8px;
+      min-width: 390px;
+    }
+
+    #control-deck-iconography .token {
+      min-height: 48px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,255,255,.04);
+      padding: 8px;
+    }
+
+    #control-deck-iconography .swatch {
+      width: 100%;
+      height: 10px;
+      border-radius: 4px;
+      margin-bottom: 7px;
+    }
+
+    #control-deck-iconography .token span {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    #control-deck-iconography .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 18px;
+    }
+
+    #control-deck-iconography .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      min-height: 190px;
+    }
+
+    #control-deck-iconography .panel h3 {
+      margin: 0 0 12px;
+      font-size: 15px;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    #control-deck-iconography .menu {
+      border-radius: 13px;
+      background: rgba(5,8,9,.72);
+      border: 1px solid rgba(255,255,255,.18);
+      overflow: hidden;
+      padding: 8px;
+    }
+
+    #control-deck-iconography .row {
+      display: grid;
+      grid-template-columns: var(--icon-col) 1fr 22px;
+      align-items: center;
+      gap: 10px;
+      height: 44px;
+      border-radius: 8px;
+      padding: 0 8px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    #control-deck-iconography .row.small {
+      grid-template-columns: var(--icon-col) 1fr 20px;
+      height: 36px;
+      font-size: 16px;
+      font-weight: 560;
+    }
+
+    #control-deck-iconography .row.active {
+      background: rgba(21,156,255,.82);
+    }
+
+    #control-deck-iconography .row.dim {
+      color: var(--muted);
+      opacity: .75;
+    }
+
+    #control-deck-iconography .chev {
+      color: rgba(255,255,255,.82);
+      font-size: 28px;
+      line-height: 1;
+      text-align: right;
+    }
+
+    #control-deck-iconography .appmark {
+      width: var(--icon-col);
+      height: 36px;
+      display: block;
+      position: relative;
+      justify-self: center;
+    }
+
+    #control-deck-iconography .app-icon {
+      width: var(--icon-m);
+      height: var(--icon-m);
+      border-radius: 6px;
+      background: linear-gradient(135deg, #ffffff, #9fb8ff);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
+      position: relative;
+    }
+
+    #control-deck-iconography .appmark .app-icon {
+      position: absolute;
+      left: 4px;
+      top: 4px;
+    }
+
+    #control-deck-iconography .app-icon.ai {
+      background: radial-gradient(circle at 50% 50%, #111 0 36%, #f2f2f2 38% 42%, #111 44%);
+    }
+
+    #control-deck-iconography .app-icon.claude {
+      background: radial-gradient(circle at 50% 50%, #fff 0 12%, #ff7f45 14% 100%);
+    }
+
+    #control-deck-iconography .mini-layout {
+      width: var(--icon-s);
+      height: 18px;
+      border: 2px solid rgba(255,255,255,.78);
+      border-radius: 3px;
+      position: relative;
+      background: rgba(255,255,255,.06);
+      position: absolute;
+      right: 4px;
+      bottom: 2px;
+    }
+
+    #control-deck-iconography .mini-layout::after {
+      content: "";
+      position: absolute;
+      right: 1px;
+      top: 1px;
+      width: 6px;
+      height: 12px;
+      border-radius: 1px;
+      background: var(--blue);
+    }
+
+    #control-deck-iconography .state {
+      width: var(--icon-s);
+      height: var(--icon-s);
+      display: inline-block;
+      position: relative;
+    }
+
+    #control-deck-iconography .appmark .state {
+      position: absolute;
+      right: 4px;
+      bottom: 7px;
+    }
+
+    #control-deck-iconography .row > .action-icon,
+    #control-deck-iconography .row > .state,
+    #control-deck-iconography .row > .screen {
+      justify-self: center;
+    }
+
+    #control-deck-iconography .state.lock::before {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 8px;
+      width: 10px;
+      height: 8px;
+      border-radius: 2px;
+      background: var(--red);
+    }
+
+    #control-deck-iconography .state.lock::after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: 2px;
+      width: 8px;
+      height: 9px;
+      border: 2px solid var(--red);
+      border-bottom: 0;
+      border-radius: 7px 7px 0 0;
+    }
+
+    #control-deck-iconography .state.pause::before,
+    #control-deck-iconography .state.pause::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      width: 4px;
+      height: 13px;
+      border-radius: 2px;
+      background: var(--orange);
+    }
+
+    #control-deck-iconography .state.pause::before { left: 4px; }
+    #control-deck-iconography .state.pause::after { right: 4px; }
+
+    #control-deck-iconography .state.free {
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 3px rgba(53,211,107,.18);
+    }
+
+    #control-deck-iconography .action-icon {
+      width: var(--icon-s);
+      height: var(--icon-s);
+      display: inline-block;
+      position: relative;
+    }
+
+    #control-deck-iconography .target {
+      border: 2px solid var(--blue);
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 5px rgba(21,156,255,.16);
+    }
+
+    #control-deck-iconography .target.red {
+      border-color: var(--red);
+      box-shadow: inset 0 0 0 5px rgba(255,64,85,.14);
+    }
+
+    #control-deck-iconography .window {
+      border: 2px solid rgba(255,255,255,.74);
+      border-radius: 3px;
+    }
+
+    #control-deck-iconography .layout-mini {
+      border: 2px solid rgba(255,255,255,.78);
+      border-radius: 3px;
+    }
+
+    #control-deck-iconography .layout-mini::after {
+      content: "";
+      position: absolute;
+      right: 2px;
+      top: 2px;
+      width: 7px;
+      height: 14px;
+      border-radius: 1px;
+      background: var(--blue);
+    }
+
+    #control-deck-iconography .screen-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    #control-deck-iconography .screen {
+      width: var(--icon-xl);
+      height: var(--icon-xl);
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 22px;
+      font-weight: 800;
+      font-family: ui-monospace, "SF Mono", monospace;
+      border: 2px solid rgba(255,255,255,.78);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.08), inset 0 1px 0 rgba(255,255,255,.24);
+    }
+
+    #control-deck-iconography .layout-set {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    #control-deck-iconography .layout-card {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.035);
+      border-radius: 10px;
+      padding: 10px;
+      min-height: 78px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 7px;
+    }
+
+    #control-deck-iconography .layout-screen {
+      width: 56px;
+      height: 34px;
+      border: 3px solid rgba(255,255,255,.78);
+      border-radius: 5px;
+      position: relative;
+      background: rgba(255,255,255,.05);
+    }
+
+    #control-deck-iconography .fill {
+      position: absolute;
+      background: var(--blue);
+      border-radius: 2px;
+    }
+
+    #control-deck-iconography .layout-card span {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 650;
+      text-align: center;
+    }
+
+    #control-deck-iconography .legend {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    #control-deck-iconography .size-ref {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 0 0 18px;
+    }
+
+    #control-deck-iconography .size-card {
+      min-height: 74px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,.04);
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+    }
+
+    #control-deck-iconography .size-demo {
+      display: grid;
+      place-items: center;
+      justify-self: center;
+      background: rgba(21,156,255,.16);
+      border: 2px solid var(--blue);
+      border-radius: 8px;
+    }
+
+    #control-deck-iconography .size-demo.s { width: var(--icon-s); height: var(--icon-s); }
+    #control-deck-iconography .size-demo.m { width: var(--icon-m); height: var(--icon-m); }
+    #control-deck-iconography .size-demo.xl {
+      width: var(--icon-xl);
+      height: var(--icon-xl);
+      background: var(--blue);
+      color: white;
+      font-family: ui-monospace, "SF Mono", monospace;
+      font-weight: 800;
+      font-size: 22px;
+    }
+
+    #control-deck-iconography .size-card strong {
+      display: block;
+      font-size: 17px;
+      margin-bottom: 3px;
+    }
+
+    #control-deck-iconography .size-card span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    #control-deck-iconography .legend-item {
+      min-height: 74px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.035);
+      border: 1px solid var(--line);
+    }
+
+    #control-deck-iconography .legend-item strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    #control-deck-iconography .legend-item p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    @media (max-width: 760px) {
+      #control-deck-iconography {
+        padding: 16px;
+      }
+      #control-deck-iconography .top,
+      #control-deck-iconography .grid,
+      #control-deck-iconography .legend,
+      #control-deck-iconography .size-ref {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+      #control-deck-iconography .tokens {
+        min-width: 0;
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+
+  <div class="top">
+    <div>
+      <h2>AgentScreen Control Deck</h2>
+      <div class="sub">Iconographie unifiee : colonne fixe, tailles de reference S/M/XL, lecture alignee.</div>
+    </div>
+    <div class="tokens" aria-label="Palette couleur">
+      <div class="token"><div class="swatch" style="background:var(--blue)"></div><span>Action</span></div>
+      <div class="token"><div class="swatch" style="background:var(--green)"></div><span>Libre</span></div>
+      <div class="token"><div class="swatch" style="background:var(--red)"></div><span>Freeze</span></div>
+      <div class="token"><div class="swatch" style="background:var(--orange)"></div><span>Pause</span></div>
+      <div class="token"><div class="swatch" style="background:var(--purple)"></div><span>Document</span></div>
+      <div class="token"><div class="swatch" style="background:var(--pink)"></div><span>Ecran</span></div>
+    </div>
+  </div>
+
+  <div class="size-ref" aria-label="Tailles de reference">
+    <div class="size-card">
+      <div class="size-demo s"></div>
+      <div><strong>S · 18 px</strong><span>Actions : localiser, premier plan, pause, retirer.</span></div>
+    </div>
+    <div class="size-card">
+      <div class="size-demo m"></div>
+      <div><strong>M · 28 px</strong><span>Apps, dossiers, documents, pictos de layout.</span></div>
+    </div>
+    <div class="size-card">
+      <div class="size-demo xl">4</div>
+      <div><strong>XL · 36 px</strong><span>Badges ecran uniquement : chiffre/lettre + couleur.</span></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h3>Menu app : hierarchie propre</h3>
+      <div class="menu">
+        <div class="row active">
+          <div class="appmark"><span class="app-icon"></span><span class="mini-layout"></span></div>
+          <div>Apercu -> Gauche [4]</div>
+          <div class="chev">›</div>
+        </div>
+        <div class="row">
+          <div class="appmark"><span class="app-icon ai"></span><span class="mini-layout"></span></div>
+          <div>ChatGPT -> Gauche [4]</div>
+          <div class="chev">›</div>
+        </div>
+        <div class="row">
+          <div class="appmark"><span class="app-icon claude"></span><span class="state pause"></span></div>
+          <div>Claude -> Droite [3]</div>
+          <div class="chev">›</div>
+        </div>
+        <div class="row">
+          <div class="appmark"><span class="app-icon" style="background:#111"></span><span class="state lock"></span></div>
+          <div>TextEdit -> Gauche [4]</div>
+          <div class="chev">›</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Sous-menu : actions petites, ecrans forts</h3>
+      <div class="menu">
+        <div class="row small">
+          <span class="action-icon target red"></span>
+          <div>Localiser</div>
+          <div></div>
+        </div>
+        <div class="row small">
+          <span class="action-icon window"></span>
+          <div>Premier plan</div>
+          <div></div>
+        </div>
+        <div class="row small">
+          <span class="action-icon layout-mini"></span>
+          <div>Agencer</div>
+          <div class="chev">›</div>
+        </div>
+        <div class="row small dim">
+          <span class="state pause"></span>
+          <div>Desactiver sans supprimer</div>
+          <div></div>
+        </div>
+        <div style="height:1px;background:var(--line);margin:8px 0"></div>
+        <div class="row">
+          <span class="screen" style="background:var(--purple)">3</span>
+          <div>Droite [3]</div>
+          <div></div>
+        </div>
+        <div class="row">
+          <span class="screen" style="background:var(--blue)">4</span>
+          <div>Gauche [4]</div>
+          <div></div>
+        </div>
+        <div class="row">
+          <span class="screen" style="background:var(--pink)">5</span>
+          <div>Display 5 [5]</div>
+          <div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:18px">
+    <div class="panel">
+      <h3>Agencer : surface occupee, pas fleches</h3>
+      <div class="layout-set">
+        <div class="layout-card">
+          <div class="layout-screen"><span class="fill" style="inset:4px"></span></div>
+          <span>Plein ecran</span>
+        </div>
+        <div class="layout-card">
+          <div class="layout-screen"><span class="fill" style="left:4px;top:4px;bottom:4px;width:25px"></span></div>
+          <span>Moitie gauche</span>
+        </div>
+        <div class="layout-card">
+          <div class="layout-screen"><span class="fill" style="right:4px;top:4px;bottom:4px;width:25px"></span></div>
+          <span>Moitie droite</span>
+        </div>
+        <div class="layout-card">
+          <div class="layout-screen"><span class="fill" style="left:4px;right:4px;top:4px;height:14px"></span></div>
+          <span>Moitie haut</span>
+        </div>
+        <div class="layout-card">
+          <div class="layout-screen"><span class="fill" style="left:4px;right:4px;bottom:4px;height:14px"></span></div>
+          <span>Moitie bas</span>
+        </div>
+        <div class="layout-card">
+          <div class="layout-screen"><span class="fill" style="left:4px;top:4px;width:25px;height:14px"></span></div>
+          <span>Quart</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Objets : couleurs distinctes</h3>
+      <div class="menu">
+        <div class="row">
+          <span style="width:var(--icon-m);height:22px;border-radius:3px;background:var(--blue);display:inline-block;justify-self:center"></span>
+          <div>Dossier: ###Doc -> Droite [3]</div>
+          <div class="chev">›</div>
+        </div>
+        <div class="row">
+          <span style="width:22px;height:var(--icon-m);border-radius:3px;background:var(--purple);display:inline-block;position:relative;justify-self:center"></span>
+          <div>Document: queue.md -> Gauche [4]</div>
+          <div class="chev">›</div>
+        </div>
+        <div style="height:1px;background:var(--line);margin:8px 0"></div>
+        <div class="screen-badges">
+          <span class="screen" style="background:var(--purple)">3</span>
+          <span class="screen" style="background:var(--blue)">4</span>
+          <span class="screen" style="background:var(--pink)">5</span>
+          <span class="screen" style="background:var(--green)">A</span>
+          <span class="screen" style="background:var(--orange)">B</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item">
+      <strong>App identity</strong>
+      <p>M = 28 px. Icone app avec badge S superpose.</p>
+    </div>
+    <div class="legend-item">
+      <strong>Actions</strong>
+      <p>S = 18 px. Action visible sans voler le focus.</p>
+    </div>
+    <div class="legend-item">
+      <strong>Ecrans</strong>
+      <p>XL = 36 px. Seule famille autorisee a dominer.</p>
+    </div>
+  </div>
+</div>

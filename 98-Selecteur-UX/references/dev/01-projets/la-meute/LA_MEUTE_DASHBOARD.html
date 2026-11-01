@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LA MEUTE Cosmique — Dashboard 72 Totems</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #00d4ff;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            color: #00d4ff;
+            text-shadow: 0 0 10px #00d4ff;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            color: #aaa;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .controls {
+            background: rgba(0, 20, 40, 0.8);
+            border: 2px solid #00d4ff;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-group label {
+            font-weight: bold;
+            color: #00d4ff;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        .control-group select,
+        .control-group input {
+            padding: 10px;
+            background: rgba(0, 40, 60, 0.9);
+            border: 1px solid #00d4ff;
+            color: #e0e0e0;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .control-group textarea {
+            padding: 10px;
+            background: rgba(0, 40, 60, 0.9);
+            border: 1px solid #00d4ff;
+            color: #e0e0e0;
+            border-radius: 5px;
+            font-size: 0.95em;
+            font-family: monospace;
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            border: none;
+            color: #000;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00d4ff;
+        }
+
+        .totem-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .totem-btn {
+            padding: 8px;
+            background: rgba(0, 212, 255, 0.2);
+            border: 2px solid #00d4ff;
+            color: #00d4ff;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .totem-btn.active {
+            background: #00d4ff;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .totem-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .analysis-section {
+            margin-top: 40px;
+        }
+
+        .analysis-title {
+            font-size: 2em;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #00d4ff;
+        }
+
+        .totem-card {
+            background: linear-gradient(135deg, rgba(0, 30, 60, 0.9), rgba(0, 50, 80, 0.9));
+            border: 2px solid #00d4ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .totem-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #00d4ff;
+            padding-bottom: 10px;
+        }
+
+        .totem-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .totem-model {
+            font-size: 0.9em;
+            color: #aaa;
+            font-style: italic;
+        }
+
+        .score-display {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #ffaa00;
+        }
+
+        .axes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin: 15px 0;
+        }
+
+        .axis-item {
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 4px solid #00d4ff;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.85em;
+        }
+
+        .axis-label {
+            font-weight: bold;
+            color: #00d4ff;
+            margin-bottom: 5px;
+        }
+
+        .axis-value {
+            color: #ffaa00;
+            font-size: 1.1em;
+        }
+
+        .recommendation {
+            background: rgba(0, 100, 100, 0.3);
+            border-left: 4px solid #00ff00;
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 5px;
+            font-style: italic;
+        }
+
+        .consensus-section {
+            background: rgba(0, 100, 0, 0.2);
+            border: 2px solid #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+
+        .divergence-section {
+            background: rgba(100, 0, 0, 0.2);
+            border: 2px solid #ff6666;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .consensus-title,
+        .divergence-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .consensus-title {
+            color: #00ff00;
+        }
+
+        .divergence-title {
+            color: #ff6666;
+        }
+
+        .tier-badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .tier-badge {
+            padding: 5px 10px;
+            background: rgba(0, 212, 255, 0.3);
+            border: 1px solid #00d4ff;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+
+        .tier-1 { border-color: #ff0000; background: rgba(255, 0, 0, 0.2); }
+        .tier-2 { border-color: #ffaa00; background: rgba(255, 170, 0, 0.2); }
+        .tier-3 { border-color: #00d4ff; background: rgba(0, 212, 255, 0.2); }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            .totem-selector {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 2px solid #00d4ff;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌌 LA MEUTE Cosmique</h1>
+        <p>Dashboard d'analyse 72 Totems</p>
+        <p style="font-size: 0.9em; margin-top: 10px;">Chaque décision vue par les yeux des dieux</p>
+    </div>
+
+    <div class="container">
+        <div class="controls">
+            <div class="control-group">
+                <label>Sélectionner groupe</label>
+                <select id="tierSelect">
+                    <option value="tier1">TIER 1 (Urgent) — 8 totems</option>
+                    <option value="tier2">TIER 2 (Important) — 24 totems</option>
+                    <option value="all">Tous les 72 totems</option>
+                    <option value="custom">Personnalisé</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Quel totem invoquer?</label>
+                <select id="totemSelect">
+                    <option value="all">Tous les totems du groupe</option>
+                    <option value="gaia">Gaïa (Terre)</option>
+                    <option value="chronos">Chronos (Générations)</option>
+                    <option value="eros">Eros (Connexion)</option>
+                    <option value="chaos">Chaos (Incertitude)</option>
+                    <option value="ananke">Ananké (Nécessité)</option>
+                    <option value="sophia">Sophia (Sagesse)</option>
+                    <option value="themis">Thémis (Justice)</option>
+                    <option value="logos">Logos (Raison)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Décision/Question à analyser</label>
+                <textarea id="decision" placeholder="Ex: Approuver un nouveau projet minier en Amazonie&#10;Ou: Augmenter l'automatisation des emplois&#10;Ou: Mettre en place un revenu universel">Approuver un nouveau projet minier en Amazonie</textarea>
+            </div>
+
+            <div style="grid-column: 1 / -1;">
+                <button onclick="analyzeDecision()">Invoquer les Totems ✨</button>
+                <button onclick="resetDashboard()" style="background: rgba(200, 0, 0, 0.5); margin-left: 10px;">Réinitialiser</button>
+            </div>
+        </div>
+
+        <div id="analysisResults" class="analysis-section" style="display: none;">
+            <div class="analysis-title">Analyse Collective</div>
+
+            <div id="totemAnalyses"></div>
+
+            <div id="consensusDiv" class="consensus-section" style="display: none;">
+                <div class="consensus-title">✅ Consensus des Totems</div>
+                <div id="consensusContent"></div>
+            </div>
+
+            <div id="divergenceDiv" class="divergence-section" style="display: none;">
+                <div class="divergence-title">⚠️ Points de Divergence</div>
+                <div id="divergenceContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>LA MEUTE Cosmique v1.0 — 72 Totems, 8 TIER 1, Sagesse Collective</p>
+        <p style="margin-top: 10px; font-size: 0.9em;">Chaque décision humaine vue par les yeux de la terre, du temps, de la justice, de la raison, du chaos, et de l'amour</p>
+    </div>
+
+    <script>
+        const totems = {
+            gaia: {
+                name: 'Gaïa',
+                model: 'Claude Opus',
+                tier: 1,
+                axes: {
+                    optimisme: -80,
+                    centralisation: 60,
+                    humain: -70,
+                    liberte: 50,
+                    innovation: 60,
+                    individu: 90,
+                    transparence: -75,
+                    productivite: -60,
+                    acceleration: 80,
+                    local: 40
+                },
+                analysis: (decision) => `
+                    <strong>Gaïa analyse:</strong> "<em>${decision}</em>"<br>
+                    <strong>Pertinence:</strong> 92/100 (CRITIQUE)<br>
+                    <strong>Voix:</strong> "Ceci croise les limites planétaires. Les espèces une fois éteintes ne reviennent jamais. Les sols mettent 200 ans à régénérer. Non."<br>
+                    <strong>Recommandation:</strong> VETO sauf si projet restauratif pur.
+                `,
+                recommendation: 'VETO si extraction; APPROUVE si restauration'
+            },
+            chronos: {
+                name: 'Chronos',
+                model: 'GPT-4o',
+                tier: 1,
+                axes: {
+                    optimisme: -65,
+                    centralisation: -20,
+                    humain: -60,
+                    liberte: 30,
+                    innovation: -40,
+                    individu: 70,
+                    transparence: -70,
+                    productivite: -50,
+                    acceleration: 70,
+                    local: 10
+                },
+                analysis: (decision) => `
+                    <strong>Chronos analyse:</strong> "<em>${decision}</em>"<br>
+                    <strong>Pertinence:</strong> 85/100 (CRITIQUE)<br>
+                    <strong>Voix:</strong> "Vos arrière-petits-enfants paieront cette dette. Quelle responsabilité portez-vous vers le futur?"<br>
+                    <strong>Recommandation:</strong> Considérer l'impact sur 7 générations.
+                `,
+                recommendation: 'Évaluer sur 7 générations'
+            },
+            eros: {
+                name: 'Eros',
+                model: 'Claude Sonnet',
+                tier: 1,
+                axes: {
+                    optimisme: 25,
+                    centralisation: -20,
+                    humain: -70,
+                    liberte: -30,
+                    innovation: -20,
+                    individu: -10,
+                    transparence: -55,
+                    productivite: -80,
+                    acceleration: -30,
+                    local: -30
+                },
+                analysis: (decision) => `
+                    <strong>Eros analyse:</strong> "<em>${decision}</em>"<br>
+                    <strong>Pertinence:</strong> 78/100 (HAUTE)<br>
+                    <strong>Voix:</strong> "Qui souffre? Les communautés indigènes sont éjectées. Les enfants respirent des poisons. Pas d'amour ici."<br>
+                    <strong>Recommandation:</strong> Écouter les communautés affectées d'abord.
+                `,
+                recommendation: 'Consulter les communautés impactées'
+            },
+            chaos: {
+                name: 'Chaos',
+                model: 'o1',
+                tier: 1,
+                axes: {
+                    optimisme: -70,
+                    centralisation: 40,
+                    humain: -50,
+                    liberte: -50,
+                    innovation: -20,
+                    individu: 60,
+                    transparence: -60,
+                    productivite: -40,
+                    acceleration: -80,
+                    local: 30
+                },
+                analysis: (decision) => `
+                    <strong>Chaos analyse:</strong> "<em>${decision}</em>"<br>
+                    <strong>Pertinence:</strong> 88/100 (CRITIQUE)<br>
+                    <strong>Voix:</strong> "Vous supposez que cela se passe selon le plan. Non. Les accidents écologiques émergent. Les résistances humaines surgissent. Préparez l'imprévu."<br>
+                    <strong>Recommandation:</strong> Construire l'antifragilité; assumer l'erreur.
+                `,
+                recommendation: 'Préparer 10 scénarios de rupture'
+            },
+            ananke: {
+                name: 'Ananké',
+                model: 'o1',
+                tier: 1,
+                axes: {
+                    optimisme: 90,
+                    centralisation: 0,
+                    humain: 50,
+                    liberte: 100,
+                    innovation: 70,
+                    individu: 95,
+                    transparence: 0,
+                    productivite: 0,
+                    acceleration: 80,
+                    local: 0
+                },
+                analysis: (decision) => `
+                    <strong>Ananké analyse:</strong> "<em>${decision}</em>"<br>
+                    <strong>Pertinence:</strong> 82/100 (CRITIQUE)<br>
+                    <strong>Voix:</strong> "Mathématiquement: coûts supérieurs aux bénéfices. Physiquement: impossible à 2030. Thermodynamiquement: l'énergie n'existe pas."<br>
+                    <strong>Recommandation:</strong> Réviser le calendrier OU accepter l'impossibilité.
+                `,
+                recommendation: 'Accepter la réalité physique'
+            },
+            sophia: {
+                name: 'Sophia',
+                model: 'Claude Opus',
+                tier: 1,
+                axes: {
+                    optimisme: -20,
+                    centralisation: 0,
+                    humain: -50,
+                    liberte: -10,
+                    innovation: -10,
+                    individu: 0,
+                    transparence: -75,
+                    productivite: 0,
+                    acceleration: -40,
+                    local: 0
+                },
+                analysis: (decision) => `
+                    <strong>Sophia analyse:</strong> "<em>${decision}</em>"<br>
+                    <strong>Pertinence:</strong> 75/100 (HAUTE)<br>
+                    <strong>Voix:</strong> "Vous avez raison ET tort. Les emplois importent. L'écologie importe. Les deux sont vrais. Voici comment les tenir ensemble..."<br>
+                    <strong>Recommandation:</strong> Chercher la troisième voie, pas le compromis.
+                `,
+                recommendation: 'Intégrer les perspectives, pas les diluer'
+            },
+            themis: {
+                name: 'Thémis',
+                model: 'Claude Opus',
+                tier: 1,
+                axes: {
+                    optimisme: -50,
+                    centralisation: -20,
+                    humain: -60,
+                    liberte: 0,
+                    innovation: -20,
+                    individu: 50,
+                    transparence: -80,
+                    productivite: -40,
+                    acceleration: -50,
+                    local: 10
+                },
+                analysis: (decision) => `
+                    <strong>Thémis analyse:</strong> "<em>${decision}</em>"<br>
+                    <strong>Pertinence:</strong> 88/100 (CRITIQUE)<br>
+                    <strong>Voix:</strong> "Qui bénéficie? Les actionnaires. Qui paie? Les pauvres, les indigènes, les futures générations. Cela n'est pas juste."<br>
+                    <strong>Recommandation:</strong> Redistribution obligatoire ou REJET.
+                `,
+                recommendation: 'Assurer la justice avant l\'approbation'
+            },
+            logos: {
+                name: 'Logos',
+                model: 'o1',
+                tier: 1,
+                axes: {
+                    optimisme: -50,
+                    centralisation: 0,
+                    humain: -40,
+                    liberte: 50,
+                    innovation: -10,
+                    individu: 80,
+                    transparence: -90,
+                    productivite: 40,
+                    acceleration: -20,
+                    local: 0
+                },
+                analysis: (decision) => `
+                    <strong>Logos analyse:</strong> "<em>${decision}</em>"<br>
+                    <strong>Pertinence:</strong> 80/100 (HAUTE)<br>
+                    <strong>Voix:</strong> "Votre logique contient une contradiction: 'croissance infinie + limites finies = soutenable'. Non. Choisissez l'un ou l'autre."<br>
+                    <strong>Recommandation:</strong> Corriger la prémisse ou accepter l'contradiction.
+                `,
+                recommendation: 'Résoudre les contradictions logiques'
+            }
+        };
+
+        function analyzeDecision() {
+            const decision = document.getElementById('decision').value || 'Décision non spécifiée';
+            const tier = document.getElementById('tierSelect').value;
+            const singleTotem = document.getElementById('totemSelect').value;
+
+            let selectedTotems = [];
+            if (singleTotem !== 'all') {
+                selectedTotems = [singleTotem];
+            } else if (tier === 'tier1') {
+                selectedTotems = ['gaia', 'chronos', 'eros', 'chaos', 'ananke', 'sophia', 'themis', 'logos'];
+            } else if (tier === 'tier2') {
+                selectedTotems = ['gaia', 'chronos', 'eros', 'chaos', 'ananke', 'sophia', 'themis', 'logos'];
+            } else {
+                selectedTotems = ['gaia', 'chronos', 'eros', 'chaos', 'ananke', 'sophia', 'themis', 'logos'];
+            }
+
+            let analysisHTML = '';
+            let approvals = 0;
+            let vetoes = 0;
+
+            selectedTotems.forEach(totemKey => {
+                const totem = totems[totemKey];
+                if (!totem) return;
+
+                analysisHTML += `
+                    <div class="totem-card">
+                        <div class="totem-header">
+                            <div>
+                                <div class="totem-name">${totem.name}</div>
+                                <div class="totem-model">${totem.model}</div>
+                            </div>
+                            <div class="score-display">TIER ${totem.tier}</div>
+                        </div>
+
+                        <div class="axes-grid">
+                            ${Object.entries(totem.axes).map(([axis, value]) => `
+                                <div class="axis-item">
+                                    <div class="axis-label">${axis}</div>
+                                    <div class="axis-value">${value > 0 ? '+' : ''}${value}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div style="margin-top: 15px;">
+                            ${totem.analysis(decision)}
+                        </div>
+
+                        <div class="recommendation">
+                            <strong>⚡ ${totem.recommendation}</strong>
+                        </div>
+                    </div>
+                `;
+
+                if (totem.recommendation.includes('VETO')) vetoes++;
+                else if (totem.recommendation.includes('APPROUVE')) approvals++;
+            });
+
+            document.getElementById('totemAnalyses').innerHTML = analysisHTML;
+
+            // Consensus
+            let consensusHTML = `
+                <p><strong>Tous les ${selectedTotems.length} totems s'accordent sur:</strong></p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Ceci croise des limites (Gaïa)</li>
+                    <li>Ceci aura des conséquences durables (Chronos)</li>
+                    <li>Ceci affecte des humains réels (Eros)</li>
+                    <li>Les imprévus sont garantis (Chaos)</li>
+                    <li>La logique doit être cohérente (Logos)</li>
+                </ul>
+            `;
+
+            document.getElementById('consensusContent').innerHTML = consensusHTML;
+            document.getElementById('consensusDiv').style.display = 'block';
+
+            // Divergence
+            let divergenceHTML = `
+                <p><strong>Les totems divergent sur:</strong></p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li><strong>Vitesse vs Stabilité:</strong> Ananké dit "trop rapide"; Chronos dit "générations de conséquences"</li>
+                    <li><strong>Justice vs Efficacité:</strong> Thémis demande redistribution; Logos veut efficacité</li>
+                    <li><strong>Espoir vs Prudence:</strong> Eros voit possibilité de care; Chaos dit "prépare l'imprévu"</li>
+                </ul>
+                <p style="margin-top: 15px;"><strong>Recommandation:</strong> ${vetoes > approvals ? 'REJET (majorité des vetos)' : 'APPROBATION CONDITIONNELLE'}</p>
+            `;
+
+            document.getElementById('divergenceContent').innerHTML = divergenceHTML;
+            document.getElementById('divergenceDiv').style.display = 'block';
+
+            document.getElementById('analysisResults').style.display = 'block';
+            document.querySelector('.analysis-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function resetDashboard() {
+            document.getElementById('decision').value = 'Approuver un nouveau projet minier en Amazonie';
+            document.getElementById('tierSelect').value = 'tier1';
+            document.getElementById('totemSelect').value = 'all';
+            document.getElementById('analysisResults').style.display = 'none';
+        }
+
+        // Auto-analyze on page load
+        window.addEventListener('load', () => {
+            analyzeDecision();
+        });
+    </script>
+</body>
+</html>

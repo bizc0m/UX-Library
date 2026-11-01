@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Night Intel</title>
+<link rel="stylesheet" href="styles/tokens.css">
+<link rel="stylesheet" href="styles/app.css?v=sources-page-20260712">
+<link rel="stylesheet" href="styles/skins.css">
+<link rel="stylesheet" href="styles/responsive.css?v=equal-home-actions-fix-20260712">
+<link rel="stylesheet" href="styles/night-intel-vault.css">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  .boot-fallback {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    color: #f7f2ff;
+    background: #07070b;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .boot-card {
+    width: min(560px, 100%);
+    border: 1px solid rgba(255, 45, 111, 0.38);
+    background: rgba(18, 16, 25, 0.94);
+    border-radius: 14px;
+    box-shadow: 0 22px 80px rgba(0, 0, 0, 0.48);
+    padding: 22px;
+  }
+  .boot-card h1 {
+    margin: 0 0 10px;
+    font-size: 22px;
+    line-height: 1.2;
+  }
+  .boot-card p {
+    margin: 0 0 16px;
+    color: #b9b2c7;
+    line-height: 1.5;
+  }
+  .boot-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .boot-actions a {
+    color: #07070b;
+    background: #ff2d6f;
+    border-radius: 10px;
+    padding: 10px 14px;
+    text-decoration: none;
+    font-weight: 800;
+  }
+  .boot-actions a.secondary {
+    color: #f7f2ff;
+    background: transparent;
+    border: 1px solid rgba(247, 242, 255, 0.24);
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="vendor/react.development.js"></script>
+<script src="vendor/react-dom.development.js"></script>
+<script src="vendor/babel.min.js"></script>
+
+<script src="src/data.js?v=annecy-293-20260712"></script>
+<script type="text/babel" src="src/atoms.jsx"></script>
+<script type="text/babel" src="src/tweaks-panel.jsx"></script>
+
+<script type="text/babel" src="src/components.jsx?v=remove-trauma-team-20260712"></script>
+<script type="text/babel" src="src/night-intel-vault.jsx"></script>
+<script type="text/babel" src="src/app.jsx?v=sources-page-20260712"></script>
+<script>
+  setTimeout(function () {
+    if (!document.querySelector(".app")) {
+      var status = document.getElementById("boot-status");
+      if (status) {
+        status.textContent = "Interface did not mount here. Start the local server and open its http://localhost URL instead of this file:// URL.";
+      }
+    }
+  }, 2200);
+</script>
+
+</body>
+</html>

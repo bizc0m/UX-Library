@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DemoForge Shader v0.6.1 · Pedagogical Shader Studio</title>
+<style>
+:root {
+  --bg:#efe9d9; --bg-2:#e5ddc8; --ink:#1a1a1a; --ink-soft:#3a3a3a;
+  --line:#1a1a1a; --accent:#6b6b28; --halo:#b8b36b; --warn:#8a2a1d; --ok:#2a5a1d;
+}
+*{box-sizing:border-box;border-radius:0!important}
+::selection{background:var(--halo);color:var(--ink)}
+html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--ink);font-family:ui-monospace,"JetBrains Mono","Cascadia Mono",Menlo,Consolas,monospace;font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-variant-numeric:tabular-nums;overflow:hidden}
+body{display:grid;grid-template-columns:320px 1fr;min-height:100vh}
+button,input,select,textarea{font-family:inherit;text-transform:uppercase;letter-spacing:.08em;font-variant-numeric:tabular-nums;color:var(--ink)}
+.sidebar{height:100vh;overflow-y:auto;background:var(--bg-2);border-right:1px solid var(--line);padding:20px 18px}
+main{height:100vh;display:grid;grid-template-rows:auto minmax(0,1fr) 270px;gap:18px;padding:20px 28px;background:var(--bg);overflow:hidden}
+h1{margin:0;font-size:13px;letter-spacing:.22em;font-weight:800;line-height:1.2}
+.subtitle{margin:7px 0 18px;font-size:10px;letter-spacing:.25em;color:var(--ink-soft)}
+.section{border-top:1px solid var(--line);padding:14px 0 16px}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;font-size:10px;letter-spacing:.28em;font-weight:800}
+.help{border:1px solid var(--line);padding:8px;margin:8px 0 10px;background:var(--bg);font-size:10px;letter-spacing:.07em;line-height:1.55;color:var(--ink-soft);text-transform:none}
+.help b{color:var(--ink);text-transform:uppercase} .help p{margin:0 0 6px} .help p:last-child{margin:0}
+.field{display:grid;gap:5px;margin-bottom:8px;font-size:10px;color:var(--ink-soft);letter-spacing:.12em}
+input[type=text],select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);font-size:12px;padding:6px 8px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--halo)}
+input[type=range]{appearance:none;-webkit-appearance:none;width:100%;height:20px;background:transparent;padding:0;border:0;outline:none}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--ink)} input[type=range]::-moz-range-track{height:2px;background:var(--ink)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:var(--bg);border:1.5px solid var(--ink);margin-top:-6px}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--bg);border:1.5px solid var(--ink)}
+button{font-size:11px;letter-spacing:.12em;background:var(--bg);border:1px solid var(--ink);padding:7px 12px;cursor:pointer}
+button:hover{background:var(--ink);color:var(--bg)}button.primary{background:var(--ink);color:var(--bg)}button.primary:hover{background:var(--accent);color:var(--bg)}
+.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px} .btn-row{display:flex;gap:6px;flex-wrap:wrap}
+.status{border:1px solid var(--line);background:var(--bg);padding:8px;font-size:11px;line-height:1.45;min-height:40px} .s-ok{color:var(--ok)} .s-warn{color:var(--warn)} .s-info{color:var(--ink-soft)}
+.topbar{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:12px;gap:12px}
+.topbar-left{display:flex;gap:8px;flex-wrap:wrap} .brand{display:flex;align-items:center;gap:10px;font-size:12px;letter-spacing:.28em;font-weight:800} .dot{width:7px;height:7px;background:var(--accent);display:inline-block}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:18px;min-height:0}
+.pane{min-height:0;display:flex;flex-direction:column} .pane-head{display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.25em;font-weight:800;margin-bottom:8px;flex:0 0 auto} .tag{color:var(--accent)}
+.ratio{position:relative;flex:1;min-height:0;background:#000;border:1px solid var(--line);overflow:hidden} .ratio>*{position:absolute;inset:0;width:100%;height:100%} .render-canvas{image-rendering:pixelated;background:#000;display:block}
+.lesson-box{border:1px solid var(--line);background:var(--bg-2);padding:12px;overflow:auto;min-height:0;flex:1;text-transform:none;letter-spacing:.04em;line-height:1.55}
+.lesson-box h2{margin:0 0 10px;font-size:13px;letter-spacing:.18em;text-transform:uppercase} .lesson-box h3{font-size:10px;margin:12px 0 6px;letter-spacing:.22em;text-transform:uppercase} .lesson-box p{margin:0 0 8px;color:var(--ink-soft)} .lesson-box b{color:var(--ink);text-transform:uppercase}
+.pill{display:inline-block;border:1px solid var(--line);background:var(--bg);padding:3px 6px;color:var(--accent);font-size:10px;margin:2px 3px 2px 0;text-transform:uppercase;letter-spacing:.08em}
+.bottom{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;min-height:0}
+.editor-wrap{display:flex;flex-direction:column;min-height:0;border:1px solid var(--line);background:var(--bg-2)} .editor-head{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--line);font-size:10px;font-weight:800;letter-spacing:.25em}
+#code{flex:1;min-height:0;background:var(--bg);border:0;border-bottom:1px solid var(--line);font-family:ui-monospace,"JetBrains Mono",monospace;font-size:11px;line-height:1.45;color:var(--ink);padding:10px;text-transform:none;letter-spacing:0;white-space:pre;overflow:auto;outline:none}
+#code .hot-param{color:var(--warn);font-weight:900;background:rgba(138,42,29,.12);border-bottom:1px solid var(--warn)} #code .param-value{color:var(--warn);font-weight:900;margin-left:6px;background:var(--bg-2);border:1px solid var(--warn);padding:0 4px} #code .hot-line{background:rgba(184,179,107,.28)}
+#log{height:56px;overflow:auto;background:var(--bg);padding:8px;font-size:10px;color:var(--ink-soft);text-transform:none;letter-spacing:.03em}
+.score-card{border:1px solid var(--line);background:var(--bg-2);padding:12px;overflow:auto} .score{font-size:34px;font-weight:900;line-height:1;margin:0 0 10px} .good{color:var(--ok)} .warn{color:var(--accent)} .bad{color:var(--warn)}
+.metric{display:grid;grid-template-columns:88px 1fr 34px;gap:7px;align-items:center;color:var(--ink-soft);font-size:10px;margin:7px 0} .bar{height:8px;background:var(--bg);border:1px solid var(--line);overflow:hidden} .bar span{display:block;height:100%;background:var(--accent)}
+.list{display:grid;gap:6px;max-height:390px;overflow:auto} .item{border:1px solid var(--line);background:var(--bg);padding:6px;cursor:pointer;display:grid;grid-template-columns:76px 1fr;gap:8px;align-items:center;min-height:62px} .item:hover,.item.active{background:var(--ink);color:var(--bg)} .item span{display:block;color:inherit;opacity:.72;font-size:10px;margin-top:3px} .thumb{width:76px;height:50px;background:#000;border:1px solid var(--line);image-rendering:pixelated;display:block} .item:hover .thumb,.item.active .thumb{border-color:var(--bg)}
+.version-badge{display:inline-block;border:1px solid var(--line);background:var(--ink);color:var(--bg);padding:3px 6px;font-size:10px;letter-spacing:.14em;margin:0 0 8px} .fullscreen-note{font-size:10px;color:var(--ink-soft);line-height:1.45;text-transform:none;letter-spacing:.04em}
+body.fullscreen main{padding:0;gap:0;grid-template-rows:minmax(0,1fr)} body.fullscreen .sidebar,body.fullscreen .topbar,body.fullscreen .bottom,body.fullscreen .lesson-pane{display:none} body.fullscreen{display:block;background:#000} body.fullscreen .stage{height:100vh;display:block} body.fullscreen .pane{height:100vh} body.fullscreen .pane-head{display:none} body.fullscreen .ratio{border:0;height:100vh}
+@media(max-width:1060px){body{grid-template-columns:1fr}.sidebar{display:none}main{padding:14px;grid-template-rows:auto minmax(0,1fr) 300px}.stage{grid-template-columns:1fr}.lesson-pane{display:none}.bottom{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <h1>DemoForge Shader v0.6.1</h1>
+  <div class="subtitle">Pedagogical Shader Studio</div>
+
+  <section class="section">
+    <div class="section-head"><span>Catalogue + previews</span></div>
+    <div class="help"><p><b>Décision produit.</b> Les fonctions conservées servent toutes l'apprentissage : choisir, voir, modifier, comprendre, exporter.</p><p><b>Previews.</b> Chaque miniature est maintenant rendue depuis le vrai shader de l’effet, pas depuis une approximation par famille.</p></div>
+    <label class="field">Recherche<input id="search" type="text" placeholder="plasma, sdf, amiga..."></label>
+    <label class="field">Famille<select id="family"><option value="">Toutes familles</option></select></label>
+    <div id="list" class="list"></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><span>Paramètres utiles</span></div>
+    <label class="row"><span class="lbl">speed</span><span class="val" id="speedLabel"></span><input id="speed" type="range" min="0" max="3" step=".01" value="1" style="grid-column:1/3"></label>
+    <label class="row"><span class="lbl">scale</span><span class="val" id="scaleLabel"></span><input id="scale" type="range" min=".2" max="8" step=".01" value="2.5" style="grid-column:1/3"></label>
+    <label class="row"><span class="lbl">intensity</span><span class="val" id="intensityLabel"></span><input id="intensity" type="range" min="0" max="2" step=".01" value="1" style="grid-column:1/3"></label>
+    <div class="help"><p><b>Pourquoi seulement 3 ?</b> Parce qu'elles modifient réellement presque tous les shaders. Les réglages décoratifs ont été supprimés.</p></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><span>Exports sobres</span></div>
+    <div class="btn-grid">
+      <button id="exportFullscreen" class="primary">HTML fullscreen</button>
+      <button id="exportStudio">HTML studio</button>
+      <button id="copyBtn">Copier shader</button>
+      <button id="fullscreenBtn">Preview full</button>
+    </div>
+    <div class="help"><p><b>Utilité vérifiée.</b> Fullscreen = diffusion. Studio = travail. Copier shader = réutilisation. Preview full = contrôle rapide.</p></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><span>Version</span></div>
+    <div class="version-badge" id="versionBadge">DemoForge Shader v0.6.0</div>
+    <div class="btn-grid"><button id="bumpPatch">+ patch</button><button id="resetVersion">reset</button></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><span>État</span></div>
+    <div id="status" class="status s-info">Prêt</div>
+  </section>
+</aside>
+
+<main>
+  <div class="topbar">
+    <div class="topbar-left">
+      <button id="compileBtn" class="primary">Compiler</button>
+      <button id="randomBtn">Effet aléatoire</button>
+      <button id="mutateBtn">Muter utile</button>
+      <button id="reloadBtn">Reset preset</button>
+    </div>
+    <div class="brand"><span class="dot"></span><span>· Pedagogical Shader Studio · v0.6.1</span></div>
+  </div>
+
+  <section class="stage">
+    <div class="pane">
+      <div class="pane-head"><span>Rendu live</span><span class="tag" id="renderTag">WebGL canvas</span></div>
+      <div class="ratio"><canvas id="glcanvas" class="render-canvas"></canvas></div>
+    </div>
+    <div class="pane lesson-pane">
+      <div class="pane-head"><span>Pédagogie</span><span class="tag" id="confidenceTag">confidence</span></div>
+      <div class="lesson-box">
+        <h2 id="title"></h2>
+        <div id="tags"></div>
+        <h3>Histoire de la scène</h3><p id="story"></p>
+        <h3>Technique</h3><p id="tech"></p>
+        <h3>Mathématique</h3><p id="math"></p>
+        <h3>Expérimentation</h3><p>Change un paramètre : la variable utile est surlignée dans le fragment shader avec sa valeur. Puis modifie la formule, pas seulement le slider.</p>
+        <p class="fullscreen-note">Grammaire minimale : transform → field → color. Le reste est souvent décoration.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="bottom">
+    <div class="editor-wrap">
+      <div class="editor-head"><span>Fragment shader</span><span class="tag">éditable</span></div>
+      <div id="code" contenteditable="true" spellcheck="false"></div>
+      <div id="log">Prêt.</div>
+    </div>
+    <div class="score-card">
+      <div class="section-head"><span>Score technique</span><span class="tag">filtre pas jugement</span></div>
+      <div id="score" class="score warn">--</div>
+      <div id="metrics"></div>
+      <p class="fullscreen-note">Score conservé car utile pour repérer coût/variation/stabilité. Il ne remplace pas le goût visuel.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+const EFFECTS_RAW = [{"name": "Plasma", "family": "Oldschool 2D", "technique": "sin/cos interference", "era": "early 1990s", "platform": "Amiga / PC DOS", "confidence": 0.55, "history": "Effet emblématique oldschool : spectaculaire, mais difficile à attribuer à un inventeur unique. Popularisé dans beaucoup de démos PC/Amiga.", "math": "Somme d'ondes sinusoïdales : sin(ax+t)+sin(by+t). Le motif vient des interférences.", "snippet": "float v=sin(p.x*uScale*4.0+t)+sin(p.y*uScale*4.0+t*1.3)+sin((p.x+p.y)*uScale*3.0-t*.7); col=palette(v*.13+t*.04);"}, {"name": "Rotozoom", "family": "Oldschool 2D", "technique": "rotation + scale", "era": "early 1990s", "platform": "Amiga / PC DOS", "confidence": 0.5, "history": "Classique des effets texture oldschool : tourner et zoomer une texture procédurale ou bitmap.", "math": "Matrice de rotation 2D + changement d'échelle dépendant du temps.", "snippet": "float a=t*.7; mat2 R=mat2(cos(a),-sin(a),sin(a),cos(a)); vec2 q=R*p*(1.2+.8*sin(t*.4))*uScale; float v=checker(q*3.0); col=palette(v+length(q)*.05);"}, {"name": "Tunnel", "family": "2.5D", "technique": "polar mapping", "era": "late 1980s / early 1990s", "platform": "Amiga / PC DOS", "confidence": 0.35, "history": "Très demoscene : souvent réinventé. L'histoire précise est floue, mais l'astuce est fondamentale.", "math": "Transformation cartésien → polaire : angle = atan(y,x), rayon = length(p).", "snippet": "vec2 q=vec2(atan(p.y,p.x)/TAU, 1.0/(length(p)+.12)); float v=checker(vec2(q.x*12.0, q.y*uScale-t*2.0)); col=palette(v+q.y*.05);"}, {"name": "Fire", "family": "Oldschool 2D", "technique": "noise + gradient", "era": "early 1990s", "platform": "PC DOS / Amiga", "confidence": 0.4, "history": "Effet feu courant. Sur machines oldschool, souvent diffusion verticale de pixels ; ici version shader noise.", "math": "Bruit fractal + biais vertical + seuil doux.", "snippet": "vec2 q=p*uScale*1.5+vec2(0.,-t*.8); float n=fbm(q); float f=smoothstep(.15,1.0,n+(1.0-uv.y)*.9-.45); col=mix(vec3(.02,0,0),vec3(1,.25,.02),f); col=mix(col,vec3(1,.9,.35),smoothstep(.72,1.,f));"}, {"name": "Water Ripples", "family": "Procedural", "technique": "radial waves", "era": "1990s+", "platform": "PC / GPU", "confidence": 0.55, "history": "Ondulations d'eau : demos, jeux, shaders modernes. Pas d'inventeur unique.", "math": "Distance au centre + sin(distance*freq - time).", "snippet": "float r=length(p); float v=sin(r*uScale*18.0-t*4.0)/(1.0+r*4.0); col=palette(v*.35+r*.2);"}, {"name": "Metaballs", "family": "Implicit 3D/2D", "technique": "field sum", "era": "1982 origin", "platform": "Research → demos", "confidence": 0.95, "history": "Cas solide : blobby surfaces / metaballs viennent de la recherche graphique, notamment Jim Blinn, puis réutilisées en demoscene.", "math": "Somme de champs 1/d², puis seuil ou smoothstep.", "snippet": "float field=0.; for(int i=0;i<6;i++){float a=float(i)*1.047+t*(.4+float(i)*.07);vec2 c=vec2(cos(a*1.3),sin(a))*0.48;float d=length(p-c);field+=.075/(d*d+.014);} float e=smoothstep(.95,1.08,field*uIntensity); col=mix(vec3(.01),palette(field*.08+t*.03),e)+pow(e,6.0);"}, {"name": "SDF Circle", "family": "SDF", "technique": "signed distance", "era": "2000s shaders", "platform": "GPU", "confidence": 0.75, "history": "Les SDF sont devenues centrales dans les shaders modernes et la culture Shadertoy/Quilez.", "math": "Distance signée : d = length(p)-radius.", "snippet": "float d=length(p)-.45; float e=smoothstep(.02,.0,abs(d)); col=mix(vec3(.02),palette(d*2.0+t*.1),e);"}, {"name": "Raymarch Sphere", "family": "Modern 3D", "technique": "sphere tracing", "era": "2000s+", "platform": "GPU", "confidence": 0.75, "history": "Technique moderne populaire pour produire de la 3D procédurale compacte.", "math": "On avance sur le rayon d'une distance garantie par la SDF.", "snippet": "col=raymarchScene(p,t);"}, {"name": "Mandelbrot", "family": "Fractal", "technique": "complex iteration", "era": "1980s graphics+", "platform": "Research / PC / GPU", "confidence": 0.9, "history": "Fractale mathématique antérieure à la demoscene, devenue matière première visuelle.", "math": "Itération complexe z=z²+c ; divergence mesurée.", "snippet": "vec2 c=p*uScale*.55+vec2(-.5,0.); vec2 z=vec2(0); float m=0.; for(int i=0;i<80;i++){z=vec2(z.x*z.x-z.y*z.y,2.*z.x*z.y)+c; if(dot(z,z)>4.){m=float(i)/80.; break;}} col=palette(m+t*.02);"}, {"name": "Julia", "family": "Fractal", "technique": "complex iteration", "era": "1980s graphics+", "platform": "Research / GPU", "confidence": 0.9, "history": "Même famille que Mandelbrot, mais avec constante animée.", "math": "z=z²+c, c fixe/animé ; chaque pixel est un z initial.", "snippet": "vec2 z=p*uScale*.7; vec2 c=.35*vec2(cos(t*.3),sin(t*.2)); float m=0.; for(int i=0;i<70;i++){z=vec2(z.x*z.x-z.y*z.y,2.*z.x*z.y)+c; if(dot(z,z)>4.){m=float(i)/70.; break;}} col=palette(m+t*.03);"}, {"name": "Voronoi Cells", "family": "Procedural", "technique": "nearest point field", "era": "modern shaders", "platform": "GPU", "confidence": 0.75, "history": "Utilisé pour cellules, pierre, peau, lave, effets organiques.", "math": "Distance au point aléatoire le plus proche dans une grille.", "snippet": "float v=voronoi(p*uScale*2.0+t*.1); col=palette(v*.8+t*.05);"}, {"name": "FBM Clouds", "family": "Procedural", "technique": "fractal Brownian motion", "era": "1980s+", "platform": "Research / GPU", "confidence": 0.85, "history": "Bruit fractal : base de nuages, fumée, terrains. Hérite de Perlin/noise.", "math": "Somme d'octaves de bruit avec amplitude décroissante.", "snippet": "float n=fbm(p*uScale+vec2(t*.08,0)); col=mix(vec3(.02,.03,.05),palette(n*.6),smoothstep(.35,.85,n));"}, {"name": "Lava Lamp", "family": "Procedural", "technique": "fbm + threshold", "era": "GPU", "platform": "GPU", "confidence": 0.65, "history": "Effet fun, pas historique pur : combinaison contemporaine noise/metaballs.", "math": "Bruit fractal déformé + seuil lissé.", "snippet": "float n=fbm(p*uScale*1.7+vec2(0,t*.25)); float e=smoothstep(.45,.7,n+sin(p.y*3.+t)*.15); col=mix(vec3(.02,0,0),palette(n*.8+t*.04),e);"}, {"name": "Kaleidoscope", "family": "Transform", "technique": "angular repetition", "era": "modern shaders", "platform": "GPU", "confidence": 0.65, "history": "Transformation angulaire qui crée de la symétrie répétée.", "math": "atan + modulo angulaire + abs.", "snippet": "float a=atan(p.y,p.x); float r=length(p); float seg=TAU/8.0; a=mod(a+seg*.5,seg)-seg*.5; vec2 q=vec2(cos(a),sin(a))*r*uScale; float v=fbm(q*3.0+t*.1); col=palette(v+a);"}, {"name": "Raster Bars", "family": "Oldschool", "technique": "horizontal color bars", "era": "1980s", "platform": "C64 / Amiga", "confidence": 0.6, "history": "Effet oldschool lié au timing raster des machines 8/16-bit. Ici simulé.", "math": "Bandes horizontales : sin(y*freq + time).", "snippet": "float v=sin((uv.y*50.0)+t*4.0); col=palette(v*.2+uv.y*.8);"}, {"name": "Starfield", "family": "Oldschool", "technique": "depth layers", "era": "1980s", "platform": "8-bit / Amiga / PC", "confidence": 0.6, "history": "Classique d'intro : impression 3D avec points projetés.", "math": "Pseudo-projection : points dans des couches de profondeur.", "snippet": "col=starfield(p,uv,t);"}, {"name": "Bump Mapping Fake", "family": "Lighting", "technique": "height gradient", "era": "1990s+", "platform": "PC / GPU", "confidence": 0.7, "history": "Donne du relief sans géométrie réelle.", "math": "Gradient d'une hauteur h(x,y), normale approximée, lumière diffuse.", "snippet": "float h=fbm(p*uScale*2.0); vec2 e=vec2(.003,0); vec3 n=normalize(vec3(h-fbm((p-e.xy)*uScale*2.0), h-fbm((p-e.yx)*uScale*2.0), .05)); float l=max(dot(n,normalize(vec3(.4,.6,.7))),0.); col=palette(h*.6)*l*uIntensity;"}, {"name": "Moire", "family": "Optical", "technique": "interference pattern", "era": "pre-demoscene optics", "platform": "All", "confidence": 0.8, "history": "Motif d'interférence visuelle devenu texture animée.", "math": "Deux fréquences proches créent battements et aliasing.", "snippet": "float v=sin(p.x*uScale*25.0+t)+sin((p.x*.96+p.y*.18)*uScale*25.0-t*.7); col=palette(v*.2);"}, {"name": "Twister", "family": "Oldschool 3D fake", "technique": "column deformation", "era": "1990s", "platform": "Amiga / PC", "confidence": 0.45, "history": "Pseudo-3D oldschool : colonne torsadée, souvent avec lookup tables.", "math": "Déformation angulaire selon y et temps.", "snippet": "float a=p.y*uScale*2.0+t*2.0; float w=.28+.08*sin(a*2.); float x=abs(p.x+sin(a)*.22); float e=smoothstep(w,w-.015,x); col=mix(vec3(.02),palette(p.y*.3+sin(a)*.2),e);"}, {"name": "Checker Tunnel", "family": "2.5D", "technique": "polar + checker", "era": "1990s", "platform": "Amiga / PC", "confidence": 0.4, "history": "Variante didactique du tunnel : mapping polaire + damier.", "math": "Texture checker en coordonnées polaires.", "snippet": "vec2 q=vec2(atan(p.y,p.x)/TAU*12.0, 1.0/(length(p)+.1)*uScale-t*3.); float v=checker(q); col=palette(v+q.y*.02);"}, {"name": "Sine Scroller Wave", "family": "Oldschool", "technique": "sine deformation", "era": "1980s/1990s", "platform": "8-bit / Amiga", "confidence": 0.55, "history": "Les scrollers sont centraux dans la culture intro/demo ; ici bande déformée.", "math": "Coordonnée y déformée par sin(x+t).", "snippet": "float y=p.y+sin(p.x*uScale*4.0+t*3.0)*.12; float band=smoothstep(.08,.02,abs(y)); col=mix(vec3(.01),palette(p.x*.2+t*.05),band);"}, {"name": "Voxel Terrain", "family": "2.5D/3D", "technique": "height field", "era": "1990s", "platform": "PC", "confidence": 0.65, "history": "Associé aux moteurs terrain voxel/software.", "math": "Hauteur h(x,z), projection simplifiée.", "snippet": "float h=fbm(vec2(p.x*uScale+t*.05, p.y*uScale*.6)); float line=smoothstep(.02,.0,abs(p.y+h*.45-.15)); col=mix(vec3(.02,.03,.05),palette(h*.7),line+smoothstep(-.5,.8,p.y)*.2);"}, {"name": "Feedback Trails", "family": "Temporal", "technique": "fake feedback", "era": "1990s+", "platform": "GPU", "confidence": 0.5, "history": "Le vrai feedback nécessite le buffer précédent ; ici simulation par couches temporelles.", "math": "Accumulation approximée de couches déformées.", "snippet": "float v=0.; for(int i=0;i<6;i++){float fi=float(i); vec2 q=p*(1.+fi*.08); v+=sin(length(q)*uScale*8.-t*2.+fi)*(.18-fi*.015);} col=palette(v);"}, {"name": "Interference Rings", "family": "Procedural", "technique": "multi-source waves", "era": "All", "platform": "All", "confidence": 0.7, "history": "Effet pédagogique parfait pour comprendre les ondes.", "math": "Somme de distances à plusieurs centres : interférences.", "snippet": "float v=0.; for(int i=0;i<4;i++){float a=float(i)*1.57+t*.4; vec2 c=vec2(cos(a),sin(a))*.45; v+=sin(length(p-c)*uScale*12.-t*3.);} col=palette(v*.12);"}, {"name": "Radial Blur Fake", "family": "Post-effect", "technique": "radial samples", "era": "2000s+", "platform": "GPU", "confidence": 0.55, "history": "Post-effet classique ; ici version sans texture externe.", "math": "Plusieurs échantillons le long d'un rayon vers le centre.", "snippet": "float v=0.; for(int i=0;i<8;i++){float fi=float(i)/7.; vec2 q=mix(p,vec2(0),fi*.5); v+=fbm(q*uScale*2.+t*.05)/8.;} col=palette(v);"}, {"name": "Marble", "family": "Procedural material", "technique": "noise-distorted sine", "era": "1980s+", "platform": "Research/GPU", "confidence": 0.85, "history": "Texture procédurale classique : marbre = sinus perturbé par bruit.", "math": "sin(x + fbm(p)*amplitude).", "snippet": "float n=fbm(p*uScale*2.0); float v=sin((p.x+n*.8)*10.0); col=mix(vec3(.05),vec3(.9,.88,.78),smoothstep(-.2,.9,v));"}, {"name": "Wood Rings", "family": "Procedural material", "technique": "radial noise", "era": "1980s+", "platform": "Research/GPU", "confidence": 0.85, "history": "Texture procédurale classique bois : anneaux radiaux perturbés.", "math": "sin(radius*frequency + noise).", "snippet": "float r=length(p*uScale); float n=fbm(p*uScale*2.); float v=sin((r+n*.25)*18.0); col=mix(vec3(.18,.08,.02),vec3(.75,.38,.12),smoothstep(-.3,1.,v));"}, {"name": "Cellular Lava", "family": "Procedural", "technique": "voronoi + palette", "era": "modern shaders", "platform": "GPU", "confidence": 0.65, "history": "Voronoi + couleurs chaudes : cellules organiques.", "math": "Distance cellulaire + seuil.", "snippet": "float v=voronoi(p*uScale*2.5+vec2(t*.07,0)); float e=smoothstep(.15,.65,v); col=mix(vec3(.05,0,0),palette(v+t*.03),e);"}, {"name": "Hex Grid", "family": "Procedural geometry", "technique": "tiling", "era": "modern shaders", "platform": "GPU", "confidence": 0.65, "history": "Tuilage procédural utile pour HUD, sci-fi, textures.", "math": "Coordonnées répétées + distance aux bords.", "snippet": "vec2 q=p*uScale*2.0; q.x+=q.y*.57735; vec2 id=floor(q); vec2 f=fract(q)-.5; float d=max(abs(f.x)*.866+f.y*.5,abs(f.y)); float e=smoothstep(.48,.44,d); col=mix(vec3(.01),palette(hash(id)+t*.03),e);"}, {"name": "CRT Scanlines", "family": "Display effect", "technique": "scanline + vignette", "era": "retro", "platform": "CRT / emulator", "confidence": 0.8, "history": "Pas un effet demoscene pur, mais esthétique rétro essentielle.", "math": "Modulation horizontale + vignettage.", "snippet": "float v=fbm(p*uScale*2.0+t*.03); vec3 base=palette(v); float scan=.75+.25*sin(uv.y*iResolution.y*PI); float vig=smoothstep(1.1,.2,length(p)); col=base*scan*vig;"}, {"name": "Glitch Blocks", "family": "Post-effect", "technique": "quantized noise offsets", "era": "modern", "platform": "GPU", "confidence": 0.5, "history": "Effet contemporain plus que demoscene historique.", "math": "Quantification spatiale + offsets discontinus.", "snippet": "vec2 b=floor(uv*vec2(18,32)); float n=hash(b+floor(t*8.)); vec2 q=p+vec2(step(.86,n)*sin(t*20.+n)*.18,0); float v=fbm(q*uScale*3.); col=palette(v+n*.2);"}, {"name": "Polar Flower", "family": "Transform", "technique": "radial symmetry", "era": "modern shaders", "platform": "GPU", "confidence": 0.65, "history": "Transformation polaire fun pour expérimenter.", "math": "r + sin(k*angle + time).", "snippet": "float a=atan(p.y,p.x); float r=length(p); float v=sin(a*8.0+t*2.0)+sin(r*uScale*12.0-t*3.); col=palette(v*.2+r*.3);"}, {"name": "SDF Box", "family": "SDF", "technique": "box distance", "era": "modern shaders", "platform": "GPU", "confidence": 0.75, "history": "Base de la modélisation SDF : boîte 2D/3D.", "math": "Distance à une boîte : length(max(abs(p)-b,0))+min(max(q.x,q.y),0).", "snippet": "vec2 b=vec2(.45,.25); vec2 q=abs(rot(p,t*.4))-b; float d=length(max(q,0.))+min(max(q.x,q.y),0.); float e=smoothstep(.02,0.,abs(d)); col=mix(vec3(.02),palette(d*3.+t*.05),e);"}, {"name": "Spiral", "family": "Transform", "technique": "angle-radius coupling", "era": "classic", "platform": "All", "confidence": 0.65, "history": "Très simple, très efficace : l'angle dépend du rayon.", "math": "sin(angle*k + radius*f - time).", "snippet": "float a=atan(p.y,p.x); float r=length(p); float v=sin(a*6.0+r*uScale*14.0-t*3.0); col=palette(v*.25+r*.2);"}, {"name": "Julia Orbit Trap", "family": "Fractal", "technique": "orbit trap coloring", "era": "modern shaders", "platform": "GPU", "confidence": 0.8, "history": "Technique de coloration fractale plus riche que l'itération brute.", "math": "On garde la distance minimale de l'orbite à une forme piège.", "snippet": "vec2 z=p*uScale*.65; vec2 c=.32*vec2(cos(t*.25),sin(t*.31)); float trap=10.; for(int i=0;i<60;i++){z=vec2(z.x*z.x-z.y*z.y,2.*z.x*z.y)+c; trap=min(trap,abs(length(z)-.5)); if(dot(z,z)>4.)break;} col=palette(exp(-trap*8.)+t*.03);"}, {"name": "Noise Warp", "family": "Procedural", "technique": "domain warping", "era": "modern", "platform": "GPU", "confidence": 0.75, "history": "Technique moderne majeure : déformer les coordonnées avant d'échantillonner.", "math": "p' = p + noise(p) ; puis fbm(p').", "snippet": "vec2 q=p*uScale; q+=vec2(fbm(q+t*.05),fbm(q+4.2-t*.04))*1.2; float v=fbm(q); col=palette(v);"}, {"name": "Grid Deform", "family": "Transform", "technique": "sin displacement", "era": "classic", "platform": "All", "confidence": 0.55, "history": "Une grille déformée révèle immédiatement la transformation de l'espace.", "math": "sinus appliqués aux coordonnées avant la grille.", "snippet": "vec2 q=p*uScale*2.0; q+=.25*sin(q.yx*2.0+t); float gx=min(abs(fract(q.x)-.5),abs(fract(q.y)-.5)); float e=smoothstep(.08,.02,gx); col=mix(vec3(.01),palette(q.x*.1+q.y*.1),e);"}, {"name": "Mandel Tunnel", "family": "Hybrid", "technique": "fractal + polar", "era": "modern", "platform": "GPU", "confidence": 0.55, "history": "Hybride volontaire : utile pour combiner familles d'effets.", "math": "Mapping polaire puis itération complexe.", "snippet": "vec2 q=vec2(atan(p.y,p.x)/TAU,1./(length(p)+.2)-t*.2); vec2 z=q*uScale*.5; float m=0.; for(int i=0;i<40;i++){z=vec2(z.x*z.x-z.y*z.y,2.*z.x*z.y)+vec2(-.5,.2); if(dot(z,z)>4.){m=float(i)/40.;break;}} col=palette(m+q.y*.05);"}, {"name": "SDF Repetition", "family": "SDF", "technique": "space repetition", "era": "modern", "platform": "GPU", "confidence": 0.75, "history": "Principe essentiel : répéter l'espace avant de calculer la distance.", "math": "mod(p, cell)-cell/2 puis SDF locale.", "snippet": "vec2 q=mod(p*uScale*1.5+0.5,1.0)-0.5; float d=length(q)-.18; float e=smoothstep(.02,0.,abs(d)); col=mix(vec3(.01),palette(length(p)+t*.04),e);"}];
+const EFFECTS = EFFECTS_RAW.map((e, i) => ({
+  id: e.id || ('fx_' + String(i+1).padStart(3,'0')),
+  name: e.name || 'Untitled effect',
+  family: e.family || 'Unclassified',
+  technique: e.technique || 'unknown',
+  era: e.era || 'unknown',
+  platform: e.platform || 'unknown',
+  confidence: Number.isFinite(+e.confidence) ? +e.confidence : 0,
+  history: e.history || '',
+  math: e.math || '',
+  snippet: e.snippet || 'col=vec3(0.0);'
+}));
+
+const COMMON = `
+precision highp float;
+uniform vec2 iResolution; uniform float iTime; uniform float uSpeed; uniform float uScale; uniform float uIntensity;
+#define PI 3.14159265359
+#define TAU 6.28318530718
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
+float noise(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1,0)),u.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x),u.y);}
+float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*noise(p);p*=2.03;a*=.5;}return v;}
+vec3 palette(float t){return .5+.5*cos(TAU*(vec3(.0,.33,.67)+t));}
+float checker(vec2 p){vec2 c=floor(p);return mod(c.x+c.y,2.0);}
+vec2 rot(vec2 p,float a){float c=cos(a),s=sin(a);return mat2(c,-s,s,c)*p;}
+float voronoi(vec2 x){vec2 n=floor(x),f=fract(x);float md=8.;for(int j=-1;j<=1;j++)for(int i=-1;i<=1;i++){vec2 g=vec2(float(i),float(j));vec2 o=vec2(hash(n+g),hash(n+g+3.1));md=min(md,length(g+o-f));}return md;}
+vec3 starfield(vec2 p, vec2 uv, float t){vec3 c=vec3(0);for(int i=0;i<4;i++){float z=fract(t*.15+float(i)*.23);vec2 q=p/(z+.15);vec2 id=floor(q*18.);float h=hash(id+float(i));vec2 f=fract(q*18.)-.5;float s=smoothstep(.04,.0,length(f))*step(.985,h);c+=s*palette(h);}return c;}
+float sdSphere(vec3 p,float r){return length(p)-r;}
+float map3(vec3 p){p.xy+=.15*sin(p.zx*3.0+iTime*uSpeed);return sdSphere(p,.75);}
+vec3 normal3(vec3 p){vec2 e=vec2(.001,0);return normalize(vec3(map3(p+e.xyy)-map3(p-e.xyy),map3(p+e.yxy)-map3(p-e.yxy),map3(p+e.yyx)-map3(p-e.yyx)));}
+vec3 raymarchScene(vec2 uv,float time){vec3 ro=vec3(0,0,3),rd=normalize(vec3(uv,-1.8));float tt=0.,d=0.;for(int i=0;i<72;i++){vec3 pos=ro+rd*tt;d=map3(pos);if(abs(d)<.001||tt>6.)break;tt+=d;}vec3 col=vec3(0);if(tt<6.){vec3 pos=ro+rd*tt,n=normal3(pos),l=normalize(vec3(.5,.8,1));float diff=max(dot(n,l),0.);col=palette(n.y*.3+time*.03)*diff*uIntensity;}return col;}
+`;
+const wrap = snippet => COMMON + `
+void mainImage(out vec4 fragColor, in vec2 fragCoord){
+ vec2 uv=fragCoord/iResolution.xy;
+ vec2 p=(fragCoord*2.0-iResolution.xy)/iResolution.y;
+ float t=iTime*uSpeed;
+ vec3 col=vec3(0.0);
+ ${snippet}
+ fragColor=vec4(col*uIntensity,1.0);
+}
+void main(){mainImage(gl_FragColor,gl_FragCoord.xy);}
+`;
+
+const canvas=document.getElementById('glcanvas'), gl=canvas.getContext('webgl');
+const code=document.getElementById('code'), list=document.getElementById('list'), logEl=document.getElementById('log');
+let current=0, program=null, uniforms={}, start=performance.now(), last=0, frames=0, rawCode='', activeParam='';
+const APP_NAME='DemoForge Shader', BASE_VERSION='0.6.1';
+let appVersion=localStorage.getItem('demoforgeShaderVersionV061')||BASE_VERSION, dirtyVersion=false;
+
+function esc(s){return String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
+function setStatus(msg,type='info'){status.textContent=msg;status.className='status s-'+type;}
+function setVersion(v){appVersion=v;localStorage.setItem('demoforgeShaderVersionV061',v);versionBadge.textContent=APP_NAME+' v'+v;document.title=APP_NAME+' v'+v+' · Pedagogical Shader Studio';}
+function bumpPatchVersion(){const p=appVersion.split('.').map(Number);setVersion([p[0]||0,p[1]||6,(p[2]||0)+1].join('.'));}
+function markVersionDirty(){if(!dirtyVersion){dirtyVersion=true;bumpPatchVersion();}}
+function escapeHTML(s){return esc(s);}
+function getCode(){return rawCode||code.innerText||'';}
+function paramValue(param){if(param==='uSpeed')return speed.value;if(param==='uScale')return scale.value;if(param==='uIntensity')return intensity.value;return '';}
+function tokenIndex(line,token){const clean=line.split('//')[0];const re=new RegExp('\\b'+token+'\\b');const m=clean.match(re);return m?m.index:-1;}
+function isUniformLine(line,param){const clean=line.split('//')[0].trim();return clean.startsWith('uniform ')||clean.startsWith('#')||clean.includes('uniform float '+param);}
+function setCode(text,hot=''){rawCode=text;activeParam=hot||'';let marked=false;code.innerHTML=text.split('\n').map(line=>{if(activeParam&&!isUniformLine(line,activeParam)&&tokenIndex(line,activeParam)>=0){const idx=tokenIndex(line,activeParam);const before=esc(line.slice(0,idx));const after=esc(line.slice(idx+activeParam.length));const mid='<span class="hot-param">'+activeParam+'</span><span class="param-value">= '+esc(paramValue(activeParam))+'</span>';const out=before+mid+after;if(!marked){marked=true;return '<span class="hot-line">'+out+'</span>';}return out;}return esc(line)||' ';}).join('\n');}
+function syncFromEditor(){rawCode=code.innerText.replace(/\u00a0/g,' ').replace(/(uSpeed|uScale|uIntensity)\s*=\s*[0-9.]+/g,'$1');}
+function focusParam(param){syncFromEditor();setCode(rawCode,param);const hot=code.querySelector('.hot-param');if(hot)hot.scrollIntoView({block:'center',inline:'nearest',behavior:'smooth'});}
+
+function shader(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw gl.getShaderInfoLog(s);return s;}
+function compile(){try{const vs=shader(gl.VERTEX_SHADER,'attribute vec2 position;void main(){gl_Position=vec4(position,0,1);}');const fs=shader(gl.FRAGMENT_SHADER,getCode());const p=gl.createProgram();gl.attachShader(p,vs);gl.attachShader(p,fs);gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw gl.getProgramInfoLog(p);program=p;gl.useProgram(program);const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);const loc=gl.getAttribLocation(program,'position');gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);['iResolution','iTime','uSpeed','uScale','uIntensity'].forEach(k=>uniforms[k]=gl.getUniformLocation(program,k));logEl.innerHTML='<span style="color:var(--ok)">Compilation OK</span>';setStatus('shader compilé','ok');scoreShader();}catch(e){logEl.innerHTML='<span style="color:var(--warn)">'+esc(String(e))+'</span>';setStatus('erreur GLSL','warn');}}
+function resize(){const d=Math.min(devicePixelRatio||1,2),w=canvas.clientWidth*d|0,h=canvas.clientHeight*d|0;if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}}
+function render(now){resize();if(program){gl.useProgram(program);gl.uniform2f(uniforms.iResolution,canvas.width,canvas.height);gl.uniform1f(uniforms.iTime,(now-start)/1000);gl.uniform1f(uniforms.uSpeed,+speed.value);gl.uniform1f(uniforms.uScale,+scale.value);gl.uniform1f(uniforms.uIntensity,+intensity.value);gl.drawArrays(gl.TRIANGLES,0,6);}frames++;if(now-last>500){renderTag.textContent=Math.round(frames*1000/(now-last||1))+' fps · '+canvas.width+'x'+canvas.height;frames=0;last=now;}requestAnimationFrame(render);}
+function load(i){current=i;const e=EFFECTS[i];setCode(wrap(e.snippet),'');title.textContent=e.name;tags.innerHTML=[e.family,e.technique,e.era,e.platform].map(x=>'<span class="pill">'+esc(x)+'</span>').join('');story.textContent=e.history;tech.textContent=e.technique+' — repère transform → field → color.';math.textContent=e.math;confidenceTag.textContent='confiance '+Math.round(e.confidence*100)+'%';renderList();compile();}
+const THUMB = {
+  gl:null, canvas:null, programCache:new Map(), buffer:null
+};
+
+function initThumbGL(){
+  if(THUMB.gl) return THUMB.gl;
+  const c = document.createElement('canvas');
+  c.width = 152;
+  c.height = 100;
+  const g = c.getContext('webgl', {preserveDrawingBuffer:true, antialias:false});
+  THUMB.canvas = c;
+  THUMB.gl = g;
+  if(!g) return null;
+  THUMB.buffer = g.createBuffer();
+  g.bindBuffer(g.ARRAY_BUFFER, THUMB.buffer);
+  g.bufferData(g.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]), g.STATIC_DRAW);
+  return g;
+}
+function compileThumbProgram(effect){
+  const g = initThumbGL();
+  if(!g) return null;
+  if(THUMB.programCache.has(effect.id)) return THUMB.programCache.get(effect.id);
+  try{
+    const vs = g.createShader(g.VERTEX_SHADER);
+    g.shaderSource(vs, 'attribute vec2 position;void main(){gl_Position=vec4(position,0,1);}');
+    g.compileShader(vs);
+    if(!g.getShaderParameter(vs,g.COMPILE_STATUS)) throw g.getShaderInfoLog(vs);
+    const fs = g.createShader(g.FRAGMENT_SHADER);
+    g.shaderSource(fs, wrap(effect.snippet));
+    g.compileShader(fs);
+    if(!g.getShaderParameter(fs,g.COMPILE_STATUS)) throw g.getShaderInfoLog(fs);
+    const p = g.createProgram();
+    g.attachShader(p,vs);
+    g.attachShader(p,fs);
+    g.linkProgram(p);
+    if(!g.getProgramParameter(p,g.LINK_STATUS)) throw g.getProgramInfoLog(p);
+    const loc = g.getAttribLocation(p,'position');
+    const u = {
+      iResolution:g.getUniformLocation(p,'iResolution'),
+      iTime:g.getUniformLocation(p,'iTime'),
+      uSpeed:g.getUniformLocation(p,'uSpeed'),
+      uScale:g.getUniformLocation(p,'uScale'),
+      uIntensity:g.getUniformLocation(p,'uIntensity'),
+      position:loc
+    };
+    const obj = {program:p, uniforms:u, error:null};
+    THUMB.programCache.set(effect.id,obj);
+    return obj;
+  }catch(err){
+    const obj = {program:null, uniforms:null, error:String(err)};
+    THUMB.programCache.set(effect.id,obj);
+    return obj;
+  }
+}
+function drawFallbackThumb(target, label){
+  const ctx = target.getContext('2d');
+  ctx.fillStyle = '#efe9d9';
+  ctx.fillRect(0,0,target.width,target.height);
+  ctx.strokeStyle = '#1a1a1a';
+  ctx.strokeRect(0,0,target.width-1,target.height-1);
+  ctx.fillStyle = '#8a2a1d';
+  ctx.font = '10px ui-monospace,monospace';
+  ctx.fillText('PREVIEW ERROR',8,22);
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillText(String(label||'shader').slice(0,18),8,42);
+}
+function renderThumbnail(target,e,seed){
+  target.width = 152;
+  target.height = 100;
+  const g = initThumbGL();
+  if(!g){ drawFallbackThumb(target,'no webgl'); return; }
+  const compiled = compileThumbProgram(e);
+  if(!compiled || !compiled.program){ drawFallbackThumb(target,e.name); return; }
+  const c = THUMB.canvas;
+  g.viewport(0,0,c.width,c.height);
+  g.useProgram(compiled.program);
+  g.bindBuffer(g.ARRAY_BUFFER, THUMB.buffer);
+  g.enableVertexAttribArray(compiled.uniforms.position);
+  g.vertexAttribPointer(compiled.uniforms.position,2,g.FLOAT,false,0,0);
+  g.uniform2f(compiled.uniforms.iResolution,c.width,c.height);
+  g.uniform1f(compiled.uniforms.iTime,1.25 + seed * 0.17);
+  g.uniform1f(compiled.uniforms.uSpeed,1.0);
+  g.uniform1f(compiled.uniforms.uScale,2.5);
+  g.uniform1f(compiled.uniforms.uIntensity,1.0);
+  g.drawArrays(g.TRIANGLES,0,6);
+
+  const ctx = target.getContext('2d');
+  ctx.drawImage(c,0,0,target.width,target.height);
+  ctx.strokeStyle = '#1a1a1a';
+  ctx.strokeRect(0,0,target.width-1,target.height-1);
+}
+function renderList(){const q=search.value.toLowerCase(),fam=family.value;list.innerHTML='';EFFECTS.forEach((e,i)=>{const text=(e.name+' '+e.family+' '+e.technique+' '+e.era+' '+e.platform).toLowerCase();if((!q||text.includes(q))&&(!fam||e.family===fam)){const div=document.createElement('div');div.className='item'+(i===current?' active':'');const thumb=document.createElement('canvas');thumb.width=152;thumb.height=100;thumb.className='thumb';renderThumbnail(thumb,e,i);const meta=document.createElement('div');meta.innerHTML='<b>'+esc(e.name)+'</b><span>'+esc(e.family)+' · '+esc(e.technique)+'</span><span>'+esc(e.platform)+' · '+Math.round(e.confidence*100)+'%</span>';div.appendChild(thumb);div.appendChild(meta);div.onclick=()=>load(i);list.appendChild(div);}});}
+function scoreShader(){const s=getCode(),len=s.length,loops=(s.match(/for\s*\(/g)||[]).length,noise=(s.match(/noise|fbm|voronoi/g)||[]).length,trig=(s.match(/sin|cos|atan|length/g)||[]).length,smooth=(s.match(/smoothstep|mix|palette/g)||[]).length;const complexity=Math.min(1,len/2600+loops*.13),variation=Math.min(1,trig*.045+noise*.16+smooth*.035),stability=Math.max(0,1-loops*.055-(s.match(/hash/g)||[]).length*.02),contrast=Math.min(1,.25+smooth*.06+(s.match(/step|pow|smoothstep/g)||[]).length*.06),cost=Math.max(0,1-complexity*.62);const total=.28*variation+.22*stability+.22*contrast+.18*cost+.10*(1-Math.abs(complexity-.55));const pct=Math.round(total*100);score.textContent=pct;score.className='score '+(pct>=72?'good':pct>=48?'warn':'bad');metrics.innerHTML=Object.entries({variation,stability,contrast,cost,complexity}).map(([k,v])=>'<div class="metric"><span>'+k+'</span><div class="bar"><span style="width:'+Math.round(v*100)+'%"></span></div><b>'+Math.round(v*100)+'</b></div>').join('');}
+function mutate(){let s=getCode();s=s.replace(/uScale\*([0-9.]+)/g,(_,n)=>'uScale*'+(+n*(.85+Math.random()*.3)).toFixed(2));s=s.replace(/t\*([0-9.]+)/g,(_,n)=>'t*'+(+n*(.85+Math.random()*.3)).toFixed(2));setCode(s,activeParam);markVersionDirty();compile();}
+function labels(){speedLabel.textContent=speed.value;scaleLabel.textContent=scale.value;intensityLabel.textContent=intensity.value;scoreShader();}
+function studioHTML(fullscreen=false){let doc='<!doctype html>\n'+document.documentElement.outerHTML;if(fullscreen)doc=doc.replace('<body>','<body class="fullscreen">');return doc;}
+function download(name,text){const blob=new Blob([text],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();URL.revokeObjectURL(a.href);}
+
+[...new Set(EFFECTS.map(e=>e.family))].sort().forEach(f=>family.add(new Option(f,f)));
+search.oninput=renderList;family.onchange=renderList;compileBtn.onclick=compile;reloadBtn.onclick=()=>load(current);mutateBtn.onclick=mutate;randomBtn.onclick=()=>load(Math.floor(Math.random()*EFFECTS.length));
+copyBtn.onclick=async()=>{await navigator.clipboard.writeText(getCode());setStatus('shader copié','ok');};
+fullscreenBtn.onclick=()=>document.body.classList.toggle('fullscreen');
+exportFullscreen.onclick=()=>download('demoforge_shader_v'+appVersion+'_fullscreen.html',studioHTML(true));
+exportStudio.onclick=()=>download('demoforge_shader_v'+appVersion+'_studio.html',studioHTML(false));
+bumpPatch.onclick=()=>{dirtyVersion=false;bumpPatchVersion();};resetVersion.onclick=()=>{dirtyVersion=false;setVersion(BASE_VERSION);};
+speed.oninput=()=>{labels();focusParam('uSpeed');};scale.oninput=()=>{labels();focusParam('uScale');};intensity.oninput=()=>{labels();focusParam('uIntensity');};
+code.addEventListener('input',()=>{syncFromEditor();markVersionDirty();});
+setVersion(appVersion);labels();renderList();load(0);requestAnimationFrame(render);
+</script>
+</body>
+</html>

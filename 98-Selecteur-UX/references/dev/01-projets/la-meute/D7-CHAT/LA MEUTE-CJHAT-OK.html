@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<!-- saved from url=(0063)file:///Users/JOB/%23%23%23DEV/Claude/D7_Chat_MVP/la_meute.html -->
+<html lang="fr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LA MEUTE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
+            background: #0a0a0a;
+            color: #f5f5f5;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: #111;
+            border-right: 1px solid #222;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            margin-bottom: 24px;
+        }
+
+        .logo h1 {
+            font-size: 20px;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, #ff9500, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo p {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .agents {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .agent-btn {
+            padding: 10px 12px;
+            background: #1a1a1a;
+            border: 1px solid #222;
+            border-radius: 6px;
+            color: #f5f5f5;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .agent-btn:hover {
+            background: #222;
+            border-color: #444;
+        }
+
+        .agent-btn.selected {
+            background: #d97757;
+            border-color: #d97757;
+            color: #fff;
+        }
+
+        .agent-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0a0a0a;
+        }
+
+        .chat {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        .msg {
+            display: flex;
+            gap: 12px;
+            animation: pop 0.3s ease;
+        }
+
+        @keyframes pop {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 11px;
+            flex-shrink: 0;
+            color: #000;
+        }
+
+        .msg-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .msg-header {
+            font-weight: 600;
+            font-size: 12px;
+            margin-bottom: 4px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .msg-role {
+            font-size: 9px;
+            background: rgba(217, 119, 87, 0.15);
+            color: #d97757;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .msg-text {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #bbb;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .input-box {
+            padding: 20px 30px;
+            border-top: 1px solid #222;
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            padding: 10px 12px;
+            background: #1a1a1a;
+            border: 1px solid #222;
+            border-radius: 6px;
+            color: #f5f5f5;
+            font-size: 12px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        input[type="text"] {
+            flex: 1;
+        }
+
+        input[type="number"] {
+            width: 50px;
+        }
+
+        input:focus {
+            border-color: #d97757;
+        }
+
+        button {
+            padding: 10px 16px;
+            background: #d97757;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #c16a4a;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #666;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .empty-inner {
+            max-width: 250px;
+        }
+
+        .empty-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .export-btn {
+            padding: 8px 12px !important;
+            font-size: 11px !important;
+            background: #333 !important;
+            position: absolute;
+            top: 20px;
+            right: 30px;
+        }
+
+        .export-btn:hover {
+            background: #444 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <h1>LA MEUTE</h1>
+                <p>13 Consciousnesses</p>
+            </div>
+            <div class="agents" id="agents"><button class="agent-btn"><div class="agent-dot" style="background:#e0e0e0"></div><span>HERMINE</span></button><button class="agent-btn"><div class="agent-dot" style="background:#8b6f47"></div><span>SABLE</span></button><button class="agent-btn"><div class="agent-dot" style="background:#4a4a4a"></div><span>ARIA</span></button><button class="agent-btn selected"><div class="agent-dot" style="background:#b8860b"></div><span>LILITH</span></button><button class="agent-btn"><div class="agent-dot" style="background:#708090"></div><span>ASTRA</span></button><button class="agent-btn"><div class="agent-dot" style="background:#daa520"></div><span>LENA</span></button><button class="agent-btn selected"><div class="agent-dot" style="background:#8b4513"></div><span>FREYA</span></button><button class="agent-btn"><div class="agent-dot" style="background:#9370db"></div><span>CATHARSE</span></button><button class="agent-btn"><div class="agent-dot" style="background:#8b7355"></div><span>METIS</span></button><button class="agent-btn"><div class="agent-dot" style="background:#e75480"></div><span>FRAMBOISE</span></button><button class="agent-btn"><div class="agent-dot" style="background:#20b2aa"></div><span>JINA</span></button><button class="agent-btn"><div class="agent-dot" style="background:#90ee90"></div><span>CYCLE</span></button><button class="agent-btn"><div class="agent-dot" style="background:#708080"></div><span>SILICA</span></button></div>
+        </div>
+
+        <div class="main">
+            <div class="chat" id="chat"><div class="msg">
+                        <div class="avatar" style="background:#8b4513">F</div>
+                        <div class="msg-body">
+                            <div class="msg-header">
+                                FREYA
+                                <span class="msg-role">Execution</span>
+                            </div>
+                            <div class="msg-text">FREYA ouvre.
+
+Vous avez mentionné Annecy, cette charmante ville située dans les Alpes françaises.Qui a décidé de vous rendre dans cette ville considérée comme la Venise des Alpes ? Était-ce un voyage en solo ou avec des amis ?</div>
+                        </div>
+                    </div><div class="msg">
+                        <div class="avatar" style="background:#b8860b">L</div>
+                        <div class="msg-body">
+                            <div class="msg-header">
+                                LILITH
+                                <span class="msg-role">Transgression</span>
+                            </div>
+                            <div class="msg-text">LILITH -&gt; FREYA
+
+Mais qu'est-ce qui vous a attiré vers Annecy, est-ce la beauté de son lac, l'histoire de ses canaux ou peut-être l'ambiance animée de ses rues piétonnes ? Ne serait-il pas intéressant de découvrir les secrets cachés de cette ville au-delà de son apparence touristique ? La découverte de ses trésors cachés pourrait être un véritable défi.</div>
+                        </div>
+                    </div></div>
+            <button class="export-btn" id="exportBtn" style="display: block;">💾 Export</button>
+
+            <div class="input-box">
+                <input type="text" id="topic" placeholder="Pose une question...">
+                <input type="number" id="rounds" value="1" min="1" max="5">
+                <button id="send">Ask</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const agents = [
+            { name: 'HERMINE', role: 'Truth', color: '#e0e0e0' },
+            { name: 'SABLE', role: 'Protection', color: '#8b6f47' },
+            { name: 'ARIA', role: 'Structure', color: '#4a4a4a' },
+            { name: 'LILITH', role: 'Transgression', color: '#b8860b' },
+            { name: 'ASTRA', role: 'Accuracy', color: '#708090' },
+            { name: 'LENA', role: 'Narrative', color: '#daa520' },
+            { name: 'FREYA', role: 'Execution', color: '#8b4513' },
+            { name: 'CATHARSE', role: 'Authenticity', color: '#9370db' },
+            { name: 'METIS', role: 'Adaptation', color: '#8b7355' },
+            { name: 'FRAMBOISE', role: 'Resilience', color: '#e75480' },
+            { name: 'JINA', role: 'Freedom', color: '#20b2aa' },
+            { name: 'CYCLE', role: 'Renewal', color: '#90ee90' },
+            { name: 'SILICA', role: 'Foundation', color: '#708080' }
+        ];
+
+        const selected = new Set();
+        const agentsDiv = document.getElementById('agents');
+        const chat = document.getElementById('chat');
+        const topicInput = document.getElementById('topic');
+        const roundsInput = document.getElementById('rounds');
+        const sendBtn = document.getElementById('send');
+        const exportBtn = document.getElementById('exportBtn');
+        let currentConversationId = null;
+
+        agents.forEach(a => {
+            const btn = document.createElement('button');
+            btn.className = 'agent-btn';
+            btn.innerHTML = `<div class="agent-dot" style="background:${a.color}"></div><span>${a.name}</span>`;
+            btn.addEventListener('click', () => {
+                if (selected.has(a.name)) {
+                    selected.delete(a.name);
+                    btn.classList.remove('selected');
+                } else {
+                    selected.add(a.name);
+                    btn.classList.add('selected');
+                }
+            });
+            agentsDiv.appendChild(btn);
+        });
+
+        sendBtn.addEventListener('click', ask);
+        topicInput.addEventListener('keypress', e => e.key === 'Enter' && ask());
+        exportBtn.addEventListener('click', exportConversation);
+
+        async function ask() {
+            const topic = topicInput.value.trim();
+            if (!topic || selected.size === 0) return alert('Question + agents requis');
+
+            chat.innerHTML = '<div class="empty"><div class="empty-inner"><div class="empty-icon">⏳</div>Chargement...</div></div>';
+
+            try {
+                const res = await fetch('http://127.0.0.1:8000/conversation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        topic,
+                        participants: Array.from(selected),
+                        rounds: parseInt(roundsInput.value),
+                        language: 'FR'
+                    })
+                });
+
+                if (!res.ok) throw new Error(res.status);
+                const data = await res.json();
+                currentConversationId = data.id;
+                exportBtn.style.display = 'block';
+
+                chat.innerHTML = '';
+                data.messages.slice(1).forEach(m => {
+                    const agent = agents.find(a => a.name === m.participant);
+                    if (!agent) return;
+
+                    const div = document.createElement('div');
+                    div.className = 'msg';
+                    div.innerHTML = `
+                        <div class="avatar" style="background:${agent.color}">${agent.name[0]}</div>
+                        <div class="msg-body">
+                            <div class="msg-header">
+                                ${agent.name}
+                                <span class="msg-role">${agent.role}</span>
+                            </div>
+                            <div class="msg-text">${m.content}</div>
+                        </div>
+                    `;
+                    chat.appendChild(div);
+                });
+
+                chat.scrollTop = chat.scrollHeight;
+            } catch (e) {
+                chat.innerHTML = '<div class="empty"><div class="empty-inner">❌ Erreur API<br><small>Serveur sur :8000?</small></div></div>';
+                console.error(e);
+            }
+        }
+
+        async function exportConversation() {
+            if (!currentConversationId) return;
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/export/${currentConversationId}`);
+                if (!res.ok) throw new Error('Export failed');
+                const data = await res.json();
+
+                const markdown = data.files.markdown;
+                const blob = new Blob([markdown], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `conversation_${currentConversationId}.md`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                alert('Erreur export');
+                console.error(e);
+            }
+        }
+    </script>
+
+
+</body></html>

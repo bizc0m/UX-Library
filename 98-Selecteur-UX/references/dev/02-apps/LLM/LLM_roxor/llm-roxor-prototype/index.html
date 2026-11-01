@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LLM-ROX Preview</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="desktop">
+      <section class="app-window" aria-label="LLM-ROX desktop preview">
+        <aside class="sidebar">
+          <div class="traffic" aria-hidden="true">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+          </div>
+
+          <header class="sidebar-head">
+            <h1>LLM-ROX</h1>
+            <div class="head-actions">
+              <button class="icon-button" title="Add root" aria-label="Add root">+</button>
+              <button class="icon-button" title="Search" aria-label="Search">⌕</button>
+              <button class="icon-button" id="openPrefs" title="Preferences" aria-label="Preferences">...</button>
+            </div>
+          </header>
+
+          <nav class="tree" aria-label="Unified LLM outliner">
+            <section class="tree-group">
+              <button class="tree-row root active" data-service="Claude">
+                <span class="chevron">⌄</span>
+                <span class="service-icon claude">AI</span>
+                <span class="row-label">Claude</span>
+                <span class="badge green">1</span>
+              </button>
+
+              <div class="children expanded">
+                <button class="tree-row child">
+                  <span class="chevron">›</span>
+                  <span class="mini-icon chats"></span>
+                  <span class="row-label">Chats</span>
+                  <span class="badge pale">12</span>
+                </button>
+                <button class="tree-row child">
+                  <span class="chevron">›</span>
+                  <span class="mini-icon prompt"></span>
+                  <span class="row-label">Prompts</span>
+                  <span class="badge pale">48</span>
+                </button>
+                <button class="tree-row child">
+                  <span class="chevron">›</span>
+                  <span class="mini-icon capture"></span>
+                  <span class="row-label">Captures</span>
+                  <span class="badge pale">23</span>
+                </button>
+                <button class="tree-row child expanded-row">
+                  <span class="chevron">⌄</span>
+                  <span class="folder green"></span>
+                  <span class="row-label">Projects</span>
+                </button>
+
+                <div class="children nested expanded">
+                  <button class="tree-row child selected">
+                    <span class="spacer"></span>
+                    <span class="folder green"></span>
+                    <span class="row-label">! ImpactIA</span>
+                    <span class="status-dot"></span>
+                  </button>
+                  <button class="tree-row child">
+                    <span class="spacer"></span>
+                    <span class="folder green"></span>
+                    <span class="row-label">! Mirae 2026</span>
+                  </button>
+                  <button class="tree-row child">
+                    <span class="spacer"></span>
+                    <span class="folder teal"></span>
+                    <span class="row-label">! AlpineChain</span>
+                  </button>
+                  <button class="tree-row child">
+                    <span class="spacer"></span>
+                    <span class="folder blue"></span>
+                    <span class="row-label"># Journalier</span>
+                  </button>
+                </div>
+
+                <button class="tree-row child">
+                  <span class="chevron">›</span>
+                  <span class="folder orange"></span>
+                  <span class="row-label">Aujourd'hui</span>
+                  <span class="badge pale">6</span>
+                </button>
+                <button class="tree-row child">
+                  <span class="chevron">›</span>
+                  <span class="folder blue"></span>
+                  <span class="row-label">Archive</span>
+                  <span class="badge pale">7</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="tree-group compact">
+              <button class="tree-row root" data-service="ChatGPT">
+                <span class="chevron">›</span>
+                <span class="service-icon chatgpt">CG</span>
+                <span class="row-label">ChatGPT</span>
+                <span class="badge pale">3</span>
+              </button>
+              <button class="tree-row root" data-service="Gemini">
+                <span class="chevron">›</span>
+                <span class="service-icon gemini">G</span>
+                <span class="row-label">Gemini</span>
+                <span class="badge pale">2</span>
+              </button>
+              <button class="tree-row root" data-service="Perplexity">
+                <span class="chevron">›</span>
+                <span class="service-icon perplexity">PX</span>
+                <span class="row-label">Perplexity</span>
+                <span class="badge pale">5</span>
+              </button>
+              <button class="tree-row root" data-service="Notion">
+                <span class="chevron">›</span>
+                <span class="service-icon notion">N</span>
+                <span class="row-label">Notion</span>
+                <span class="badge pale">1</span>
+              </button>
+              <button class="tree-row root" data-service="GitHub">
+                <span class="chevron">›</span>
+                <span class="service-icon github">GH</span>
+                <span class="row-label">GitHub</span>
+                <span class="badge pale">2</span>
+              </button>
+              <button class="tree-row root" data-service="Telegram">
+                <span class="chevron">›</span>
+                <span class="service-icon telegram">TG</span>
+                <span class="row-label">Telegram</span>
+                <span class="badge pale">4</span>
+              </button>
+            </section>
+
+            <section class="tree-group bottom">
+              <button class="tree-row child">
+                <span class="mini-icon inbox"></span>
+                <span class="row-label">Inbox</span>
+                <span class="badge pale">9</span>
+              </button>
+              <button class="tree-row child">
+                <span class="mini-icon trash"></span>
+                <span class="row-label">Corbeille</span>
+              </button>
+            </section>
+          </nav>
+
+          <footer class="sidebar-foot">
+            <button class="primary-light">+ Note / Dossier</button>
+            <button class="icon-button" title="Sync" aria-label="Sync">☁</button>
+            <button class="icon-button" id="openPrefsFooter" title="Preferences" aria-label="Preferences">⚙</button>
+          </footer>
+        </aside>
+
+        <section class="workspace">
+          <header class="tabs">
+            <button class="tab active"><span class="service-icon claude small">AI</span>Claude <span class="close">×</span></button>
+            <button class="tab"><span class="service-icon chatgpt small">CG</span>ChatGPT <span class="close">×</span></button>
+            <button class="tab"><span class="service-icon gemini small">G</span>Gemini <span class="close">×</span></button>
+            <button class="tab"><span class="service-icon perplexity small">PX</span>Perplexity <span class="close">×</span></button>
+            <button class="tab"><span class="service-icon notion small">N</span>Notion <span class="close">×</span></button>
+            <button class="tab add">+</button>
+          </header>
+
+          <section class="provider-head">
+            <div class="provider-title">
+              <span class="service-icon claude">AI</span>
+              <h2>Claude</h2>
+              <button class="plain-button">⌄</button>
+              <select aria-label="Model">
+                <option>Claude 3.5 Sonnet</option>
+                <option>Claude Opus</option>
+                <option>Claude Haiku</option>
+              </select>
+            </div>
+            <div class="provider-actions">
+              <button class="icon-button" title="Favorite" aria-label="Favorite">☆</button>
+              <button class="icon-button" title="History" aria-label="History">↻</button>
+              <button class="icon-button" title="Menu" aria-label="Menu">⋮</button>
+            </div>
+          </section>
+
+          <section class="chat-shell">
+            <article class="message user">
+              <div>
+                <strong>You</strong>
+                <p>Peux-tu m'aider a structurer une strategie de contenu pour ImpactIA sur les 3 prochains mois ?</p>
+              </div>
+              <time>12:47</time>
+            </article>
+
+            <article class="assistant-message">
+              <span class="service-icon claude">AI</span>
+              <div class="answer">
+                <h3>Claude</h3>
+                <p>Bien sur. Voici une structure de strategie de contenu sur 3 mois pour ImpactIA.</p>
+                <hr />
+                <h4>Strategie de contenu ImpactIA - 3 prochains mois</h4>
+                <h5>Objectif general</h5>
+                <p>Positionner ImpactIA comme une reference francophone sur l'IA appliquee, en apportant de la valeur concrete, pedagogique et actionnable.</p>
+                <hr />
+                <h5>Mois 1 - Fondation & Awareness</h5>
+                <ul>
+                  <li>4 articles de blog : concepts cles de l'IA expliques simplement</li>
+                  <li>2 etudes de cas : applications concretes</li>
+                  <li>1 guide pratique : "Bien demarrer avec l'IA"</li>
+                  <li>3 posts LinkedIn par semaine</li>
+                  <li>1 newsletter / semaine</li>
+                </ul>
+                <div class="message-actions">
+                  <button class="secondary">Copy</button>
+                  <button class="secondary">Retry</button>
+                  <div class="send-menu">
+                    <button class="secondary strong" id="sendToLlm">Send to LLM</button>
+                    <div class="send-popover" id="sendPopover" aria-hidden="true">
+                      <strong>Partager vers</strong>
+                      <button data-target="ChatGPT">ChatGPT</button>
+                      <button data-target="Gemini">Gemini</button>
+                      <button data-target="Perplexity">Perplexity</button>
+                      <hr />
+                      <button data-target="Clipboard">Clipboard + focus</button>
+                    </div>
+                  </div>
+                  <button class="secondary">Save node</button>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <footer class="composer">
+            <button class="icon-button large" aria-label="Add context">+</button>
+            <button class="icon-button large" aria-label="Settings">☷</button>
+            <select aria-label="Active profile">
+              <option>Claude JOB / Strategie</option>
+              <option>Claude ImpactIA / Redaction</option>
+              <option>Claude Test / Critique</option>
+            </select>
+            <input id="composerInput" value="..d  #Projet  Peux-tu transformer cette reponse en plan actionnable ?" aria-label="Prompt input" />
+            <button class="send-button" id="expandMacro">Expand</button>
+          </footer>
+        </section>
+
+        <aside class="inspector">
+          <header class="inspector-tabs">
+            <button class="active">Capture</button>
+            <button>Prompts</button>
+            <button>Notes</button>
+            <button class="pin">⌖</button>
+          </header>
+
+            <section class="panel-card">
+              <h3>Save chat</h3>
+              <p>Save this conversation as a Markdown note with YAML frontmatter.</p>
+              <button class="primary" id="saveChat">Save chat</button>
+            </section>
+
+          <section class="panel-card">
+            <h3>Send to note</h3>
+            <p>Choisir une note de destination.</p>
+            <select>
+              <option>! ImpactIA / Strategie contenu</option>
+              <option>Claude / Captures / Aujourd'hui</option>
+              <option>Inbox / A classer</option>
+            </select>
+          </section>
+
+          <section class="panel-card">
+            <h3>Insert prompt</h3>
+            <p>Inserer un prompt depuis la bibliotheque locale.</p>
+            <button class="secondary full">Browse prompts</button>
+          </section>
+
+          <section class="panel-card">
+            <h3>Export</h3>
+            <div class="grid-2">
+              <button class="secondary" id="exportMd">.MD</button>
+              <button class="secondary" id="exportPdf">.PDF</button>
+            </div>
+          </section>
+
+          <section class="panel-card metadata">
+            <h3>Cartouche</h3>
+            <dl>
+              <dt>Service</dt><dd>Claude</dd>
+              <dt>Compte</dt><dd>Claude JOB</dd>
+              <dt>Projet</dt><dd>LLM-ROX</dd>
+              <dt>Memory</dt><dd>A resumer</dd>
+            </dl>
+            <div class="tags">
+              <span>#strategie</span>
+              <span>#contenu</span>
+              <span>#impactia</span>
+            </div>
+          </section>
+
+          <section class="panel-card handoff" id="handoffLog">
+            <h3>Suivi LLM</h3>
+            <p>Claude -> ChatGPT pret a partager.</p>
+          </section>
+
+          <section class="panel-card active-panel" id="activeInspectorPanel">
+            <h3>Etat</h3>
+            <p>Capture est active. Clique sur Prompts ou Notes pour changer le panneau.</p>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <dialog class="prefs" id="prefsDialog">
+      <form method="dialog">
+        <header>
+          <h2>Preferences LLM-ROX</h2>
+          <button class="icon-button" value="cancel" aria-label="Close">×</button>
+        </header>
+
+        <div class="prefs-grid">
+          <nav class="prefs-nav">
+            <button type="button" class="active">Workspace</button>
+            <button type="button">Heritage</button>
+            <button type="button">Skills</button>
+            <button type="button">Macros</button>
+            <button type="button">Exports</button>
+          </nav>
+
+          <section class="prefs-content">
+            <div class="setting-card">
+              <h3>Workspace local</h3>
+              <label>
+                Repertoire racine
+                <input value="/Users/JOB/###DEV/_Prod/LLM_roxor" />
+              </label>
+              <div class="inline-actions">
+                <button type="button" class="secondary">Choisir...</button>
+                <button type="button" class="secondary">Ouvrir</button>
+                <button type="button" class="secondary">Backup ZIP</button>
+              </div>
+            </div>
+
+            <div class="setting-card">
+              <h3>Setup par niveau</h3>
+              <div class="levels">
+                <span>Global</span>
+                <span>Projet</span>
+                <span>Compte</span>
+                <span>Chat</span>
+              </div>
+              <label class="check"><input type="checkbox" checked /> Le chat herite du projet</label>
+              <label class="check"><input type="checkbox" checked /> Le compte herite du global</label>
+              <label class="check"><input type="checkbox" /> Verrouiller les overrides sensibles</label>
+            </div>
+
+            <div class="setting-card">
+              <h3>Skills activables</h3>
+              <div class="skill-list">
+                <label><input type="checkbox" checked /> Resume memory</label>
+                <label><input type="checkbox" checked /> Critique</label>
+                <label><input type="checkbox" checked /> Markdown cleanup</label>
+                <label><input type="checkbox" /> LinkedIn rewrite</label>
+                <label><input type="checkbox" /> API route</label>
+              </div>
+            </div>
+
+            <div class="setting-card">
+              <h3>Macros + text expander</h3>
+              <table>
+                <tbody>
+                  <tr><td>#Date</td><td>date du jour</td></tr>
+                  <tr><td>#DateHeure</td><td>date + heure</td></tr>
+                  <tr><td>#Projet</td><td>projet actif</td></tr>
+                  <tr><td>..d</td><td>2026-06-06</td></tr>
+                  <tr><td>..h</td><td>handoff LLM</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

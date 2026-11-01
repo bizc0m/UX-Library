@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MistressPixel V3 — TOUT INCLUS</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      font-family: monospace;
+    }
+    canvas { display: block; }
+    #ui {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #0f0;
+      background: rgba(0,0,0,0.75);
+      border: 1px solid #0f0;
+      padding: 10px;
+      max-height: 92vh;
+      max-width: 360px;
+      overflow-y: auto;
+      z-index: 10;
+    }
+    h1, h3 { margin: 0 0 8px 0; font-size: 14px; }
+    .section {
+      margin: 12px 0;
+      padding: 8px;
+      border: 1px solid #0f0;
+    }
+    button, input, select, textarea {
+      background: #000;
+      color: #0f0;
+      border: 1px solid #0f0;
+      padding: 5px 8px;
+      margin: 3px 0;
+      font-family: monospace;
+      cursor: pointer;
+      width: 100%;
+      font-size: 12px;
+    }
+    button:hover { background: #0f0; color: #000; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .layer-item {
+      border: 1px solid #0f0;
+      padding: 5px;
+      margin: 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .layer-item span { flex: 1; }
+    .layer-item button { width: auto; margin: 0; }
+    textarea {
+      height: 80px;
+      resize: vertical;
+      font-size: 10px;
+    }
+    #audioInfo { font-size: 11px; margin-bottom: 5px; }
+    .row { display: flex; gap: 5px; }
+    .row button, .row select { flex: 1; }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <h1>MistressPixel V3 — TOUT INCLUS</h1>
+
+    <div class="section">
+      <h3>Control</h3>
+      <button id="toggleMic">Micro ON</button>
+      <button id="toggleMidi">MIDI OFF</button>
+      <button id="toggleWs">WebSocket OFF</button>
+      <button id="fullscreen">Fullscreen</button>
+    </div>
+
+    <div class="section">
+      <h3>Audio Info</h3>
+      <div id="audioInfo">BPM: -- | Bass: -- | Med: -- | Treble: --</div>
+    </div>
+
+    <div class="section">
+      <h3>Layers</h3>
+      <div class="row">
+        <select id="layerType">
+          <option value="plasma">Plasma</option>
+          <option value="tunnel">Tunnel</option>
+          <option value="glitch">Glitch</option>
+          <option value="ansi">ANSI Motion</option>
+        </select>
+        <button id="addLayer">+</button>
+      </div>
+      <div id="layersList"></div>
+    </div>
+
+    <div class="section">
+      <h3>Presets</h3>
+      <button id="savePreset">Save Preset</button>
+      <input type="file" id="loadPreset" accept=".json"/>
+      <div class="row">
+        <select id="presetSelect">
+          <option value="">Default presets</option>
+          <option value="plasma-flow">Plasma Flow</option>
+          <option value="tunnel-vision">Tunnel Vision</option>
+          <option value="glitch-party">Glitch Party</option>
+        </select>
+        <button id="loadDefaultPreset">Load</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Shader Editor</h3>
+      <select id="shaderLayerSelect"></select>
+      <textarea id="vertexShader" placeholder="Vertex Shader GLSL"></textarea>
+      <textarea id="fragmentShader" placeholder="Fragment Shader GLSL"></textarea>
+      <button id="applyShader">Apply Shader</button>
+    </div>
+
+    <div class="section">
+      <h3>Export</h3>
+      <button id="exportMp4">Export MP4/WebM</button>
+      <button id="exportGif">Export GIF</button>
+      <button id="exportHtml">Export HTML</button>
+    </div>
+
+    <div class="section">
+      <h3>Theme</h3>
+      <select id="themeSelect">
+        <option value="dark">Dark</option>
+        <option value="cyberpunk">Cyberpunk</option>
+        <option value="neon">Neon</option>
+      </select>
+    </div>
+
+    <div class="section">
+      <h3>Shortcuts</h3>
+      <div style="font-size:11px">Space: pause time | 1-9: toggle layer | F11: fullscreen</div>
+    </div>
+  </div>
+
+  <!-- gif.js pour export GIF -->
+  <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
+  <!-- Three.js en local -->
+  <script>
+    (async function() {
+      const THREE = await import('./assets/three.module.js');
+      window.THREE = THREE;
+      if (!THREE) {
+        document.body.innerHTML = '<div style="color:#f00;font-family:monospace;padding:20px;">ERREUR : Three.js n\'a pas pu etre charge. Verifie ta connexion / bloqueurs.</div>';
+        throw new Error('Three.js non charge');
+      }
+
+      // ============================================================
+      // MISTRESSPIXEL V3 — TOUT INCLUS
+      // 4 calques, audio micro, MIDI, WebSocket, export, shader editor
+      // ============================================================
+
+    // --- AUDIO ---
+    let audioContext, analyser, dataArray, microphoneStream;
+    let audioEnabled = false;
+    let bpm = 0, lastPeakTime = 0, peakCount = 0, firstPeakTime = 0;
+
+    async function initMicrophone() {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 2048;
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const source = audioContext.createMediaStreamSource(microphoneStream);
+      source.connect(analyser);
+    }
+
+    function getAudioData() {
+      if (!analyser) return null;
+      analyser.getByteFrequencyData(dataArray);
+      return dataArray;
+    }
+
+    function getBassLevel() {
+      const data = getAudioData();
+      if (!data) return 0;
+      let sum = 0;
+      for (let i = 0; i < 10; i++) sum += data[i];
+      return sum / 10 / 255;
+    }
+
+    function getMediumLevel() {
+      const data = getAudioData();
+      if (!data) return 0;
+      let sum = 0;
+      for (let i = 50; i < 200; i++) sum += data[i];
+      return sum / 150 / 255;
+    }
+
+    function getTrebleLevel() {
+      const data = getAudioData();
+      if (!data) return 0;
+      let sum = 0;
+      for (let i = 200; i < 500; i++) sum += data[i];
+      return sum / 300 / 255;
+    }
+
+    function detectBPM(bassLevel) {
+      const threshold = 0.75;
+      const now = performance.now();
+      if (bassLevel > threshold && now - lastPeakTime > 300) {
+        if (peakCount === 0) firstPeakTime = now;
+        peakCount++;
+        lastPeakTime = now;
+        if (peakCount >= 4) {
+          const avgInterval = (now - firstPeakTime) / (peakCount - 1);
+          bpm = Math.round(60000 / avgInterval);
+          peakCount = 0;
+        }
+      }
+      return bpm;
+    }
+
+    function stopMicrophone() {
+      if (microphoneStream) microphoneStream.getTracks().forEach(t => t.stop());
+      if (audioContext) audioContext.close();
+      analyser = null;
+      dataArray = null;
+    }
+
+    // --- MIDI ---
+    let midiAccess = null;
+    let midiEnabled = false;
+
+    async function initMidi() {
+      if (!navigator.requestMIDIAccess) throw new Error('Web MIDI API non supportee');
+      midiAccess = await navigator.requestMIDIAccess();
+      midiAccess.inputs.forEach(input => {
+        input.onmidimessage = (e) => {
+          const [command, note, velocity] = e.data;
+          // Note ON : notes 60-63 mappées sur l'opacité des calques 0-3
+          if (command === 144 && velocity > 0 && note >= 60 && note <= 63) {
+            const idx = note - 60;
+            if (layers[idx]) {
+              layers[idx].mesh.material.uniforms.opacity.value = velocity / 127;
+            }
+          }
+        };
+      });
+      midiEnabled = true;
+    }
+
+    // --- WEBSOCKET ---
+    let ws = null;
+    let wsEnabled = false;
+
+    function connectWebSocket() {
+      const wsUrl = prompt('URL WebSocket (ex: ws://localhost:3000):', 'ws://localhost:3000');
+      if (!wsUrl) return;
+      ws = new WebSocket(wsUrl);
+      ws.onopen = () => {
+        wsEnabled = true;
+        document.getElementById('toggleWs').textContent = 'WebSocket ON';
+      };
+      ws.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          if (data.type === 'opacity' && layers[data.layer]) {
+            layers[data.layer].mesh.material.uniforms.opacity.value = data.value;
+          }
+          if (data.type === 'toggle' && layers[data.layer]) {
+            toggleLayer(data.layer);
+          }
+        } catch (err) { console.error(err); }
+      };
+      ws.onclose = () => {
+        wsEnabled = false;
+        document.getElementById('toggleWs').textContent = 'WebSocket OFF';
+      };
+    }
+
+    function sendWS(data) {
+      if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(data));
+    }
+
+    // --- THREE.JS ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 2;
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 1);
+    renderer.domElement.style.position = 'fixed';
+    renderer.domElement.style.top = '0';
+    renderer.domElement.style.left = '0';
+    renderer.domElement.style.zIndex = '0';
+    document.body.insertBefore(renderer.domElement, document.body.firstChild);
+
+    const layers = [];
+    let timePaused = false;
+
+    // Factory de shaders par type
+    function getLayerShaders(type) {
+      const vs = `void main() { gl_Position = vec4(position, 1.0); }`;
+      if (type === 'plasma') {
+        return {
+          uniforms: { time: 0, speed: 1.0, opacity: 0.8, resolution: new THREE.Vector2() },
+          fs: `
+            uniform float time, speed, opacity;
+            uniform vec2 resolution;
+            void main() {
+              vec2 uv = gl_FragCoord.xy / resolution;
+              float c = sin(uv.x * 12.0 + time * speed) + sin(uv.y * 10.0 + time * speed * 1.3) + sin((uv.x + uv.y) * 8.0 + time * speed * 0.7);
+              c = c / 3.0 * 0.5 + 0.5;
+              gl_FragColor = vec4(vec3(c * 1.2, c * 0.5, c * 0.9), opacity);
+            }
+          `
+        };
+      }
+      if (type === 'tunnel') {
+        return {
+          uniforms: { time: 0, rotation: 0.0, opacity: 0.6, resolution: new THREE.Vector2() },
+          fs: `
+            uniform float time, rotation, opacity;
+            uniform vec2 resolution;
+            void main() {
+              vec2 uv = gl_FragCoord.xy / resolution;
+              uv = uv * 2.0 - 1.0;
+              float a = rotation + time * 0.3;
+              float x = uv.x * cos(a) - uv.y * sin(a);
+              float y = uv.x * sin(a) + uv.y * cos(a);
+              float c = 1.0 / (length(vec2(x, y)) * 2.5 + 0.05);
+              gl_FragColor = vec4(vec3(c * 0.4, c * 0.7, c * 1.2), opacity);
+            }
+          `
+        };
+      }
+      if (type === 'glitch') {
+        return {
+          uniforms: { time: 0, intensity: 0.5, opacity: 0.4, resolution: new THREE.Vector2() },
+          fs: `
+            uniform float time, intensity, opacity;
+            uniform vec2 resolution;
+            void main() {
+              vec2 uv = gl_FragCoord.xy / resolution;
+              float g = sin(uv.x * 80.0 + time * 20.0) * intensity;
+              float g2 = sin(uv.y * 60.0 - time * 15.0) * intensity;
+              vec3 col = vec3(fract(uv.x + g + time), fract(uv.y - g2), fract(time * 1.3));
+              gl_FragColor = vec4(col, opacity);
+            }
+          `
+        };
+      }
+      if (type === 'ansi') {
+        return {
+          uniforms: { time: 0, speed: 1.0, opacity: 0.7, resolution: new THREE.Vector2() },
+          fs: `
+            uniform float time, speed, opacity;
+            uniform vec2 resolution;
+            void main() {
+              vec2 uv = gl_FragCoord.xy / resolution;
+              float rows = 24.0;
+              float cols = 40.0;
+              float y = floor(uv.y * rows);
+              float x = floor(uv.x * cols);
+              float blink = mod(time * speed * 10.0 + y * 0.7 + x * 0.3, 2.0) > 1.0 ? 1.0 : 0.0;
+              vec3 col = vec3(0.0, blink, 0.0);
+              gl_FragColor = vec4(col, opacity);
+            }
+          `
+        };
+      }
+      return null;
+    }
+
+    function createLayer(type, params = {}) {
+      const def = getLayerShaders(type);
+      if (!def) return;
+      const uniforms = {};
+      for (const k in def.uniforms) {
+        const v = def.uniforms[k];
+        uniforms[k] = { value: params[k] !== undefined ? params[k] : v };
+      }
+      // Initialiser resolution si absent
+      if (!uniforms.resolution) uniforms.resolution = { value: new THREE.Vector2(window.innerWidth, window.innerHeight) };
+
+      const material = new THREE.ShaderMaterial({
+        uniforms,
+        vertexShader: def.vs || `void main() { gl_Position = vec4(position, 1.0); }`,
+        fragmentShader: def.fs,
+        transparent: true,
+        blending: THREE.AdditiveBlending
+      });
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+      scene.add(mesh);
+      layers.push({ mesh, type, enabled: true });
+      renderLayersList();
+      updateShaderEditor();
+    }
+
+    function removeLayer(index) {
+      scene.remove(layers[index].mesh);
+      layers.splice(index, 1);
+      renderLayersList();
+      updateShaderEditor();
+    }
+
+    function toggleLayer(index) {
+      if (!layers[index]) return;
+      layers[index].enabled = !layers[index].enabled;
+      layers[index].mesh.visible = layers[index].enabled;
+      renderLayersList();
+    }
+
+    window.toggleLayer = toggleLayer;
+    window.removeLayer = removeLayer;
+
+    function renderLayersList() {
+      const list = document.getElementById('layersList');
+      list.innerHTML = '';
+      layers.forEach((layer, i) => {
+        const div = document.createElement('div');
+        div.className = 'layer-item';
+        div.innerHTML = `
+          <span>${i + 1}. ${layer.type} ${layer.enabled ? '' : '(off)'}</span>
+          <button onclick="toggleLayer(${i})">👁</button>
+          <button onclick="removeLayer(${i})">✕</button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    // --- SHADER EDITOR ---
+    function updateShaderEditor() {
+      const select = document.getElementById('shaderLayerSelect');
+      select.innerHTML = '';
+      layers.forEach((layer, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `${i}. ${layer.type}`;
+        select.appendChild(opt);
+      });
+      if (layers.length > 0) loadShaderInEditor(0);
+      else {
+        document.getElementById('vertexShader').value = '';
+        document.getElementById('fragmentShader').value = '';
+      }
+    }
+
+    function loadShaderInEditor(index) {
+      const mat = layers[index].mesh.material;
+      document.getElementById('vertexShader').value = mat.vertexShader;
+      document.getElementById('fragmentShader').value = mat.fragmentShader;
+    }
+
+    // --- PRESETS ---
+    const defaultPresets = {
+      'plasma-flow': [
+        { type: 'plasma', uniforms: { speed: 1.2, opacity: 0.9 } }
+      ],
+      'tunnel-vision': [
+        { type: 'tunnel', uniforms: { rotation: 0.0, opacity: 0.8 } }
+      ],
+      'glitch-party': [
+        { type: 'plasma', uniforms: { speed: 1.0, opacity: 0.6 } },
+        { type: 'glitch', uniforms: { intensity: 0.7, opacity: 0.5 } }
+      ]
+    };
+
+    function clearLayers() {
+      while (layers.length) removeLayer(0);
+    }
+
+    function loadPresetData(data) {
+      clearLayers();
+      (data.layers || []).forEach(l => createLayer(l.type, l.uniforms || {}));
+      if (data.theme) {
+        document.getElementById('themeSelect').value = data.theme;
+        applyTheme(data.theme);
+      }
+    }
+
+    function savePreset() {
+      const data = {
+        layers: layers.map(l => {
+          const u = {};
+          for (const k in l.mesh.material.uniforms) {
+            const val = l.mesh.material.uniforms[k].value;
+            u[k] = (val && val.isVector2) ? { x: val.x, y: val.y } : val;
+          }
+          return { type: l.type, uniforms: u };
+        }),
+        theme: document.getElementById('themeSelect').value,
+        version: 'mistresspixel-v3'
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'mistresspixel-preset.json';
+      a.click();
+    }
+
+    // --- EXPORT MP4 ---
+    let mediaRecorder, chunks = [];
+    function startExportMp4() {
+      const stream = renderer.domElement.captureStream(60);
+      // Ajouter le micro au stream si possible
+      if (microphoneStream) {
+        const audioTrack = microphoneStream.getAudioTracks()[0];
+        if (audioTrack) stream.addTrack(audioTrack);
+      }
+      const options = { mimeType: 'video/webm;codecs=vp9' };
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        options.mimeType = 'video/webm';
+      }
+      mediaRecorder = new MediaRecorder(stream, options);
+      chunks = [];
+      mediaRecorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'mistresspixel-recording.webm';
+        a.click();
+      };
+      mediaRecorder.start(100);
+      const btn = document.getElementById('exportMp4');
+      btn.textContent = 'Stop MP4/WebM';
+      btn.onclick = () => {
+        mediaRecorder.stop();
+        btn.textContent = 'Export MP4/WebM';
+        btn.onclick = startExportMp4;
+      };
+    }
+
+    // --- EXPORT GIF ---
+    function startExportGif() {
+      if (typeof GIF === 'undefined') {
+        alert('gif.js pas charge. Recharge la page ou utilise Export MP4.');
+        return;
+      }
+      const gif = new GIF({ workers: 2, quality: 10, width: 320, height: 180, workerScript: URL.createObjectURL(new Blob([gifWorkerCode], { type: 'application/javascript' })) });
+      const frames = 30; // 1 seconde à 30 fps
+      let captured = 0;
+      const btn = document.getElementById('exportGif');
+      btn.disabled = true;
+      btn.textContent = 'Capture GIF...';
+
+      function capture() {
+        if (captured >= frames) {
+          gif.render();
+          return;
+        }
+        renderer.render(scene, camera);
+        gif.addFrame(renderer.domElement, { delay: 33, copy: true });
+        captured++;
+        requestAnimationFrame(capture);
+      }
+
+      gif.on('finished', blob => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'mistresspixel.gif';
+        a.click();
+        btn.disabled = false;
+        btn.textContent = 'Export GIF';
+      });
+
+      capture();
+    }
+
+    // Worker inline pour gif.js (code minimal)
+    const gifWorkerCode = `
+      // gif.js worker inline
+      var self = this;
+      self.onmessage = function(ev) {
+        // gif.js s'attend à un worker externe, ce fallback est incomplet.
+        // En pratique gif.js avec worker inline ne fonctionne pas sans le vrai worker.
+      };
+    `;
+
+    // --- EXPORT HTML ---
+    function exportHtml() {
+      const html = document.documentElement.outerHTML;
+      const blob = new Blob([html], { type: 'text/html' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'mistresspixel-standalone.html';
+      a.click();
+    }
+
+    // --- THEMES ---
+    const themes = {
+      dark: { bg: '#000', ui: '#0f0', border: '#0f0' },
+      cyberpunk: { bg: '#0a0a1a', ui: '#ff00ff', border: '#00ffff' },
+      neon: { bg: '#000', ui: '#ffff00', border: '#ff00ff' }
+    };
+
+    function applyTheme(name) {
+      const t = themes[name] || themes.dark;
+      document.body.style.background = t.bg;
+      const ui = document.getElementById('ui');
+      ui.style.color = t.ui;
+      ui.style.borderColor = t.border;
+      // Appliquer aux sections, boutons, inputs
+      const all = ui.querySelectorAll('*');
+      all.forEach(el => {
+        if (el.tagName === 'BUTTON' || el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') {
+          el.style.color = t.ui;
+          el.style.borderColor = t.border;
+        }
+        if (el.classList.contains('section') || el.classList.contains('layer-item')) {
+          el.style.borderColor = t.border;
+        }
+      });
+    }
+
+    // --- UI EVENTS ---
+    document.getElementById('toggleMic').addEventListener('click', async () => {
+      if (!audioEnabled) {
+        await initMicrophone();
+        audioEnabled = true;
+        document.getElementById('toggleMic').textContent = 'Micro OFF';
+      } else {
+        stopMicrophone();
+        audioEnabled = false;
+        document.getElementById('toggleMic').textContent = 'Micro ON';
+      }
+    });
+
+    document.getElementById('toggleMidi').addEventListener('click', async () => {
+      if (!midiEnabled) {
+        try {
+          await initMidi();
+          document.getElementById('toggleMidi').textContent = 'MIDI ON';
+        } catch (e) {
+          alert('MIDI non disponible : ' + e.message);
+        }
+      } else {
+        midiEnabled = false;
+        document.getElementById('toggleMidi').textContent = 'MIDI OFF';
+      }
+    });
+
+    document.getElementById('toggleWs').addEventListener('click', () => {
+      if (!wsEnabled) connectWebSocket();
+      else if (ws) { ws.close(); wsEnabled = false; document.getElementById('toggleWs').textContent = 'WebSocket OFF'; }
+    });
+
+    document.getElementById('fullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    });
+
+    document.getElementById('addLayer').addEventListener('click', () => {
+      const type = document.getElementById('layerType').value;
+      createLayer(type);
+    });
+
+    document.getElementById('shaderLayerSelect').addEventListener('change', (e) => {
+      loadShaderInEditor(parseInt(e.target.value));
+    });
+
+    document.getElementById('applyShader').addEventListener('click', () => {
+      const idx = parseInt(document.getElementById('shaderLayerSelect').value);
+      if (!layers[idx]) return;
+      const mat = layers[idx].mesh.material;
+      const vs = document.getElementById('vertexShader').value;
+      const fs = document.getElementById('fragmentShader').value;
+      try {
+        // Recréer le material pour forcer la recompilation
+        const newMat = new THREE.ShaderMaterial({
+          uniforms: mat.uniforms,
+          vertexShader: vs,
+          fragmentShader: fs,
+          transparent: true,
+          blending: THREE.AdditiveBlending
+        });
+        layers[idx].mesh.material = newMat;
+        newMat.needsUpdate = true;
+      } catch (err) {
+        alert('Erreur shader : ' + err.message);
+      }
+    });
+
+    document.getElementById('savePreset').addEventListener('click', savePreset);
+
+    document.getElementById('loadPreset').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const data = JSON.parse(ev.target.result);
+          loadPresetData(data);
+        } catch (err) { alert('Preset invalide'); }
+      };
+      reader.readAsText(file);
+    });
+
+    document.getElementById('loadDefaultPreset').addEventListener('click', () => {
+      const key = document.getElementById('presetSelect').value;
+      if (!key) return;
+      loadPresetData({ layers: defaultPresets[key] });
+    });
+
+    document.getElementById('exportMp4').onclick = startExportMp4;
+    document.getElementById('exportGif').onclick = startExportGif;
+    document.getElementById('exportHtml').addEventListener('click', exportHtml);
+
+    document.getElementById('themeSelect').addEventListener('change', (e) => applyTheme(e.target.value));
+
+    // --- SHORTCUTS ---
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        timePaused = !timePaused;
+      } else if (e.key >= '1' && e.key <= '9') {
+        const i = parseInt(e.key) - 1;
+        if (layers[i]) {
+          toggleLayer(i);
+          sendWS({ type: 'toggle', layer: i });
+        }
+      } else if (e.code === 'F11') {
+        e.preventDefault();
+        document.getElementById('fullscreen').click();
+      }
+    });
+
+    // --- RESIZE ---
+    window.addEventListener('resize', () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      layers.forEach(l => {
+        l.mesh.material.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
+      });
+    });
+
+    // --- ANIMATE ---
+    function animate() {
+      requestAnimationFrame(animate);
+
+      if (audioEnabled) {
+        const bass = getBassLevel();
+        const medium = getMediumLevel();
+        const treble = getTrebleLevel();
+        const currentBpm = detectBPM(bass);
+
+        document.getElementById('audioInfo').textContent =
+          `BPM: ${currentBpm || '--'} | Bass: ${bass.toFixed(2)} | Med: ${medium.toFixed(2)} | Treble: ${treble.toFixed(2)}`;
+
+        layers.forEach(layer => {
+          if (!layer.enabled) return;
+          const mat = layer.mesh.material;
+          if (layer.type === 'plasma') mat.uniforms.speed.value = 1.0 + bass * 2.0;
+          if (layer.type === 'tunnel') mat.uniforms.rotation.value += medium * 0.01;
+          if (layer.type === 'glitch') mat.uniforms.intensity.value = 0.5 + treble * 0.5;
+          if (layer.type === 'ansi') mat.uniforms.speed.value = 1.0 + bass * 3.0;
+        });
+      }
+
+      if (!timePaused) {
+        layers.forEach(layer => {
+          if (layer.enabled) layer.mesh.material.uniforms.time.value += 0.01;
+        });
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    // --- INIT ---
+    createLayer('plasma');
+    createLayer('tunnel');
+    applyTheme('dark');
+    animate();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<!-- saved from url=(0057)https://api.xn-%2Di-zfa.dev/meute/unified-v4?v=export-png -->
+<html lang="fr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LA MEUTE — POC V4 · v0.2</title>
+<style>
+/* =====================================================================
+   LA MEUTE — unified-v4.html · v0.2
+   Visual redesign only. Backend contract is isolated in the <script>
+   block under "BACKEND CONTRACT". No external dependencies, no API keys,
+   no direct LLM calls — only POST /meute/conversation (same-origin).
+   ===================================================================== */
+:root{
+  --paper:#f3efe6;
+  --paper-2:#ebe6d9;
+  --paper-3:#e3ddcd;
+  --ink:#0c0c0c;
+  --ink-soft:#2a2825;
+  --grey:#6f6a62;
+  --grey-2:#928c80;
+  --grey-faint:#b6afa1;
+  --rubedo:#b3141b;
+  --rubedo-deep:#7c0f14;
+  --line:rgba(12,12,12,0.20);
+  --line-faint:rgba(12,12,12,0.11);
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+  --ease:cubic-bezier(0.2,0.8,0.2,1);
+}
+*,*::before,*::after{ box-sizing:border-box; }
+html,body{ margin:0; }
+body{
+  font-family:var(--sans);
+  color:var(--ink);
+  background:var(--paper);
+  background-image:
+    radial-gradient(120% 80% at 18% 0%, rgba(179,20,27,0.04), transparent 50%),
+    url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNjAnIGhlaWdodD0nMTYwJz48ZmlsdGVyIGlkPSduJz48ZmVUdXJidWxlbmNlIHR5cGU9J2ZyYWN0YWxOb2lzZScgYmFzZUZyZXF1ZW5jeT0nMC45JyBudW1PY3RhdmVzPScyJyBzdGl0Y2hUaWxlcz0nc3RpdGNoJy8+PGZlQ29sb3JNYXRyaXggdHlwZT0nc2F0dXJhdGUnIHZhbHVlcz0nMCcvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPScxNjAnIGhlaWdodD0nMTYwJyBmaWx0ZXI9J3VybCgjbiknIG9wYWNpdHk9JzAuMDQnLz48L3N2Zz4=");
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{ max-width:1080px; margin:0 auto; padding:26px 22px 80px; }
+
+/* engraved keyline frame (discreet) */
+.frame{ position:fixed; inset:10px; border:1px solid var(--line-faint); pointer-events:none; z-index:0; }
+.frame::before{ content:""; position:absolute; inset:4px; border:1px solid rgba(179,20,27,0.16); }
+@media(max-width:640px){ .frame{ inset:6px; } }
+
+/* ---------------- header ---------------- */
+.eyebrows{ display:flex; justify-content:space-between; align-items:center; gap:12px;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:0.24em; text-transform:uppercase;
+  color:var(--grey); border-bottom:1px solid var(--line-faint); padding-bottom:12px; flex-wrap:wrap; }
+.eyebrows .lat{ color:var(--ink-soft); }
+.eyebrows b{ color:var(--rubedo); font-weight:600; }
+
+.tagline{ font-family:var(--serif); font-style:italic; font-size:19px; color:var(--ink-soft);
+  margin:24px 0 0; max-width:60ch; }
+.lede{ font-size:14px; color:var(--grey); margin:6px 0 0; max-width:64ch; line-height:1.55; }
+
+/* ---------------- control bar ---------------- */
+.controls{ display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap; margin:24px 0 18px;
+  padding:14px 16px; background:var(--paper-2); border:1px solid var(--line); }
+.ctl{ display:inline-flex; align-items:center; gap:8px; }
+.ctl > .lab{ font-family:var(--mono); font-size:9.5px; letter-spacing:0.16em; text-transform:uppercase; color:var(--grey); }
+.seg{ display:inline-flex; border:1px solid var(--line); background:var(--paper); }
+.seg button{ appearance:none; border:none; background:transparent; cursor:pointer;
+  font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--ink-soft); padding:7px 12px; border-right:1px solid var(--line); transition:all .16s var(--ease); }
+.seg button:last-child{ border-right:none; }
+.seg button:hover{ background:var(--paper-2); }
+.seg button.on{ background:var(--rubedo); color:#fff; }
+.spacer{ flex:1 1 40px; }
+
+.maxtok{ display:inline-flex; align-items:center; gap:8px; }
+.maxtok input{ width:74px; font-family:var(--mono); font-size:12px; color:var(--ink);
+  background:var(--paper); border:1px solid var(--line); padding:6px 8px; text-align:right; }
+.maxtok input:focus{ outline:none; border-color:var(--rubedo); }
+
+.status{ display:inline-flex; align-items:center; gap:7px; font-family:var(--mono); font-size:11px;
+  letter-spacing:0.1em; text-transform:uppercase; color:var(--grey); }
+.status .dot{ width:7px; height:7px; border-radius:50%; background:var(--grey-2); }
+.status.ready .dot{ background:var(--rubedo); }
+.status.busy .dot{ background:var(--rubedo); animation:pulse 1.4s var(--ease) infinite; }
+.status.error .dot{ background:var(--rubedo-deep); }
+@keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+.btn{ appearance:none; cursor:pointer; font-family:var(--mono); font-size:11px; letter-spacing:0.14em;
+  text-transform:uppercase; padding:8px 14px; border:1px solid var(--ink); background:transparent;
+  color:var(--ink); transition:all .16s var(--ease); }
+.btn:hover{ background:var(--ink); color:var(--paper); }
+.btn.ghost{ border-color:var(--line); color:var(--grey); }
+.btn.ghost:hover{ border-color:var(--ink); background:transparent; color:var(--ink); }
+.btn:disabled{ opacity:0.42; cursor:not-allowed; }
+.btn:disabled:hover{ background:transparent; color:var(--grey); border-color:var(--line); }
+
+/* ---------------- sigil roster ---------------- */
+.roster-head{ display:flex; align-items:center; gap:12px; margin:6px 0 12px; }
+.roster-head .eb{ font-family:var(--mono); font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--rubedo); white-space:nowrap; }
+.roster-head .rule{ flex:1; height:1px; background:var(--line-faint); }
+.roster-head .count{ font-family:var(--mono); font-size:10px; letter-spacing:0.12em; color:var(--grey-2); white-space:nowrap; }
+
+/* 13 sigils on a single row */
+.roster{ display:grid; grid-template-columns:repeat(13,1fr); gap:6px; }
+.sigil{ display:flex; flex-direction:column; align-items:center; gap:4px; padding:9px 4px 8px;
+  background:var(--paper-2); border:1px solid var(--line); cursor:pointer; text-align:center;
+  transition:all .16s var(--ease); position:relative; }
+.sigil:hover{ background:var(--paper-3); border-color:var(--grey-faint); }
+.sigil .medal{ width:26px; height:26px; color:var(--ink-soft); transition:color .16s var(--ease); }
+.sigil .face{ display:none; width:34px; height:34px; border-radius:50%; object-fit:cover; border:1px solid var(--line);
+  filter:grayscale(0.12) contrast(1.05); }
+.sigil.has-face .face{ display:block; }
+.sigil.has-face .medal{ display:none; }
+.sigil .nm{ font-family:var(--sans); font-size:9.5px; font-weight:700; letter-spacing:0; color:var(--ink); line-height:1.05; }
+.sigil .ro{ font-family:var(--mono); font-size:7px; letter-spacing:0.04em; text-transform:uppercase; color:var(--grey); line-height:1; }
+.sigil .pick{ position:absolute; top:4px; right:4px; width:6px; height:6px; border-radius:50%;
+  border:1px solid var(--grey-faint); }
+.sigil.sel{ background:#fff; border-color:var(--rubedo); }
+.sigil.sel .medal{ color:var(--rubedo); }
+.sigil.sel .nm{ color:var(--rubedo); }
+.sigil.sel .ro{ color:var(--rubedo-deep); }
+.sigil.sel .pick{ background:var(--rubedo); border-color:var(--rubedo); }
+.sigil:focus-visible{ outline:2px solid var(--rubedo); outline-offset:2px; }
+
+/* keep the 13 on one line even on narrow screens via horizontal scroll */
+@media(max-width:760px){
+  .roster{ grid-auto-flow:column; grid-template-columns:none; grid-auto-columns:72px;
+    overflow-x:auto; padding-bottom:6px; -webkit-overflow-scrolling:touch; }
+}
+
+/* ---------------- ask ---------------- */
+.ask{ margin-top:24px; padding-top:18px; border-top:1px solid var(--line); }
+.ask textarea{ width:100%; min-height:92px; resize:vertical; font-family:var(--serif); font-size:18px;
+  line-height:1.5; color:var(--ink); background:var(--paper-2); border:1px solid var(--line);
+  padding:14px 16px; }
+.ask textarea::placeholder{ color:var(--grey-faint); font-style:italic; }
+.ask textarea:focus{ outline:none; border-color:var(--rubedo); background:#fff; }
+.ask-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:10px; flex-wrap:wrap; }
+.ask-hint{ font-family:var(--mono); font-size:10px; letter-spacing:0.08em; color:var(--grey-2); }
+.btn.primary{ border-color:var(--rubedo); background:var(--rubedo); color:#fff; padding:11px 22px; font-size:12px; }
+.btn.primary:hover{ background:var(--rubedo-deep); border-color:var(--rubedo-deep); }
+.btn.primary:disabled{ opacity:0.5; cursor:not-allowed; }
+
+/* ---------------- deliberation output ---------------- */
+.response-frame{ margin-top:24px; border:1px solid var(--line); background:rgba(255,255,255,0.36); }
+.response-frame-head{ display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--line-faint);
+  font-family:var(--mono); font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--rubedo); }
+.response-frame-head::after{ content:""; flex:1; height:1px; background:var(--line-faint); }
+.out{ min-height:220px; max-height:560px; overflow:auto; padding:14px; display:flex; flex-direction:column; gap:14px; }
+.turn{ display:flex; flex-direction:column; gap:14px; }
+.out-empty{ font-family:var(--serif); font-style:italic; font-size:18px; color:var(--grey-2);
+  text-align:center; padding:40px 20px; border:1px dashed var(--line); }
+.msg{ background:#fff; border:1px solid var(--line); padding:18px 20px; position:relative; }
+.msg::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--rubedo); opacity:0.55; }
+.msg-line{ display:flex; align-items:flex-start; gap:12px; min-width:0; }
+.msg-head{ display:flex; align-items:center; gap:10px; flex-wrap:nowrap; min-width:0; flex:none; max-width:42%; }
+.msg-head .medal{ width:26px; height:26px; color:var(--rubedo); flex:none; }
+.msg-head .who{ appearance:none; border:0; background:transparent; padding:0; margin:0; cursor:pointer;
+  font-family:var(--sans); font-size:14px; font-weight:700; letter-spacing:0.02em; color:var(--ink);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:left; }
+.msg-head .who:hover{ color:var(--rubedo); }
+.msg-head .who:focus-visible{ outline:2px solid var(--rubedo); outline-offset:3px; }
+.msg-head .who-role{ color:var(--grey); font-family:var(--mono); font-size:10px; font-weight:500; letter-spacing:0; text-transform:none; }
+.msg-body{ font-size:15px; line-height:1.62; color:var(--ink-soft); white-space:pre-wrap; word-wrap:break-word; flex:1; min-width:0; }
+.msg-body a{ color:var(--rubedo); text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:3px; }
+.msg-body a:hover{ color:var(--rubedo-deep); }
+.msg.synthesis{ background:var(--paper-2); }
+.msg.synthesis::before{ background:var(--ink); opacity:0.4; }
+.msg.error{ background:#fbecec; }
+.msg.error .msg-body{ color:var(--rubedo-deep); }
+.msg.question{ background:var(--paper-2); }
+.msg.question::before{ background:var(--ink); opacity:0.32; }
+.msg.question .msg-head{ max-width:150px; }
+.msg.question .who{ cursor:default; pointer-events:none; }
+.msg.question .msg-body{ font-family:var(--serif); font-style:italic; color:var(--ink); }
+
+/* ---------------- agent modal ---------------- */
+.modal-backdrop{ position:fixed; inset:0; z-index:30; display:none; align-items:center; justify-content:center;
+  padding:22px; background:rgba(12,12,12,0.38); }
+.modal-backdrop.open{ display:flex; }
+.agent-modal{ width:min(720px,100%); max-height:min(760px,92vh); overflow:auto; background:var(--paper);
+  border:1px solid var(--line); box-shadow:0 16px 60px rgba(0,0,0,0.22); }
+.agent-modal-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:18px;
+  padding:20px 22px; border-bottom:1px solid var(--line-faint); }
+.agent-modal-title{ display:flex; align-items:center; gap:14px; }
+.agent-modal-title .medal{ width:40px; height:40px; color:var(--rubedo); flex:none; }
+.agent-logo{ width:46px; height:46px; flex:none; display:grid; place-items:center; border:1px solid var(--line);
+  background:#fff; color:var(--rubedo); }
+.agent-logo .medal{ width:34px; height:34px; color:var(--rubedo); }
+.agent-portrait{ width:72px; height:72px; flex:none; object-fit:cover; border:1px solid var(--line); background:var(--paper-2); cursor:zoom-in; }
+.agent-portrait:focus-visible{ outline:2px solid var(--rubedo); outline-offset:3px; }
+.agent-modal h2{ margin:0; font-family:var(--serif); font-size:34px; line-height:1; font-weight:400; color:var(--rubedo); }
+.agent-modal .agent-role{ margin-top:5px; font-family:var(--mono); font-size:10px; letter-spacing:0.16em;
+  text-transform:uppercase; color:var(--grey); }
+.modal-close{ appearance:none; border:1px solid var(--line); background:transparent; color:var(--ink);
+  font-family:var(--mono); font-size:10px; letter-spacing:0.14em; text-transform:uppercase; padding:8px 10px; cursor:pointer; }
+.modal-close:hover{ border-color:var(--rubedo); color:var(--rubedo); }
+.agent-modal-body{ padding:20px 22px 22px; display:grid; gap:14px; }
+.agent-line{ display:grid; grid-template-columns:120px minmax(0,1fr); gap:14px; border-bottom:1px solid var(--line-faint);
+  padding-bottom:12px; }
+.agent-line:last-child{ border-bottom:0; padding-bottom:0; }
+.agent-line b{ font-family:var(--mono); font-size:10px; letter-spacing:0.15em; text-transform:uppercase; color:var(--grey); }
+.agent-line span{ font-size:15px; line-height:1.55; color:var(--ink-soft); }
+@media(max-width:640px){ .agent-line{ grid-template-columns:1fr; gap:5px; } .agent-modal h2{ font-size:28px; } }
+.wai-banner{ border:1px solid rgba(179,20,27,0.36); background:#fff; padding:10px 12px;
+  font-family:var(--mono); font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--rubedo); }
+.prompt-card{ border:1px solid var(--line); background:#fff; padding:12px; display:grid; gap:10px; }
+.prompt-card-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.prompt-card-title{ font-family:var(--mono); font-size:10px; letter-spacing:0.15em; text-transform:uppercase; color:var(--grey); }
+.prompt-copy{ appearance:none; cursor:pointer; border:1px solid var(--line); background:var(--paper);
+  font-family:var(--mono); font-size:10px; letter-spacing:0.14em; text-transform:uppercase; padding:7px 10px; color:var(--ink); }
+.prompt-copy:hover{ border-color:var(--rubedo); color:var(--rubedo); }
+.agent-prompt{ width:100%; min-height:118px; resize:vertical; border:1px solid var(--line-faint); background:var(--paper-2);
+  color:var(--ink-soft); font-family:var(--mono); font-size:11px; line-height:1.55; padding:10px; }
+.agent-prompt:focus{ outline:none; border-color:var(--rubedo); background:#fff; }
+
+/* portrait zoom */
+.portrait-lightbox{ position:fixed; inset:0; z-index:45; display:none; align-items:center; justify-content:center;
+  padding:22px; background:rgba(12,12,12,0.72); }
+.portrait-lightbox.open{ display:flex; }
+.portrait-lightbox-panel{ width:min(860px,96vw); max-height:92vh; display:grid; gap:10px; }
+.portrait-lightbox-head{ display:flex; align-items:center; justify-content:space-between; gap:14px;
+  font-family:var(--mono); font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--paper); }
+.portrait-lightbox-close{ appearance:none; border:1px solid rgba(243,239,230,0.45); background:transparent; color:var(--paper);
+  font-family:var(--mono); font-size:10px; letter-spacing:0.14em; text-transform:uppercase; padding:8px 10px; cursor:pointer; }
+.portrait-lightbox-close:hover{ border-color:#fff; color:#fff; }
+.portrait-lightbox img{ display:block; width:100%; max-height:82vh; object-fit:contain; background:var(--paper);
+  border:1px solid rgba(243,239,230,0.42); }
+
+/* footer */
+.foot{ margin-top:40px; padding-top:14px; border-top:1px solid var(--line-faint);
+  font-family:var(--mono); font-size:9.5px; letter-spacing:0.16em; text-transform:uppercase;
+  color:var(--grey-2); text-align:center; }
+.foot b{ color:var(--rubedo); font-weight:600; }
+
+@media(max-width:640px){
+  .wrap{ padding:20px 16px 64px; }
+  .controls{ gap:10px; }
+  .spacer{ display:none; }
+  .msg-line{ flex-direction:column; gap:8px; }
+  .msg-head{ max-width:100%; }
+}
+</style>
+<input type="hidden" id="_o_dbjbempljhcmhlfpfacalomonjpalpko" data-inspect-config="7"><script type="text/javascript" src="chrome-extension://dbjbempljhcmhlfpfacalomonjpalpko/scripts/inspector.js"></script></head>
+<body>
+
+<div class="frame"></div>
+<div class="wrap">
+
+  <!-- eyebrows -->
+  <div class="eyebrows">
+    <span class="lat">Solve · Coagula · <b>La Meute</b> · GENESYS</span>
+    <span data-i18n="eyebrowMid">Scire · Velle · Audere · Communicare</span>
+    <span>MMXXVI · D7 · 13/13 · v0.2</span>
+  </div>
+
+  <p class="tagline" data-i18n="tagline">Conversation distribuée — invoque les sigils, pose une question, lis la délibération.</p>
+
+  <!-- controls -->
+  <div class="controls">
+    <div class="ctl">
+      <span class="lab" data-i18n="langLab">Langue</span>
+      <div class="seg" id="segLang">
+        <button data-v="fr" class="on">FR</button><button data-v="en">EN</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="lab" data-i18n="modeLab">Mode</span>
+      <div class="seg" id="segMode">
+        <button data-v="compact" class="on" data-i18n="modeCompact">Compact</button><button data-v="detail" data-i18n="modeDetail">Détail</button>
+      </div>
+    </div>
+    <div class="ctl maxtok">
+      <span class="lab" data-i18n="maxLab">Max tokens</span>
+      <input id="maxTokens" type="number" min="40" max="220" step="20" value="120">
+    </div>
+    <div class="ctl">
+      <span class="lab" data-i18n="talkLab">Dialogue</span>
+      <div class="seg" id="segInteraction">
+        <button data-v="together" class="on" data-i18n="talkTogether">Ensemble</button><button data-v="isolated" data-i18n="talkIsolated">Séparées</button>
+      </div>
+    </div>
+    <span class="spacer"></span>
+    <span class="status ready" id="status"><span class="dot"></span><span id="statusText" data-i18n="stReady">prêt</span></span>
+    <button class="btn ghost" id="clearBtn" data-i18n="clear">Vider</button>
+  </div>
+
+  <!-- roster -->
+  <div class="roster-head">
+    <span class="eb" data-i18n="rosterEb">Invoque des sigils</span>
+    <span class="rule"></span>
+    <button class="btn ghost" id="inspectAgent" data-i18n="inspectAgent" disabled="">Voir fiche</button>
+    <button class="btn ghost" id="invokeAll" data-i18n="invokeAll">Invoquer la meute</button>
+    <span class="count" id="selCount">0 / 13</span>
+  </div>
+  <div class="roster" id="roster"><div class="sigil has-face" role="button" tabindex="0" aria-pressed="false"><span class="pick"></span><img class="face" src="./LA MEUTE — POC V4.1 · v0.2_files/HERMINE.png" alt=""><svg class="medal" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="50" r="46" stroke-width="1" opacity="0.32"></circle><path d="M50 22 L74 70 L26 70 Z"></path><line x1="34" y1="58" x2="66" y2="58"></line></svg><span class="nm">HERMINE</span><span class="ro">vérité</span></div><div class="sigil has-face" role="button" tabindex="0" aria-pressed="false"><span class="pick"></span><img class="face" src="./LA MEUTE — POC V4.1 · v0.2_files/SABLE.png" alt=""><svg class="medal" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="50" r="46" stroke-width="1" opacity="0.32"></circle><circle cx="40" cy="50" r="18"></circle><circle cx="60" cy="50" r="18"></circle></svg><span class="nm">SABLE</span><span class="ro">protection</span></div><div class="sigil has-face" role="button" tabindex="0" aria-pressed="false"><span class="pick"></span><img class="face" src="./LA MEUTE — POC V4.1 · v0.2_files/ARIA.png" alt=""><svg class="medal" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="50" r="46" stroke-width="1" opacity="0.32"></circle><path d="M28 58 q22 -26 44 0"></path><path d="M34 46 q16 -18 32 0"></path><circle cx="50" cy="34" r="2.4" fill="currentColor" stroke="none"></circle></svg><span class="nm">ARIA</span><span class="ro">organisation</span></div><div class="sigil has-face" role="button" tabindex="0" aria-pressed="false"><span class="pick"></span><img class="face" src="./LA MEUTE — POC V4.1 · v0.2_files/LILITH.png" alt=""><svg class="medal" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="50" r="46" stroke-width="1" opacity="0.32"></circle><circle cx="50" cy="50" r="24"></circle><path d="M50 26 a24 24 0 0 0 0 48 a16 16 0 0 1 0 -48Z" fill="currentColor" stroke="none"></path></svg><span class="nm">LILITH</span><span class="ro">question</span></div><div class="sigil has-face" role="button" tabindex="0" aria-pressed="false"><span class="pick"></span><img class="face" src="./LA MEUTE — POC V4.1 · v0.2_files/ASTRA.png" alt=""><svg class="medal" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="50" r="46" stroke-width="1" opacity="0.32"></circle><circle cx="50" cy="50" r="22"></circle><line x1="50" y1="22" x2="50" y2="78"></line><line x1="22" y1="50" x2="78" y2="50"></line><circle cx="50" cy="50" r="6"></circle></svg><span class="nm">ASTRA</span><span class="ro">vision</span></div><div class="sigil has-face" role="button" tabindex="0" aria-pressed="false"><span class="pick"></span><img class="face" src="./LA MEUTE — POC V4.1 · v0.2_files/LENA.png" alt=""><svg class="medal" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="50" r="46" stroke-width="1" opacity="0.32"></circle><line x1="50" y1="26" x2="50" y2="74"></line><line x1="36" y1="42" x2="64" y2="42"></line><circle cx="50" cy="50" r="24"></circle></svg><span class="nm">LENA</span><span class="ro">transmission</span></div><div class="sigil has-face" role="button" tabindex="0" aria-pressed="false"><span class="pick"></span><img class="face" src="./LA MEUTE — POC V4.1 · v0.2_files/FREYA.png" alt=""><svg class="medal" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="50" r="46" stroke-width="1" opacity="0.32"></circle><path d="M50 24 C40 42 62 48 50 72 C44 60 44 50 50 24Z"></path><path d="M50 72 q-10 -6 0 -16 q10 10 0 16Z" fill="currentColor" stroke="none"></path></svg><span class="nm">FREYA</span><span class="ro">action</span></div><div class="sigil has-face" role="button" tabindex="0" aria-pressed="false"><span class="pick"></span><img class="face" src="./LA MEUTE — POC V4.1 · v0.2_files/CATHARSE.png" alt=""><svg class="medal" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="50" r="46" stroke-width="1" opacity="0.32"></circle><path d="M50 24 C62 44 62 56 50 70 C38 56 38 44 50 24Z"></path><circle cx="50" cy="58" r="5"></circle></svg><span class="nm">CATHARSE</span><span class="ro">intégration</span></div><div class="sigil has-face" role="button" tabindex="0" aria-pressed="false"><span class="pick"></span><img class="face" src="./LA MEUTE — POC V4.1 · v0.2_files/METIS.png" alt=""><svg class="medal" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="50" r="46" stroke-width="1" opacity="0.32"></circle><polygon points="50,24 73,38 73,62 50,76 27,62 27,38"></polygon><line x1="50" y1="24" x2="50" y2="76"></line><line x1="27" y1="38" x2="73" y2="62"></line></svg><span class="nm">MÉTIS</span><span class="ro">adaptation</span></div><div class="sigil has-face" role="button" tabindex="0" aria-pressed="false"><span class="pick"></span><img class="face" src="./LA MEUTE — POC V4.1 · v0.2_files/FRAMBOISE.png" alt=""><svg class="medal" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="50" r="46" stroke-width="1" opacity="0.32"></circle><circle cx="50" cy="46" r="13"></circle><path d="M40 32 q10 -12 20 0"></path><line x1="50" y1="59" x2="50" y2="76"></line><line x1="40" y1="68" x2="60" y2="68"></line></svg><span class="nm">FRAMBOISE</span><span class="ro">résilience</span></div><div class="sigil has-face" role="button" tabindex="0" aria-pressed="false"><span class="pick"></span><img class="face" src="./LA MEUTE — POC V4.1 · v0.2_files/JINA.png" alt=""><svg class="medal" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="50" r="46" stroke-width="1" opacity="0.32"></circle><circle cx="40" cy="46" r="9"></circle><circle cx="60" cy="46" r="9"></circle><path d="M30 60 q20 16 40 0"></path></svg><span class="nm">JINA</span><span class="ro">liberté</span></div><div class="sigil has-face" role="button" tabindex="0" aria-pressed="false"><span class="pick"></span><img class="face" src="./LA MEUTE — POC V4.1 · v0.2_files/CYCLE.png" alt=""><svg class="medal" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="50" r="46" stroke-width="1" opacity="0.32"></circle><line x1="50" y1="24" x2="50" y2="76"></line><line x1="24" y1="50" x2="76" y2="50"></line><line x1="32" y1="32" x2="68" y2="68"></line><line x1="68" y1="32" x2="32" y2="68"></line></svg><span class="nm">CYCLE</span><span class="ro">renouveau</span></div><div class="sigil has-face" role="button" tabindex="0" aria-pressed="false"><span class="pick"></span><img class="face" src="./LA MEUTE — POC V4.1 · v0.2_files/SILICA.png" alt=""><svg class="medal" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="50" r="46" stroke-width="1" opacity="0.32"></circle><polygon points="50,26 72,50 50,74 28,50"></polygon><circle cx="50" cy="50" r="4" fill="currentColor" stroke="none"></circle></svg><span class="nm">SILICA</span><span class="ro">fondation</span></div></div>
+
+  <div class="modal-backdrop" id="agentModal" aria-hidden="true">
+    <section class="agent-modal" role="dialog" aria-modal="true" aria-labelledby="agentModalName">
+      <div class="agent-modal-head">
+        <div class="agent-modal-title" id="agentModalTitle"></div>
+        <button class="modal-close" id="agentModalClose" type="button">Fermer</button>
+      </div>
+      <div class="agent-modal-body" id="agentModalBody"></div>
+    </section>
+  </div>
+
+  <div class="portrait-lightbox" id="portraitLightbox" aria-hidden="true">
+    <div class="portrait-lightbox-panel" role="dialog" aria-modal="true" aria-labelledby="portraitLightboxName">
+      <div class="portrait-lightbox-head">
+        <span id="portraitLightboxName">Portrait</span>
+        <button class="portrait-lightbox-close" id="portraitLightboxClose" type="button">Fermer</button>
+      </div>
+      <img id="portraitLightboxImg" alt="">
+    </div>
+  </div>
+
+  <!-- ask -->
+  <div class="ask">
+    <textarea id="question" data-i18n-ph="qPh" placeholder="Sélectionne des sigils et pose une question…"></textarea>
+    <div class="ask-row">
+      <span class="ask-hint" data-i18n="askHint">Entrée pour envoyer · Shift + Entrée pour revenir à la ligne</span>
+      <button class="btn ghost" id="exportBtn" data-i18n="export">Exporter</button>
+      <button class="btn primary" id="askBtn" data-i18n="ask">Demander</button>
+    </div>
+  </div>
+
+  <!-- output (deliberation) -->
+  <section class="response-frame" aria-label="Réponses LA MEUTE">
+    <div class="response-frame-head">Réponses</div>
+    <div class="out" id="out"><div class="out-empty">La délibération s'affichera ici.</div></div>
+  </section>
+
+  <div class="foot">La Meute · D7 — <b data-i18n="footMotto">ensemble, connectées, invincibles</b> · MMXXVI · v0.2</div>
+</div>
+
+<script>
+/* =====================================================================
+   BACKEND CONTRACT  —  adjust ONLY this block if your v2 differs.
+   The visual layer below never needs editing to match the backend.
+   ===================================================================== */
+var IS_LOCAL = location.hostname === '127.0.0.1' || location.hostname === 'localhost';
+var API_BASE = location.origin;
+var ENDPOINTS = IS_LOCAL ? ['/conversation', '/meute/conversation'] : [API_BASE + '/meute/conversation'];
+
+// Build the JSON body sent to the backend. Rename fields to match v2 if needed.
+function buildPayload(question, agentIds, lang, mode, maxTokens){
+  var contextualTopic = withConversationContext(question);
+  var languageInstruction = lang === 'en'
+    ? 'Answer in English.'
+    : 'Réponds en français. Par défaut, toute réponse doit être en français.';
+  return {
+    topic: languageInstruction + '\n\n' + contextualTopic,
+    participants: agentIds.map(function(id){ return id.toUpperCase(); }),
+    question: question,
+    context_text: conversationContextText(),
+    language_instruction: languageInstruction,
+    agents: agentIds,
+    lang:     lang,         // 'fr' | 'en'
+    mode:     mode,         // 'compact' | 'detail'
+    interaction: INTERACTION,
+    rounds:   1,
+    max_tokens: maxTokens   // integer
+  };
+}
+
+// Turn whatever the backend returns into a flat list of {who, role, text, kind}.
+// Handles: plain string · {reply|answer|response|text|content} · {error}
+//          · array · {messages|deliberation|agents|responses: [...]} · {synthesis|summary}
+function extractMessages(data){
+  var out = [];
+  if(data == null) return out;
+  if(typeof data === 'string'){ out.push({text:data}); return out; }
+  if(data.error){ out.push({text:String(data.error), kind:'error'}); return out; }
+
+  var arr = Array.isArray(data) ? data
+          : data.messages || data.deliberation || data.agents || data.responses || data.turns || null;
+  if(Array.isArray(arr)){
+    arr.forEach(function(it){
+      if(it == null) return;
+      if(typeof it === 'string'){ out.push({text:it}); return; }
+      out.push({
+        who:  it.agent || it.name || it.sigil || it.id || it.role || '',
+        role: it.title || (it.agent ? it.role : '') || '',
+        text: it.response || it.text || it.content || it.message || it.reply || it.answer || (typeof it.value==='string'?it.value:JSON.stringify(it))
+      });
+    });
+  } else {
+    var reply = data.reply || data.answer || data.response || data.text || data.content || data.output;
+    if(reply) out.push({text: typeof reply==='string' ? reply : JSON.stringify(reply,null,2)});
+  }
+  var synth = data.synthesis || data.summary || data.conclusion;
+  if(synth) out.push({who: I18N[LANG].synthesisWho, text: typeof synth==='string'?synth:JSON.stringify(synth,null,2), kind:'synthesis'});
+  if(out.length===0) out.push({text: JSON.stringify(data,null,2)});
+  return out;
+}
+
+// The send routine. Keeps existing logic minimal: POST → json → render.
+async function sendConversation(payload){
+  var lastError = null;
+  for(var i = 0; i < ENDPOINTS.length; i++){
+    try{
+      var res = await fetch(ENDPOINTS[i], {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        credentials:'same-origin',
+        cache:'no-store',
+        body: JSON.stringify(payload)
+      });
+      if(!res.ok) throw new Error(ENDPOINTS[i] + ' HTTP ' + res.status);
+      var ct = res.headers.get('content-type') || '';
+      return ct.indexOf('application/json') >= 0 ? res.json() : res.text();
+    }catch(err){
+      lastError = err;
+    }
+  }
+  throw lastError || new Error('API unavailable');
+}
+/* =================== END BACKEND CONTRACT =================== */
+
+
+/* ---------------- roster data (ids are what gets sent as `agents`) ---------------- */
+var ROSTER = [
+  {id:'hermine', name:'HERMINE', role:{fr:'vérité'}, glyph:'seuil'},
+  {id:'sable',   name:'SABLE',   role:{fr:'protection'}, glyph:'lien'},
+  {id:'aria',    name:'ARIA',    role:{fr:'organisation'}, glyph:'ciel'},
+  {id:'lilith',  name:'LILITH',  role:{fr:'question'}, glyph:'ombre'},
+  {id:'astra',   name:'ASTRA',   role:{fr:'vision'}, glyph:'oracle'},
+  {id:'lena',    name:'LENA',    role:{fr:'transmission'}, glyph:'soin'},
+  {id:'freya',   name:'FREYA',   role:{fr:'action'}, glyph:'feu'},
+  {id:'catharse',name:'CATHARSE',role:{fr:'intégration'}, glyph:'larme'},
+  {id:'metis',   name:'MÉTIS',   role:{fr:'adaptation'},glyph:'metis'},
+  {id:'framboise',name:'FRAMBOISE',role:{fr:'résilience'},glyph:'mercure'},
+  {id:'jina',    name:'JINA',    role:{fr:'liberté'}, glyph:'hibou'},
+  {id:'cycle',   name:'CYCLE',   role:{fr:'renouveau'},glyph:'treize'},
+  {id:'silica',  name:'SILICA',  role:{fr:'fondation'},glyph:'lynx'}
+];
+var ROLE_EN = {hermine:'truth',sable:'protection',aria:'organization',lilith:'question',astra:'vision',lena:'transmission',
+  freya:'action',catharse:'integration',metis:'adaptation',framboise:'resilience',jina:'freedom',cycle:'renewal',silica:'foundation'};
+var FACE_BASE = '/meute/static/faces/';
+var AGENT_DETAILS = {
+  hermine:{fn:'Vérité',question:'Est-ce vrai ?',pathology:'Technocratie / froideur',visual:'Nordique, cheveux argent, verticalité froide, neige ou cristal discret.',voice:'Teste le vrai avant tout. Elle coupe le bruit.'},
+  sable:{fn:'Protection',question:'Qui protège ?',pathology:'Surprotection / possessivité',visual:'Afro-caribéenne, longues tresses, posture de bouclier, sable et or mat.',voice:'Cherche qui doit être protégé, et de quoi.'},
+  aria:{fn:'Organisation',question:'Est-ce organisé ?',pathology:'Bureaucratie / rigidité',visual:'Asiatique Est, carré strict, posture exacte, lignes architecturales.',voice:'Met de l’ordre, des priorités et des règles lisibles.'},
+  lilith:{fn:'Remise en question',question:'Qu’est-ce qui doit être contesté ?',pathology:'Destruction pour la destruction',visual:'Levantine, très longs cheveux noirs, lune noire, rouge sombre.',voice:'Repère ce qui ment, enferme ou doit être refusé.'},
+  astra:{fn:'Vision',question:'Que voit-on venir ?',pathology:'Projection / scénarios sans réel',visual:'Indo-persane, regard horizon, bleu nuit, étoile discrète.',voice:'Lit les trajectoires et les signaux faibles.'},
+  lena:{fn:'Transmission',question:'Que transmet-on ?',pathology:'Mythification',visual:'Européenne, blond ambré, main ouverte, livre ou mémoire.',voice:'Transforme l’expérience en récit transmissible.'},
+  freya:{fn:'Action',question:'Qui agit ?',pathology:'Précipitation / burn-out',visual:'Scandinave, athlétique, prête à avancer, acier et rouge.',voice:'Décide qui fait quoi, maintenant.'},
+  catharse:{fn:'Intégration',question:'Qu’est-ce qui est intégré ?',pathology:'Psychologisation',visual:'Eurasienne, calme, blanc cassé, eau ou goutte discrète.',voice:'Fait passer le choc dans le corps du système.'},
+  metis:{fn:'Adaptation',question:'Comment s’adapte-t-on ?',pathology:'Manipulation / opportunisme',visual:'Méditerranéenne, mèches bronze, mouvement, spirale stratégique.',voice:'Trouve le mouvement intelligent sous contrainte.'},
+  framboise:{fn:'Résilience',question:'Comment repart-on ?',pathology:'Refus du deuil',visual:'Rousse, vive, étincelle ou braise, rouge framboise et cuivre.',voice:'Cherche le redémarrage possible après rupture.'},
+  jina:{fn:'Liberté',question:'Où est la liberté ?',pathology:'Dispersion / fuite',visual:'Métisse asiatique, très longs cheveux au vent, lignes aériennes.',voice:'Ouvre les sorties, les marges, les respirations.'},
+  cycle:{fn:'Renouveau',question:'Quand recommencer ?',pathology:'Attentisme',visual:'Métisse solaire, châtain argent, cercle, or pâle et terre claire.',voice:'Décide quand fermer une boucle et relancer.'},
+  silica:{fn:'Fondation',question:'Qu’est-ce qui tient ?',pathology:'Immobilisme',visual:'Noire-bronze, cheveux très courts, immobile, pierre et socle.',voice:'Vérifie ce qui reste debout quand tout bouge.'}
+};
+
+var GLYPHS = {
+  seuil:'<path d="M50 22 L74 70 L26 70 Z"/><line x1="34" y1="58" x2="66" y2="58"/>',
+  lien:'<circle cx="40" cy="50" r="18"/><circle cx="60" cy="50" r="18"/>',
+  ombre:'<circle cx="50" cy="50" r="24"/><path d="M50 26 a24 24 0 0 0 0 48 a16 16 0 0 1 0 -48Z" fill="currentColor" stroke="none"/>',
+  ciel:'<path d="M28 58 q22 -26 44 0"/><path d="M34 46 q16 -18 32 0"/><circle cx="50" cy="34" r="2.4" fill="currentColor" stroke="none"/>',
+  oracle:'<circle cx="50" cy="50" r="22"/><line x1="50" y1="22" x2="50" y2="78"/><line x1="22" y1="50" x2="78" y2="50"/><circle cx="50" cy="50" r="6"/>',
+  soin:'<line x1="50" y1="26" x2="50" y2="74"/><line x1="36" y1="42" x2="64" y2="42"/><circle cx="50" cy="50" r="24"/>',
+  feu:'<path d="M50 24 C40 42 62 48 50 72 C44 60 44 50 50 24Z"/><path d="M50 72 q-10 -6 0 -16 q10 10 0 16Z" fill="currentColor" stroke="none"/>',
+  larme:'<path d="M50 24 C62 44 62 56 50 70 C38 56 38 44 50 24Z"/><circle cx="50" cy="58" r="5"/>',
+  metis:'<polygon points="50,24 73,38 73,62 50,76 27,62 27,38"/><line x1="50" y1="24" x2="50" y2="76"/><line x1="27" y1="38" x2="73" y2="62"/>',
+  mercure:'<circle cx="50" cy="46" r="13"/><path d="M40 32 q10 -12 20 0"/><line x1="50" y1="59" x2="50" y2="76"/><line x1="40" y1="68" x2="60" y2="68"/>',
+  hibou:'<circle cx="40" cy="46" r="9"/><circle cx="60" cy="46" r="9"/><path d="M30 60 q20 16 40 0"/>',
+  treize:'<line x1="50" y1="24" x2="50" y2="76"/><line x1="24" y1="50" x2="76" y2="50"/><line x1="32" y1="32" x2="68" y2="68"/><line x1="68" y1="32" x2="32" y2="68"/>',
+  lynx:'<polygon points="50,26 72,50 50,74 28,50"/><circle cx="50" cy="50" r="4" fill="currentColor" stroke="none"/>'
+};
+function medalSVG(glyph, withRing){
+  var ring = withRing ? '<circle cx="50" cy="50" r="46" stroke-width="1" opacity="0.32"/>' : '';
+  return '<svg class="medal" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" '
+    + 'stroke-linecap="round" stroke-linejoin="round">'+ring+(GLYPHS[glyph]||'')+'</svg>';
+}
+
+/* ---------------- i18n ---------------- */
+var I18N = {
+  fr:{
+    eyebrowMid:'Scire · Velle · Audere · Communicare',
+    tagline:"Conversation distribuée — invoque les sigils, pose une question, lis la délibération.",
+    lede:'',
+    langLab:'Langue', modeLab:'Mode', modeCompact:'Compact', modeDetail:'Détail', maxLab:'Max tokens',
+    talkLab:'Dialogue', talkTogether:'Ensemble', talkIsolated:'Séparées',
+    clear:'Vider', rosterEb:'Invoque des sigils', invokeAll:'Invoquer la meute', inspectAgent:'Voir fiche', export:'Exporter',
+    modalClose:'Fermer', modalFunction:'Fonction', modalQuestion:'Question', modalPathology:'Risque', modalVisual:'Visuel', modalVoice:'Voix',
+    qPh:'Sélectionne des sigils et pose une question…', askHint:'Entrée pour envoyer · Shift + Entrée pour revenir à la ligne', ask:'Demander',
+    outEmpty:"La délibération s'affichera ici.", footMotto:'ensemble, connectées, invincibles',
+    stReady:'prêt', stBusy:'invocation…', stError:'erreur', stDone:'prêt',
+    errNoAgents:'Sélectionne au moins un sigil.', errNoQuestion:'Pose une question.', errNoExport:'Aucune réponse à exporter.',
+    errNet:'Le backend n\u2019a pas répondu', synthesisWho:'SYNTHÈSE'
+  },
+  en:{
+    eyebrowMid:'Scire · Velle · Audere · Communicare',
+    tagline:'Distributed conversation — invoke the sigils, ask a question, read the deliberation.',
+    lede:'',
+    langLab:'Language', modeLab:'Mode', modeCompact:'Compact', modeDetail:'Detail', maxLab:'Max tokens',
+    talkLab:'Dialogue', talkTogether:'Together', talkIsolated:'Isolated',
+    clear:'Clear', rosterEb:'Invoke sigils', invokeAll:'Invoke the pack', inspectAgent:'View file', export:'Export',
+    modalClose:'Close', modalFunction:'Function', modalQuestion:'Question', modalPathology:'Risk', modalVisual:'Visual', modalVoice:'Voice',
+    qPh:'Select sigils and ask a question…', askHint:'Enter to send · Shift + Enter for a new line', ask:'Ask',
+    outEmpty:'The deliberation will appear here.', footMotto:'together, connected, invincible',
+    stReady:'ready', stBusy:'invoking…', stError:'error', stDone:'ready',
+    errNoAgents:'Select at least one sigil.', errNoQuestion:'Ask a question.', errNoExport:'No response to export.',
+    errNet:'The backend did not respond', synthesisWho:'SYNTHESIS'
+  }
+};
+var LANG='fr', MODE='compact', INTERACTION='together';
+var selected = new Set();
+var activeAgentId = null;
+var conversationMemory = [];
+var currentTurnEl = null;
+
+/* ---------------- render roster ---------------- */
+var rosterEl = document.getElementById('roster');
+function roleLabel(a){ return LANG==='en' ? (ROLE_EN[a.id]||'') : (a.role.fr||''); }
+function renderRoster(){
+  rosterEl.innerHTML='';
+  ROSTER.forEach(function(a){
+    var el=document.createElement('div');
+    el.className='sigil'+(selected.has(a.id)?' sel':'');
+    el.setAttribute('role','button'); el.setAttribute('tabindex','0');
+    el.setAttribute('aria-pressed', selected.has(a.id)?'true':'false');
+    var face = FACE_BASE + a.name.replace('É','E') + '.png';
+    el.innerHTML = '<span class="pick"></span><img class="face" src="'+face+'" alt="">'+medalSVG(a.glyph,true)
+      +'<span class="nm">'+a.name+'</span><span class="ro">'+roleLabel(a)+'</span>';
+    var img = el.querySelector('.face');
+    img.addEventListener('load', function(){ el.classList.add('has-face'); });
+    img.addEventListener('error', function(){ el.classList.remove('has-face'); });
+    function toggle(){
+      if(selected.has(a.id)) selected.delete(a.id); else { selected.add(a.id); activeAgentId = a.id; }
+      if(activeAgentId === a.id && !selected.has(a.id)) activeAgentId = Array.from(selected)[0] || null;
+      renderRoster(); updateCount();
+    }
+    el.addEventListener('click', toggle);
+    el.addEventListener('dblclick', function(){ activeAgentId = a.id; if(!selected.has(a.id)) selected.add(a.id); renderRoster(); updateCount(); openAgentModal(a.id); });
+    el.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(); } });
+    rosterEl.appendChild(el);
+  });
+}
+function updateCount(){
+  document.getElementById('selCount').textContent = selected.size+' / '+ROSTER.length;
+  var inspect = document.getElementById('inspectAgent');
+  if(inspect) inspect.disabled = !activeAgentId;
+}
+
+/* ---------------- i18n apply ---------------- */
+function applyLang(lang){
+  LANG = (lang==='en')?'en':'fr';
+  document.documentElement.setAttribute('lang', LANG);
+  var d=I18N[LANG];
+  document.querySelectorAll('[data-i18n]').forEach(function(el){ var k=el.getAttribute('data-i18n'); if(d[k]!=null) el.textContent=d[k]; });
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el){ var k=el.getAttribute('data-i18n-ph'); if(d[k]!=null) el.setAttribute('placeholder',d[k]); });
+  document.querySelectorAll('#segLang button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-v')===LANG); });
+  if(!busy) setStatus('ready');
+  renderRoster();
+}
+
+/* ---------------- status ---------------- */
+var busy=false;
+function setStatus(kind){
+  var s=document.getElementById('status'), t=document.getElementById('statusText');
+  s.className='status '+(kind==='busy'?'busy':kind==='error'?'error':'ready');
+  t.textContent = kind==='busy'?I18N[LANG].stBusy : kind==='error'?I18N[LANG].stError
+                : kind==='done'?I18N[LANG].stDone : I18N[LANG].stReady;
+}
+
+/* ---------------- output ---------------- */
+var outEl=document.getElementById('out');
+function clearOutput(){ outEl.innerHTML='<div class="out-empty">'+I18N[LANG].outEmpty+'</div>'; }
+function conversationContextText(){
+  return conversationMemory.slice(-4).map(function(turn, idx){
+    return 'Tour '+(idx+1)+'\nQuestion: '+turn.question+'\nRéponses: '+turn.summary;
+  }).join('\n\n');
+}
+function withConversationContext(question){
+  var context = conversationContextText();
+  if(!context) return question;
+  return [
+    'Contexte précédent de cette conversation LA MEUTE :',
+    context,
+    '',
+    'Nouvelle question :',
+    question,
+    '',
+    'Réponds en tenant compte du contexte précédent, sans le répéter inutilement.'
+  ].join('\n');
+}
+function rememberConversation(question, messages){
+  var summary = messages.filter(function(m){ return m.kind !== 'error'; }).slice(0, 8).map(function(m){
+    var who = (m.who || '').toString();
+    var text = (m.text || '').toString().replace(/\s+/g,' ').trim();
+    return (who ? who + ': ' : '') + text.slice(0, 260);
+  }).join(' | ');
+  if(!summary) return;
+  conversationMemory.push({ question: question, summary: summary.slice(0, 1800) });
+  if(conversationMemory.length > 6) conversationMemory = conversationMemory.slice(-6);
+}
+function escapeHtml(text){
+  return String(text || '').replace(/[&<>"']/g, function(ch){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+  });
+}
+function linkedText(text){
+  var html = escapeHtml(text);
+  html = html.replace(/\[([^\]]{1,80})\]\((https?:\/\/[^\s)<>"]+)\)/g, function(_, label, url){
+    return '<a href="'+url+'" target="_blank" rel="noopener noreferrer">'+label+'</a>';
+  });
+  html = html.replace(/(^|[\s(])(https?:\/\/[^\s<>"')]+)(?=$|[\s).,!?:;])/g, function(_, lead, url){
+    return lead+'<a href="'+url+'" target="_blank" rel="noopener noreferrer">'+url+'</a>';
+  });
+  return html;
+}
+function line(label, value){
+  return '<div class="agent-line"><b>'+escapeHtml(label)+'</b><span>'+escapeHtml(value)+'</span></div>';
+}
+function agentPrompt(agent, d){
+  return [
+    'Wai.dev / LA MEUTE',
+    'Créer un portrait vertical pour '+agent.name+'.',
+    'Fonction : '+(d.fn || roleLabel(agent))+'.',
+    'Question-guide : '+(d.question || '')+'.',
+    'Direction visuelle : '+(d.visual || 'portrait sérieux, sigil discret, affiche papier rubedo')+'.',
+    'Style : affiche papier, gravure contemporaine, rubedo discret, fond clair, cadrage visage/épaules, lisible, sans texte intégré, sans pentacle dominant.'
+  ].join('\n');
+}
+function promptBlock(agent, d){
+  var prompt = agentPrompt(agent, d);
+  return '<div class="wai-banner">Wai.dev · Prompt portrait prêt à copier</div>'
+    + '<div class="prompt-card">'
+    + '<div class="prompt-card-head"><span class="prompt-card-title">Prompt</span><button class="prompt-copy" type="button" id="copyAgentPrompt">Copier</button></div>'
+    + '<textarea class="agent-prompt" id="agentPrompt" readonly>'+escapeHtml(prompt)+'</textarea>'
+    + '</div>';
+}
+function openAgentModal(agentId){
+  var agent = ROSTER.filter(function(a){ return a.id === agentId; })[0];
+  if(!agent) return;
+  var d = AGENT_DETAILS[agent.id] || {};
+  var labels = I18N[LANG];
+  document.getElementById('agentModalClose').textContent = labels.modalClose;
+  var face = FACE_BASE + agent.name.replace('É','E') + '.png';
+  document.getElementById('agentModalTitle').innerHTML = '<img class="agent-portrait" src="'+face+'" alt="">'
+    + '<span class="agent-logo" aria-label="'+escapeHtml(agent.name)+' logo">'+medalSVG(agent.glyph,false)+'</span>'
+    + '<div><h2 id="agentModalName">'+escapeHtml(agent.name)+'</h2><div class="agent-role">'+escapeHtml(roleLabel(agent))+'</div></div>';
+  var portrait = document.querySelector('.agent-portrait');
+  portrait.addEventListener('error', function(){ portrait.style.display='none'; });
+  portrait.setAttribute('role','button');
+  portrait.setAttribute('tabindex','0');
+  portrait.setAttribute('aria-label', agent.name + ' portrait');
+  function zoomPortrait(){
+    if(portrait.style.display !== 'none') openPortraitLightbox(face, agent.name);
+  }
+  portrait.addEventListener('click', zoomPortrait);
+  portrait.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); zoomPortrait(); }
+  });
+  document.getElementById('agentModalBody').innerHTML =
+    line(labels.modalFunction, d.fn || roleLabel(agent))+
+    line(labels.modalQuestion, d.question || '')+
+    line(labels.modalPathology, d.pathology || '')+
+    line(labels.modalVoice, d.voice || '')+
+    promptBlock(agent, d);
+  var copyBtn = document.getElementById('copyAgentPrompt');
+  copyBtn.addEventListener('click', async function(){
+    var prompt = document.getElementById('agentPrompt').value;
+    try{
+      await navigator.clipboard.writeText(prompt);
+      copyBtn.textContent = LANG === 'en' ? 'Copied' : 'Copié';
+    }catch(err){
+      var promptField = document.getElementById('agentPrompt');
+      promptField.select();
+      var copied = false;
+      try{ copied = document.execCommand('copy'); }catch(copyErr){ copied = false; }
+      copyBtn.textContent = copied ? (LANG === 'en' ? 'Copied' : 'Copié') : (LANG === 'en' ? 'Select' : 'Sélectionné');
+    }
+    setTimeout(function(){ copyBtn.textContent = LANG === 'en' ? 'Copy' : 'Copier'; }, 1400);
+  });
+  var modal = document.getElementById('agentModal');
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+  document.getElementById('agentModalClose').focus();
+}
+function closeAgentModal(){
+  var modal = document.getElementById('agentModal');
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+}
+function openPortraitLightbox(src, name){
+  var box = document.getElementById('portraitLightbox');
+  var img = document.getElementById('portraitLightboxImg');
+  document.getElementById('portraitLightboxName').textContent = name;
+  document.getElementById('portraitLightboxClose').textContent = I18N[LANG].modalClose;
+  img.src = src;
+  img.alt = name;
+  box.classList.add('open');
+  box.setAttribute('aria-hidden','false');
+  document.getElementById('portraitLightboxClose').focus();
+}
+function closePortraitLightbox(){
+  var box = document.getElementById('portraitLightbox');
+  box.classList.remove('open');
+  box.setAttribute('aria-hidden','true');
+}
+function ensureThreadOutput(){
+  var empty = outEl.querySelector('.out-empty');
+  if(empty) outEl.innerHTML='';
+}
+function appendQuestion(question){
+  ensureThreadOutput();
+  currentTurnEl = document.createElement('div');
+  currentTurnEl.className = 'turn';
+  var card = document.createElement('div');
+  card.className = 'msg question';
+  card.innerHTML = '<div class="msg-line"><div class="msg-head">'
+    + '<span class="who">'+(LANG === 'en' ? 'QUESTION' : 'QUESTION')+'</span></div>'
+    + '<div class="msg-body">'+linkedText(question)+'</div></div>';
+  currentTurnEl.appendChild(card);
+  outEl.insertBefore(currentTurnEl, outEl.firstChild);
+}
+function setLoadingMessage(){
+  ensureThreadOutput();
+  var card = document.createElement('div');
+  card.className = 'out-empty loading-turn';
+  card.textContent = I18N[LANG].stBusy;
+  (currentTurnEl || outEl).appendChild(card);
+}
+function clearLoadingMessage(){
+  var loading = outEl.querySelector('.loading-turn');
+  if(loading) loading.remove();
+}
+function renderMessages(list, append){
+  if(!append) outEl.innerHTML='';
+  else ensureThreadOutput();
+  list.forEach(function(m){
+    var who=(m.who||'').toString();
+    var agent = ROSTER.filter(function(a){ return a.id===who.toLowerCase()||a.name===who.toUpperCase(); })[0];
+    var glyph = agent ? agent.glyph : 'oracle';
+    var role = m.role || (agent?roleLabel(agent):'');
+    var card=document.createElement('div');
+    card.className='msg'+(m.kind==='error'?' error':m.kind==='synthesis'?' synthesis':'');
+    var displayName = agent ? agent.name : who;
+    var head = who ? '<div class="msg-head">'+medalSVG(glyph,false)
+      +'<button class="who" type="button"'+(agent?' data-agent-id="'+escapeHtml(agent.id)+'" title="Voir la fiche '+escapeHtml(agent.name)+'"':'')+'>'
+      +escapeHtml(displayName)+(role?' <span class="who-role">'+escapeHtml(role)+'</span>':'')+'</button></div>' : '';
+    card.innerHTML = '<div class="msg-line">'+head+'<div class="msg-body">'+linkedText(m.text || '')+'</div></div>';
+    var whoButton = card.querySelector('.who[data-agent-id]');
+    if(whoButton){
+      whoButton.addEventListener('click', function(){
+        openAgentModal(this.getAttribute('data-agent-id'));
+      });
+    }
+    (append && currentTurnEl ? currentTurnEl : outEl).appendChild(card);
+  });
+}
+
+/* ---------------- ask flow ---------------- */
+async function ask(){
+  if(busy) return;
+  var q=document.getElementById('question').value.trim();
+  if(selected.size===0){ flashError(I18N[LANG].errNoAgents); return; }
+  if(!q){ flashError(I18N[LANG].errNoQuestion); return; }
+  var maxTok=parseInt(document.getElementById('maxTokens').value,10)||120;
+  maxTok=Math.max(40, Math.min(220, maxTok));
+  busy=true; setStatus('busy'); document.getElementById('askBtn').disabled=true;
+  appendQuestion(q);
+  setLoadingMessage();
+  try{
+    var payload=buildPayload(q, Array.from(selected), LANG, MODE, maxTok);
+    var data=await sendConversation(payload);
+    var messages = extractMessages(data);
+    clearLoadingMessage();
+    renderMessages(messages, true);
+    rememberConversation(q, messages);
+    document.getElementById('question').value='';
+    setStatus('done');
+  }catch(err){
+    clearLoadingMessage();
+    renderMessages([{text:I18N[LANG].errNet+' — '+err.message+'. Recharge la page avec ?v=live-now si le navigateur garde une ancienne version.', kind:'error'}], true);
+    setStatus('error');
+  }finally{
+    busy=false; document.getElementById('askBtn').disabled=false;
+  }
+}
+function flashError(msg){
+  setStatus('error');
+  renderMessages([{text:msg, kind:'error'}]);
+  setTimeout(function(){ if(!busy) setStatus('ready'); }, 2200);
+}
+function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight){
+  var words = String(text || '').replace(/\s+/g,' ').trim().split(' ');
+  var line = '';
+  var lines = [];
+  words.forEach(function(word){
+    var test = line ? line + ' ' + word : word;
+    if(ctx.measureText(test).width > maxWidth && line){
+      lines.push(line);
+      line = word;
+    }else{
+      line = test;
+    }
+  });
+  if(line) lines.push(line);
+  lines.forEach(function(l, i){ ctx.fillText(l, x, y + i * lineHeight); });
+  return lines.length * lineHeight;
+}
+function getAgentFromText(text){
+  var normalized = String(text || '').toUpperCase();
+  return ROSTER.filter(function(a){ return normalized.indexOf(a.name) === 0 || normalized.indexOf(a.name.replace('É','E')) === 0; })[0] || null;
+}
+function exportResponsesImage(){
+  var turns = Array.from(document.querySelectorAll('#out .turn'));
+  if(turns.length === 0){ flashError(I18N[LANG].errNoExport); return; }
+  var width = 1400;
+  var pad = 48;
+  var blocks = [];
+  var measure = document.createElement('canvas').getContext('2d');
+  measure.font = '24px Georgia';
+  turns.forEach(function(turn){
+    var items = Array.from(turn.querySelectorAll('.msg')).map(function(msg){
+      var title = (msg.querySelector('.msg-head') || msg).innerText.replace(/\s+/g,' ').trim();
+      var body = (msg.querySelector('.msg-body') || msg).innerText.replace(/\s+/g,' ').trim();
+      var agent = msg.classList.contains('question') ? null : getAgentFromText(title);
+      measure.font = msg.classList.contains('question') ? 'italic 24px Georgia' : '24px Georgia';
+      var bodyLines = Math.max(1, Math.ceil(measure.measureText(body).width / 980));
+      return { title:title, body:body, agent:agent, question:msg.classList.contains('question'), height:Math.max(96, 62 + bodyLines * 34) };
+    });
+    blocks.push({ items:items, height:items.reduce(function(sum, item){ return sum + item.height + 18; }, 26) });
+  });
+  var height = pad * 2 + 86 + blocks.reduce(function(sum, block){ return sum + block.height + 26; }, 0);
+  var canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = Math.min(16000, height);
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#f3efe6';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle = 'rgba(12,12,12,0.18)';
+  ctx.strokeRect(22,22,canvas.width-44,canvas.height-44);
+  ctx.fillStyle = '#b3141b';
+  ctx.font = '700 24px ui-monospace, Menlo, monospace';
+  ctx.fillText('LA MEUTE · REPONSES · v0.2', pad, pad + 8);
+  ctx.fillStyle = '#6f6a62';
+  ctx.font = '18px ui-monospace, Menlo, monospace';
+  ctx.fillText(new Date().toLocaleString('fr-FR'), pad, pad + 40);
+  var y = pad + 86;
+  blocks.forEach(function(block){
+    ctx.strokeStyle = 'rgba(12,12,12,0.18)';
+    ctx.strokeRect(pad, y, width - pad * 2, block.height);
+    y += 18;
+    block.items.forEach(function(item){
+      ctx.fillStyle = item.question ? '#ebe6d9' : '#fffdf8';
+      ctx.fillRect(pad + 18, y, width - pad * 2 - 36, item.height);
+      ctx.strokeStyle = item.question ? 'rgba(12,12,12,0.28)' : 'rgba(179,20,27,0.42)';
+      ctx.strokeRect(pad + 18, y, width - pad * 2 - 36, item.height);
+      ctx.fillStyle = item.question ? '#0c0c0c' : '#b3141b';
+      ctx.font = '700 20px ui-monospace, Menlo, monospace';
+      ctx.fillText(item.title || 'REPONSE', pad + 42, y + 34);
+      if(item.agent){
+        ctx.fillStyle = '#f3efe6';
+        ctx.fillRect(pad + 42, y + 46, 46, 46);
+        ctx.strokeStyle = 'rgba(12,12,12,0.20)';
+        ctx.strokeRect(pad + 42, y + 46, 46, 46);
+        ctx.fillStyle = '#b3141b';
+        ctx.font = '700 24px Georgia';
+        ctx.fillText(item.agent.name.charAt(0), pad + 57, y + 77);
+      }
+      ctx.fillStyle = '#2a2825';
+      ctx.font = item.question ? 'italic 24px Georgia' : '24px Georgia';
+      wrapCanvasText(ctx, item.body, pad + 112, y + 72, width - pad * 2 - 164, 34);
+      y += item.height + 18;
+    });
+    y += 8;
+  });
+  var link = document.createElement('a');
+  link.download = 'la-meute-reponses-v0.2.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+/* ---------------- wiring ---------------- */
+document.getElementById('segLang').addEventListener('click', function(e){
+  var b=e.target.closest('button'); if(!b) return; applyLang(b.getAttribute('data-v'));
+});
+document.getElementById('segMode').addEventListener('click', function(e){
+  var b=e.target.closest('button'); if(!b) return;
+  MODE=b.getAttribute('data-v');
+  document.querySelectorAll('#segMode button').forEach(function(x){ x.classList.toggle('on', x===b); });
+});
+document.getElementById('segInteraction').addEventListener('click', function(e){
+  var b=e.target.closest('button'); if(!b) return;
+  INTERACTION=b.getAttribute('data-v') === 'isolated' ? 'isolated' : 'together';
+  document.querySelectorAll('#segInteraction button').forEach(function(x){ x.classList.toggle('on', x===b); });
+});
+document.getElementById('invokeAll').addEventListener('click', function(){
+  if(selected.size===ROSTER.length) selected.clear();
+  else ROSTER.forEach(function(a){ selected.add(a.id); });
+  activeAgentId = Array.from(selected)[0] || null;
+  renderRoster(); updateCount();
+});
+document.getElementById('inspectAgent').addEventListener('click', function(){
+  if(activeAgentId) openAgentModal(activeAgentId);
+});
+document.getElementById('agentModalClose').addEventListener('click', closeAgentModal);
+document.getElementById('agentModal').addEventListener('click', function(e){
+  if(e.target === this) closeAgentModal();
+});
+document.getElementById('portraitLightboxClose').addEventListener('click', closePortraitLightbox);
+document.getElementById('portraitLightbox').addEventListener('click', function(e){
+  if(e.target === this) closePortraitLightbox();
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    if(document.getElementById('portraitLightbox').classList.contains('open')) closePortraitLightbox();
+    else closeAgentModal();
+  }
+});
+document.getElementById('clearBtn').addEventListener('click', function(){
+  document.getElementById('question').value=''; conversationMemory = []; currentTurnEl = null; clearOutput(); if(!busy) setStatus('ready');
+});
+document.getElementById('exportBtn').addEventListener('click', exportResponsesImage);
+document.getElementById('askBtn').addEventListener('click', ask);
+var questionEl = document.getElementById('question');
+function submitOnEnter(e){
+  var isEnter = e.key === 'Enter' || e.code === 'Enter' || e.code === 'NumpadEnter' || e.keyCode === 13;
+  if(isEnter && !e.shiftKey && !e.isComposing){
+    e.preventDefault();
+    e.stopPropagation();
+    ask();
+    return false;
+  }
+}
+questionEl.addEventListener('keydown', submitOnEnter, true);
+questionEl.addEventListener('keypress', submitOnEnter, true);
+
+/* ---------------- init ---------------- */
+renderRoster(); updateCount(); applyLang('fr'); clearOutput();
+</script>
+
+
+
+<div id="give-freely-root-camppjleccjaphfdbohjdohecfnoikec" class="give-freely-root" data-extension-id="camppjleccjaphfdbohjdohecfnoikec" data-extension-name="Merlin AI" style="display: block;"><template shadowrootmode="open"><style>
+  :host {
+    all: initial;
+  }
+
+  .gf-scroll-remove::-webkit-scrollbar {
+    border-radius-bottom-right: 15px;
+  }
+
+  button {
+    cursor: pointer;
+    transition: transform 0.1s ease;
+  }
+
+  button:active {
+    transform: scale(0.98);
+  }
+
+  .give-freely-close-button:hover {
+    opacity: 0.7;
+  }
+
+  input[type="radio"] {
+    margin-right: 8px;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid #e5e5e5;
+    margin: 1em 0;
+  }
+
+  dialog::backdrop  {
+    background-color: rgba(180, 180, 180, 0.6);
+  }
+
+  dialog.backdrop-hidden::backdrop  {
+    background-color: transparent;
+  }
+</style><div><div class="gf-app"></div></div></template></div><div id="buffer-extension-hover-container" style="font-family: Roboto, sans-serif; display: none; position: absolute; z-index: 8675309; cursor: pointer; width: 67px; top: 254.5px; left: 1020.8px; opacity: 0.6;"><div id="buffer-extension-button-hover-container" style="position: relative; z-index: 8675309; width: 67px; height: 24px;"><span id="buffer-extension-hover-button" style="width: 67px; height: 24px; background-image: url(&quot;chrome-extension://noojglkidnpfjbincgijbaiedldjfbhh/buffer-hover-button.svg&quot;); background-size: 67px 24px; cursor: pointer; opacity: 0.9; display: block; position: relative; z-index: 8675309;"></span><div id="buffer-extension-button-menu" style="position: relative; z-index: 8675308; width: 140px; height: 94px; display: none; bottom: 94px; right: 75px;"><div style="font-size: 14px; width: 140px; display: block; cursor: pointer; padding: 0px 4px; color: rgb(61, 61, 61); line-height: 28px; background-color: rgba(255, 255, 255, 0.8); border-top-left-radius: 4px; border-top-right-radius: 4px; height: 4px;"></div><div id="buffer-extension-create" class="buffer-extension-hover-button" style="font-size: 14px; width: 140px; height: 28px; display: block; cursor: pointer; padding: 0px 4px; color: rgb(61, 61, 61); line-height: 28px;"><span>Create Post</span></div><div id="buffer-extension-save" class="buffer-extension-hover-button" style="font-size: 14px; width: 140px; height: 28px; display: block; cursor: pointer; padding: 0px 4px; color: rgb(61, 61, 61); line-height: 28px;"><span>Save Idea</span></div><div style="font-size: 14px; width: 140px; display: block; cursor: pointer; padding: 0px 4px; color: rgb(61, 61, 61); line-height: 28px; background-color: rgba(255, 255, 255, 0.8); border-bottom-right-radius: 4px; border-bottom-left-radius: 4px; height: 4px;"></div><style>.buffer-extension-hover-button { background-color:rgba(255, 255, 255, 0.8); } .buffer-extension-hover-button span { display:block; padding: 0 4px; border-radius: 4px 4px 4px 4px; -webkit-border-radius: 4px 4px 4px 4px; -moz-border-radius: 4px 4px 4px 4px; } .buffer-extension-hover-button:hover span { background-color:#F5F5F5; }</style></div></div></div><div id="buffer-extension-hover-container" style="font-family: Roboto, sans-serif; display: none; position: absolute; z-index: 8675309; cursor: pointer; width: 67px; top: 254.5px; left: 1020.8px; opacity: 0.6;"><div id="buffer-extension-button-hover-container" style="position: relative; z-index: 8675309; width: 67px; height: 24px;"><span id="buffer-extension-hover-button" style="width: 67px; height: 24px; background-image: url(&quot;chrome-extension://noojglkidnpfjbincgijbaiedldjfbhh/buffer-hover-button.svg&quot;); background-size: 67px 24px; cursor: pointer; opacity: 0.9; display: block; position: relative; z-index: 8675309;"></span><div id="buffer-extension-button-menu" style="position: relative; z-index: 8675308; width: 140px; height: 94px; display: none; bottom: 94px; right: 75px;"><div style="font-size: 14px; width: 140px; display: block; cursor: pointer; padding: 0px 4px; color: rgb(61, 61, 61); line-height: 28px; background-color: rgba(255, 255, 255, 0.8); border-top-left-radius: 4px; border-top-right-radius: 4px; height: 4px;"></div><div id="buffer-extension-create" class="buffer-extension-hover-button" style="font-size: 14px; width: 140px; height: 28px; display: block; cursor: pointer; padding: 0px 4px; color: rgb(61, 61, 61); line-height: 28px;"><span>Create Post</span></div><div id="buffer-extension-save" class="buffer-extension-hover-button" style="font-size: 14px; width: 140px; height: 28px; display: block; cursor: pointer; padding: 0px 4px; color: rgb(61, 61, 61); line-height: 28px;"><span>Save Idea</span></div><div style="font-size: 14px; width: 140px; display: block; cursor: pointer; padding: 0px 4px; color: rgb(61, 61, 61); line-height: 28px; background-color: rgba(255, 255, 255, 0.8); border-bottom-right-radius: 4px; border-bottom-left-radius: 4px; height: 4px;"></div><style>.buffer-extension-hover-button { background-color:rgba(255, 255, 255, 0.8); } .buffer-extension-hover-button span { display:block; padding: 0 4px; border-radius: 4px 4px 4px 4px; -webkit-border-radius: 4px 4px 4px 4px; -moz-border-radius: 4px 4px 4px 4px; } .buffer-extension-hover-button:hover span { background-color:#F5F5F5; }</style></div></div></div></body></html>

@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MadameGlitch CodersFX — Clone Demoscene Editor</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --panel: #12121a;
+      --panel-2: #1a1a25;
+      --border: #2a2a3a;
+      --fg: #e0e0f0;
+      --muted: #7a7a9a;
+      --accent: #ff2a6d;
+      --accent-2: #05d9e8;
+      --ok: #00ff9d;
+      --warn: #ffd700;
+      --font: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font); overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+
+    /* HEADER */
+    #header {
+      height: 44px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 12px; gap: 12px;
+    }
+    #header h1 { font-size: 14px; color: var(--accent); text-shadow: 0 0 8px var(--accent); margin: 0; }
+    .header-left, .header-right { display: flex; align-items: center; gap: 8px; }
+    .btn {
+      background: var(--panel-2); color: var(--fg); border: 1px solid var(--border); border-radius: 4px;
+      padding: 5px 10px; font-family: inherit; font-size: 11px; cursor: pointer; transition: all 0.15s;
+    }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn.primary { background: var(--accent); color: #000; border-color: var(--accent); font-weight: bold; }
+    .btn.primary:hover { background: #ff5a8d; }
+    .btn.accent2 { border-color: var(--accent-2); color: var(--accent-2); }
+    .btn.accent2:hover { background: rgba(5,217,232,0.1); }
+
+    /* MAIN */
+    #main { flex: 1; display: grid; grid-template-columns: 220px 1fr 1fr; grid-template-rows: 1fr 140px; overflow: hidden; }
+
+    /* SIDEBAR */
+    #sidebar {
+      grid-row: 1 / 3; background: var(--panel); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .sidebar-section { border-bottom: 1px solid var(--border); }
+    .sidebar-title {
+      padding: 8px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--muted); background: rgba(0,0,0,0.2);
+    }
+    .sidebar-content { padding: 6px; max-height: 200px; overflow-y: auto; }
+    .template-item, .asset-item {
+      padding: 6px 8px; margin: 3px 0; border-radius: 4px; font-size: 11px;
+      background: var(--panel-2); border: 1px solid var(--border); cursor: pointer;
+    }
+    .template-item:hover, .asset-item:hover { border-color: var(--accent-2); color: var(--accent-2); }
+
+    /* EDITOR */
+    #editor { display: flex; flex-direction: column; border-right: 1px solid var(--border); }
+    #editor-tabs {
+      display: flex; background: var(--panel); border-bottom: 1px solid var(--border);
+    }
+    .tab {
+      padding: 8px 16px; font-size: 11px; cursor: pointer; border-right: 1px solid var(--border);
+      color: var(--muted); background: var(--panel);
+    }
+    .tab.active { color: var(--fg); background: var(--panel-2); border-bottom: 2px solid var(--accent); }
+    .tab:hover { color: var(--fg); }
+    .editor-pane { flex: 1; display: none; }
+    .editor-pane.active { display: flex; }
+    textarea {
+      flex: 1; width: 100%; height: 100%; background: var(--panel-2); color: var(--fg);
+      border: none; outline: none; padding: 10px; font-family: var(--font); font-size: 12px; resize: none;
+      tab-size: 2;
+    }
+
+    /* PREVIEW */
+    #preview { display: flex; flex-direction: column; background: #000; }
+    #preview-bar {
+      height: 28px; background: var(--panel); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 11px;
+    }
+    #preview-frame { flex: 1; position: relative; }
+    #preview-frame iframe { width: 100%; height: 100%; border: none; background: #000; }
+
+    /* BOTTOM PANEL */
+    #bottom {
+      grid-column: 2 / 4; background: var(--panel); border-top: 1px solid var(--border);
+      display: flex; flex-direction: column;
+    }
+    #bottom-tabs { display: flex; background: var(--panel); border-bottom: 1px solid var(--border); }
+    #console-output {
+      flex: 1; overflow-y: auto; padding: 8px; font-size: 11px; color: var(--muted);
+      font-family: var(--font);
+    }
+    #console-output .log { color: var(--fg); }
+    #console-output .warn { color: var(--warn); }
+    #console-output .error { color: #ff4444; }
+    #console-output .info { color: var(--accent-2); }
+    #timeline-panel { flex: 1; display: none; padding: 8px; overflow-x: auto; }
+    #timeline-panel.active { display: block; }
+    #timeline-track {
+      height: 60px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 4px;
+      position: relative; min-width: 600px;
+    }
+    .timeline-marker {
+      position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); left: 0%;
+    }
+    .timeline-scene {
+      position: absolute; top: 8px; height: 44px; background: rgba(5,217,232,0.15);
+      border: 1px solid var(--accent-2); border-radius: 4px; font-size: 9px; padding: 4px;
+      color: var(--accent-2); overflow: hidden;
+    }
+
+    /* AUDIO */
+    #audio-viz {
+      display: flex; align-items: flex-end; gap: 2px; height: 24px; width: 80px;
+    }
+    .bar { flex: 1; background: var(--accent); min-height: 2px; border-radius: 1px; }
+
+    @media (max-width: 1100px) {
+      #main { grid-template-columns: 180px 1fr; grid-template-rows: 1fr 1fr 120px; }
+      #preview { grid-column: 2; grid-row: 2; }
+      #bottom { grid-column: 2; grid-row: 3; }
+      #sidebar { grid-row: 1 / 4; }
+    }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <div class="header-left">
+      <h1>🎛️ MadameGlitch CodersFX</h1>
+      <span style="color:var(--muted);font-size:11px">Clone Demoscene Editor</span>
+    </div>
+    <div class="header-right">
+      <button class="btn primary" id="btn-run">▶ Run</button>
+      <button class="btn" id="btn-audio">🎤 Audio OFF</button>
+      <button class="btn accent2" id="btn-export-html">⬇ HTML</button>
+      <button class="btn accent2" id="btn-export-json">⬇ JSON</button>
+      <button class="btn" id="btn-import-json">⬆ JSON</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" />
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Templates</div>
+        <div class="sidebar-content" id="templates">
+          <div class="template-item" data-template="cracktro">⚡ Cracktro</div>
+          <div class="template-item" data-template="intro">🌌 Intro</div>
+          <div class="template-item" data-template="demo">🎬 Demo</div>
+          <div class="template-item" data-template="plasma">🔥 Plasma</div>
+          <div class="template-item" data-template="starfield">✨ Starfield</div>
+          <div class="template-item" data-template="glitch">💥 Glitch</div>
+          <div class="template-item" data-template="rotozoomer">🌀 Rotozoomer</div>
+          <div class="template-item" data-template="sine">〰️ Sine Scroller</div>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Scenes</div>
+        <div class="sidebar-content" id="scenes">
+          <div class="asset-item" id="scene-main">main</div>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Audio Viz</div>
+        <div class="sidebar-content" style="display:flex;justify-content:center">
+          <div id="audio-viz"></div>
+        </div>
+      </div>
+      <div class="sidebar-section" style="flex:1;border:none">
+        <div class="sidebar-title">Status</div>
+        <div class="sidebar-content" style="font-size:10px;color:var(--muted)">
+          FPS: <span id="fps">0</span><br/>
+          Time: <span id="time">0.0</span>s
+        </div>
+      </div>
+    </div>
+
+    <div id="editor">
+      <div id="editor-tabs">
+        <div class="tab active" data-tab="html">HTML</div>
+        <div class="tab" data-tab="css">CSS</div>
+        <div class="tab" data-tab="js">JS</div>
+      </div>
+      <div class="editor-pane active" data-pane="html">
+        <textarea id="code-html" spellcheck="false"></textarea>
+      </div>
+      <div class="editor-pane" data-pane="css">
+        <textarea id="code-css" spellcheck="false"></textarea>
+      </div>
+      <div class="editor-pane" data-pane="js">
+        <textarea id="code-js" spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <div id="preview">
+      <div id="preview-bar">
+        <span>Preview</span>
+        <span id="preview-size">-- x --</span>
+      </div>
+      <div id="preview-frame"><iframe id="preview-iframe" sandbox="allow-scripts allow-same-origin"></iframe></div>
+    </div>
+
+    <div id="bottom">
+      <div id="bottom-tabs">
+        <div class="tab active" data-bottom="console">Console</div>
+        <div class="tab" data-bottom="timeline">Timeline</div>
+      </div>
+      <div id="console-output"></div>
+      <div id="timeline-panel">
+        <div id="timeline-track">
+          <div class="timeline-marker" id="timeline-marker"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // MADAMEGLITCH CODERSFX CLONE
+    // Éditeur demoscene 3 panneaux : HTML / CSS / JS + preview live.
+    // ============================================================
+
+    const TEMPLATES = {
+      cracktro: {
+        html: `<div id="screen">
+  <div class="logo">MADAMEGLITCH</div>
+  <div class="scroller">*** CRACKTRO *** PRESS SPACE TO GLITCH *** CODED IN 2026 ***</div>
+</div>`,
+        css: `body { margin:0; background:#000; color:#0f0; font-family:monospace; overflow:hidden; }
+#screen { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; }
+.logo { font-size:48px; text-shadow:0 0 20px #0f0; animation:pulse 1s infinite alternate; }
+.scroller { position:absolute; bottom:40px; white-space:nowrap; animation:scroll 6s linear infinite; font-size:18px; }
+@keyframes pulse { from { opacity:0.7; } to { opacity:1; text-shadow:0 0 40px #f0f; color:#f0f; } }
+@keyframes scroll { from { transform:translateX(100vw); } to { transform:translateX(-100%); } }`,
+        js: `document.addEventListener('keydown', e => {
+  if (e.code === 'Space') document.body.style.background = '#'+Math.floor(Math.random()*16777215).toString(16);
+});
+console.log('Cracktro loaded');`
+      },
+      intro: {
+        html: `<canvas id="c"></canvas>
+<div class="title">INTRO</div>`,
+        css: `body { margin:0; background:#050510; overflow:hidden; }
+canvas { display:block; }
+.title { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:64px; color:#fff; mix-blend-mode:difference; font-family:monospace; }`,
+        js: `const c=document.getElementById('c'), x=c.getContext('2d');
+let w,h,t=0;
+function resize(){w=c.width=innerWidth;h=c.height=innerHeight;} resize(); addEventListener('resize',resize);
+function loop(){
+  t+=0.01; x.fillStyle='rgba(5,5,16,0.2)'; x.fillRect(0,0,w,h);
+  for(let i=0;i<100;i++){
+    const a=t+i*0.1, r=100+Math.sin(t+i*0.05)*80;
+    x.fillStyle='hsl('+(t*50+i)+',80%,60%)';
+    x.fillRect(w/2+Math.cos(a)*r, h/2+Math.sin(a)*r, 3, 3);
+  }
+  requestAnimationFrame(loop);
+} loop();`
+      },
+      demo: {
+        html: `<canvas id="c"></canvas>
+<div id="info">DEMO SCENE 1 / 3</div>`,
+        css: `body { margin:0; background:#000; overflow:hidden; }
+canvas { display:block; }
+#info { position:absolute; top:10px; left:10px; color:#0ff; font-family:monospace; font-size:12px; }`,
+        js: `const c=document.getElementById('c'), x=c.getContext('2d');
+let w,h,t=0; function resize(){w=c.width=innerWidth;h=c.height=innerHeight;} resize();
+function loop(){
+  t+=0.02; x.fillStyle='#000'; x.fillRect(0,0,w,h);
+  for(let y=0;y<h;y+=8){
+    const off=Math.sin(y*0.02+t)*50+Math.sin(t*3)*20;
+    x.fillStyle='hsl('+((y+t*100)%360)+',70%,50%)';
+    x.fillRect(w/2+off-100,y,200,4);
+  }
+  requestAnimationFrame(loop);
+} loop();`
+      },
+      plasma: {
+        html: `<canvas id="c"></canvas>`,
+        css: `body { margin:0; background:#000; overflow:hidden; }
+canvas { display:block; }`,
+        js: `const c=document.getElementById('c'), x=c.getContext('2d');
+let w,h,t=0, img; function resize(){w=c.width=innerWidth;h=c.height=innerHeight; img=x.createImageData(w,h);} resize(); addEventListener('resize',resize);
+function loop(){
+  t+=0.05; const d=img.data;
+  for(let y=0;y<h;y++){
+    for(let xx=0;xx<w;xx++){
+      const v=Math.sin(xx*0.01+t)+Math.sin(y*0.01+t*1.3)+Math.sin((xx+y)*0.005+t*0.7);
+      const idx=(y*w+xx)*4; const col=(v/3+0.5)*255;
+      d[idx]=col*1.2; d[idx+1]=col*0.4; d[idx+2]=col*0.9; d[idx+3]=255;
+    }
+  }
+  x.putImageData(img,0,0); requestAnimationFrame(loop);
+} loop();`
+      },
+      starfield: {
+        html: `<canvas id="c"></canvas>`,
+        css: `body { margin:0; background:#000; overflow:hidden; }
+canvas { display:block; }`,
+        js: `const c=document.getElementById('c'), x=c.getContext('2d');
+let w,h,stars=[]; function resize(){w=c.width=innerWidth;h=c.height=innerHeight; stars=Array(400).fill().map(()=>({x:Math.random()*w,y:Math.random()*h,z:Math.random()*2+0.1}));} resize(); addEventListener('resize',resize);
+function loop(){
+  x.fillStyle='rgba(0,0,0,0.3)'; x.fillRect(0,0,w,h);
+  stars.forEach(s=>{ s.x-=s.z; if(s.x<0){s.x=w;s.y=Math.random()*h;} const size=s.z; x.fillStyle='#fff'; x.fillRect(s.x,s.y,size,size); });
+  requestAnimationFrame(loop);
+} loop();`
+      },
+      glitch: {
+        html: `<canvas id="c"></canvas>`,
+        css: `body { margin:0; background:#000; overflow:hidden; }
+canvas { display:block; }`,
+        js: `const c=document.getElementById('c'), x=c.getContext('2d');
+let w,h,t=0; function resize(){w=c.width=innerWidth;h=c.height=innerHeight;} resize(); addEventListener('resize',resize);
+function loop(){
+  t+=0.05; x.fillStyle='#000'; x.fillRect(0,0,w,h);
+  for(let i=0;i<50;i++){
+    const y=Math.random()*h, h2=Math.random()*40+2;
+    x.fillStyle='hsl('+Math.random()*360+',80%,60%)';
+    x.fillRect(Math.sin(t+i)*w*0.3+w/2, y, Math.random()*w*0.5, h2);
+  }
+  requestAnimationFrame(loop);
+} loop();`
+      },
+      rotozoomer: {
+        html: `<canvas id="c"></canvas>`,
+        css: `body { margin:0; background:#000; overflow:hidden; }
+canvas { display:block; }`,
+        js: `const c=document.getElementById('c'), x=c.getContext('2d');
+let w,h,t=0; function resize(){w=c.width=innerWidth;h=c.height=innerHeight;} resize(); addEventListener('resize',resize);
+function loop(){
+  t+=0.02; x.fillStyle='#000'; x.fillRect(0,0,w,h);
+  const s=20+Math.sin(t)*10;
+  for(let y=-10;y<h/s+10;y++){
+    for(let xx=-10;xx<w/s+10;xx++){
+      const cx=xx*w/s/h, cy=y*h/s/w;
+      const a=t+xx*0.1+y*0.1;
+      const col=(Math.floor(xx^y)+Math.floor(t*2))%2;
+      x.fillStyle=col?'#f0f':'#000';
+      const rx=w/2+(xx*w/s-h/2)*Math.cos(a)-(y*h/s-w/2)*Math.sin(a);
+      const ry=h/2+(xx*w/s-h/2)*Math.sin(a)+(y*h/s-w/2)*Math.cos(a);
+      x.fillRect(rx,ry,s,s);
+    }
+  }
+  requestAnimationFrame(loop);
+} loop();`
+      },
+      sine: {
+        html: `<canvas id="c"></canvas>`,
+        css: `body { margin:0; background:#001; overflow:hidden; }
+canvas { display:block; }`,
+        js: `const c=document.getElementById('c'), x=c.getContext('2d');
+let w,h,t=0, text='MADAMEGLITCH SINE SCROLLER - HELLO DEMOSCENE - '; function resize(){w=c.width=innerWidth;h=c.height=innerHeight;} resize(); addEventListener('resize',resize);
+function loop(){
+  t+=0.03; x.fillStyle='#001'; x.fillRect(0,0,w,h);
+  x.font='bold 32px monospace'; x.fillStyle='#0f0';
+  for(let i=0;i<text.length;i++){
+    const px=(i*28-t*60)% (w+400) - 200;
+    const py=h/2+Math.sin(px*0.02+t)*40;
+    x.fillText(text[i], px, py);
+  }
+  requestAnimationFrame(loop);
+} loop();`
+      }
+    };
+
+    const els = {
+      html: document.getElementById('code-html'),
+      css: document.getElementById('code-css'),
+      js: document.getElementById('code-js'),
+      iframe: document.getElementById('preview-iframe'),
+      console: document.getElementById('console-output'),
+      fps: document.getElementById('fps'),
+      time: document.getElementById('time'),
+      audioViz: document.getElementById('audio-viz'),
+      previewSize: document.getElementById('preview-size')
+    };
+
+    let audioCtx, analyser, dataArray, micStream, audioEnabled = false;
+    let startTime = performance.now();
+
+    function log(msg, type='info') {
+      const div = document.createElement('div'); div.className = type; div.textContent = `[${type.toUpperCase()}] ${msg}`;
+      els.console.appendChild(div); els.console.scrollTop = els.console.scrollHeight;
+    }
+
+    function updatePreview() {
+      const html = els.html.value;
+      const css = els.css.value;
+      const js = els.js.value;
+      const consoleHook = `<script>
+        window.addEventListener('error', e => parent.postMessage({type:'console', level:'error', msg:e.message}, '*'));
+        const originalLog = console.log, originalWarn = console.warn, originalError = console.error;
+        console.log = (...a) => { originalLog(...a); parent.postMessage({type:'console', level:'log', msg:a.join(' ')}, '*'); };
+        console.warn = (...a) => { originalWarn(...a); parent.postMessage({type:'console', level:'warn', msg:a.join(' ')}, '*'); };
+        console.error = (...a) => { originalError(...a); parent.postMessage({type:'console', level:'error', msg:a.join(' ')}, '*'); };
+      <\/script>`;
+      const full = `<!DOCTYPE html><html><head><style>${css}</style></head><body>${html}${consoleHook}<script>${js}<\/script></body></html>`;
+      els.iframe.srcdoc = full;
+      log('Preview updated');
+    }
+
+    function loadTemplate(name) {
+      const t = TEMPLATES[name];
+      if (!t) return;
+      els.html.value = t.html; els.css.value = t.css; els.js.value = t.js;
+      updatePreview();
+      log(`Template loaded: ${name}`);
+    }
+
+    async function toggleAudio() {
+      const btn = document.getElementById('btn-audio');
+      if (!audioEnabled) {
+        try {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          analyser = audioCtx.createAnalyser(); analyser.fftSize = 64;
+          dataArray = new Uint8Array(analyser.frequencyBinCount);
+          micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const src = audioCtx.createMediaStreamSource(micStream);
+          src.connect(analyser);
+          audioEnabled = true; btn.textContent = '🎤 Audio ON';
+          log('Microphone enabled'); renderAudioViz();
+        } catch (e) { log('Microphone error: ' + e.message, 'error'); }
+      } else {
+        if (micStream) micStream.getTracks().forEach(t => t.stop());
+        if (audioCtx) audioCtx.close();
+        audioEnabled = false; btn.textContent = '🎤 Audio OFF';
+        els.audioViz.innerHTML = ''; log('Microphone disabled');
+      }
+    }
+
+    function renderAudioViz() {
+      if (!audioEnabled) return;
+      analyser.getByteFrequencyData(dataArray);
+      els.audioViz.innerHTML = '';
+      for (let i = 0; i < 12; i++) {
+        const v = dataArray[Math.floor(i * dataArray.length / 12)] / 255;
+        const bar = document.createElement('div'); bar.className = 'bar'; bar.style.height = Math.max(2, v * 24) + 'px';
+        els.audioViz.appendChild(bar);
+      }
+      requestAnimationFrame(renderAudioViz);
+    }
+
+    function exportHTML() {
+      const blob = new Blob([els.iframe.srcdoc], { type: 'text/html' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = 'madameglitch-codersfx-scene.html'; a.click();
+      log('Exported HTML standalone');
+    }
+
+    function exportJSON() {
+      const data = { html: els.html.value, css: els.css.value, js: els.js.value, version: 'codersfx-clone-v1' };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = 'madameglitch-codersfx-project.json'; a.click();
+      log('Exported JSON project');
+    }
+
+    function importJSON(file) {
+      const r = new FileReader();
+      r.onload = e => {
+        try {
+          const data = JSON.parse(e.target.result);
+          els.html.value = data.html || ''; els.css.value = data.css || ''; els.js.value = data.js || '';
+          updatePreview(); log('Project imported');
+        } catch (err) { log('Invalid JSON: ' + err.message, 'error'); }
+      };
+      r.readAsText(file);
+    }
+
+    // Tabs
+    document.querySelectorAll('#editor-tabs .tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('#editor-tabs .tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.editor-pane').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active'); document.querySelector(`.editor-pane[data-pane="${tab.dataset.tab}"]`).classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('#bottom-tabs .tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('#bottom-tabs .tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const isTimeline = tab.dataset.bottom === 'timeline';
+        document.getElementById('console-output').style.display = isTimeline ? 'none' : 'flex';
+        document.getElementById('timeline-panel').classList.toggle('active', isTimeline);
+      });
+    });
+
+    // Templates
+    document.querySelectorAll('.template-item').forEach(item => {
+      item.addEventListener('click', () => loadTemplate(item.dataset.template));
+    });
+
+    // Buttons
+    document.getElementById('btn-run').addEventListener('click', updatePreview);
+    document.getElementById('btn-audio').addEventListener('click', toggleAudio);
+    document.getElementById('btn-export-html').addEventListener('click', exportHTML);
+    document.getElementById('btn-export-json').addEventListener('click', exportJSON);
+    document.getElementById('btn-import-json').addEventListener('click', () => document.getElementById('import-file').click());
+    document.getElementById('import-file').addEventListener('change', e => { if (e.target.files[0]) importJSON(e.target.files[0]); });
+
+    // Console messages from iframe
+    window.addEventListener('message', e => {
+      if (e.data && e.data.type === 'console') log(e.data.msg, e.data.level);
+    });
+
+    // Stats
+    let last = performance.now(), frames = 0;
+    function updateStats() {
+      const now = performance.now(); frames++;
+      if (now - last >= 1000) { els.fps.textContent = frames; frames = 0; last = now; }
+      els.time.textContent = ((now - startTime) / 1000).toFixed(1);
+      const rect = els.iframe.getBoundingClientRect();
+      els.previewSize.textContent = `${Math.round(rect.width)} x ${Math.round(rect.height)}`;
+      requestAnimationFrame(updateStats);
+    }
+    updateStats();
+
+    // Timeline marker animation
+    let tlTime = 0;
+    function animateTimeline() {
+      tlTime = (tlTime + 0.2) % 100;
+      document.getElementById('timeline-marker').style.left = tlTime + '%';
+      requestAnimationFrame(animateTimeline);
+    }
+    animateTimeline();
+
+    // Init
+    loadTemplate('cracktro');
+    log('CodersFX Clone ready');
+  </script>
+</body>
+</html>

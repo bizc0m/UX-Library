@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mirae Dashboard</title>
+  <style>
+    :root {
+      --bg: #f3f5f6;
+      --surface: #ffffff;
+      --surface-2: #e9eef0;
+      --ink: #182022;
+      --muted: #657174;
+      --line: #cfd8da;
+      --accent: #08746d;
+      --accent-2: #dff4f1;
+      --red: #b33b35;
+      --red-bg: #ffeceb;
+      --amber: #996300;
+      --amber-bg: #fff4dd;
+      --green: #236b3a;
+      --green-bg: #eaf6ee;
+      --blue: #2f5f8f;
+      --blue-bg: #eaf1fb;
+      --shadow: 0 14px 34px rgba(31, 50, 55, .08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 14px/1.45 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+    a { color: inherit; text-decoration: none; }
+    a:hover { color: var(--accent); }
+    button, input {
+      font: inherit;
+      letter-spacing: 0;
+    }
+    .app {
+      min-height: 100dvh;
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+    }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100dvh;
+      padding: 22px 16px;
+      border-right: 1px solid var(--line);
+      background: #fbfcfc;
+      overflow: auto;
+    }
+    .brand {
+      padding: 0 8px 18px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 18px;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 23px;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+    .brand p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .nav-title {
+      margin: 18px 8px 8px;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+    .nav-link, .filter-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      padding: 9px 10px;
+      color: var(--ink);
+      cursor: pointer;
+      text-align: left;
+    }
+    .nav-link:hover, .filter-btn:hover, .filter-btn.active {
+      background: var(--surface-2);
+      color: var(--ink);
+    }
+    .filter-btn.active {
+      border-color: #b8c7ca;
+      font-weight: 750;
+    }
+    .count {
+      min-width: 22px;
+      height: 22px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 12px;
+      border: 1px solid var(--line);
+    }
+    main {
+      min-width: 0;
+      padding: 24px;
+    }
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 330px;
+      gap: 16px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+    .hero {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+    .hero h2 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+    .hero p {
+      margin: 10px 0 0;
+      max-width: 78ch;
+      color: var(--muted);
+    }
+    .searchbox {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .searchbox label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 750;
+      text-transform: uppercase;
+    }
+    .searchbox input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 11px 12px;
+      outline: none;
+      background: #fbfcfc;
+    }
+    .searchbox input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-2);
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .metric {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      min-height: 112px;
+    }
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+    .metric strong {
+      display: block;
+      margin-top: 12px;
+      font-size: 30px;
+      line-height: 1;
+    }
+    .metric small {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+    }
+    .board {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfc;
+    }
+    .panel-head h2 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+    .panel-head p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 11px 12px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid var(--line);
+    }
+    th {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      background: #f6f8f8;
+    }
+    tbody tr:hover { background: #f8fbfb; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 24px;
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .ok { color: var(--green); background: var(--green-bg); }
+    .mid { color: var(--amber); background: var(--amber-bg); }
+    .risk { color: var(--red); background: var(--red-bg); }
+    .info { color: var(--blue); background: var(--blue-bg); }
+    .doc-grid {
+      padding: 14px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 10px;
+    }
+    .doc-card {
+      display: grid;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfcfc;
+      min-height: 118px;
+    }
+    .doc-card strong {
+      font-size: 14px;
+      line-height: 1.25;
+    }
+    .doc-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .doc-card .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-self: end;
+    }
+    .link-btn {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      padding: 7px 9px;
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .link-btn:hover {
+      border-color: var(--accent);
+      text-decoration: none;
+    }
+    .timeline {
+      padding: 14px 16px;
+      display: grid;
+      gap: 10px;
+    }
+    .stage {
+      border-left: 3px solid var(--line);
+      padding: 4px 0 4px 12px;
+    }
+    .stage.active { border-color: var(--accent); }
+    .stage strong { display: block; }
+    .stage span { color: var(--muted); font-size: 12px; }
+    .risk-list {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+    .risk-item {
+      display: grid;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfcfc;
+    }
+    .risk-item header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border: 0;
+      padding: 0;
+      background: transparent;
+    }
+    .risk-item p { margin: 0; color: var(--muted); font-size: 13px; }
+    .citations {
+      padding: 14px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 10px;
+    }
+    .cite {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 11px;
+      background: #fbfcfc;
+    }
+    .cite code {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--accent);
+      font-weight: 800;
+    }
+    .cite p { margin: 0; color: var(--muted); font-size: 12px; }
+    .hidden { display: none !important; }
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      aside {
+        position: relative;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .topbar, .board { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 620px) {
+      main { padding: 14px; }
+      .metrics { grid-template-columns: 1fr; }
+      .panel { overflow-x: auto; }
+      th, td { min-width: 150px; }
+      .hero h2 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <h1>Mirae Dashboard</h1>
+        <p>Pilotage du dossier : salon, local, curation K-Hair, données, risques.</p>
+      </div>
+
+      <div class="nav-title">Navigation</div>
+      <a class="nav-link" href="#overview">Vue synthèse <span class="count">1</span></a>
+      <a class="nav-link" href="#entities">Entités <span class="count">8</span></a>
+      <a class="nav-link" href="#documents">Documents <span class="count">13</span></a>
+      <a class="nav-link" href="#pipeline">Étapes <span class="count">7</span></a>
+      <a class="nav-link" href="#risks">Risques <span class="count">5</span></a>
+      <a class="nav-link" href="#sources">Citations <span class="count">13</span></a>
+
+      <div class="nav-title">Filtre entités</div>
+      <button class="filter-btn active" type="button" data-filter="all">Toutes <span class="count">8</span></button>
+      <button class="filter-btn" type="button" data-filter="core">Cœur salon <span class="count">2</span></button>
+      <button class="filter-btn" type="button" data-filter="curation">Curation/K-Hair <span class="count">3</span></button>
+      <button class="filter-btn" type="button" data-filter="legal">Juridique <span class="count">1</span></button>
+      <button class="filter-btn" type="button" data-filter="market">Marché <span class="count">2</span></button>
+    </aside>
+
+    <main>
+      <section class="topbar" id="overview">
+        <div class="hero">
+          <h2>Tableau de bord Mirae</h2>
+          <p>Ce dashboard sépare les objets du dossier, rend les documents accessibles, rattache les décisions aux citations internes et montre les prochaines étapes sans mélanger salon, import, curation et juridique.</p>
+        </div>
+        <div class="searchbox">
+          <label for="search">Recherche rapide</label>
+          <input id="search" type="search" placeholder="Ex. Bergues, K-Hair, conformité, By Mirae">
+          <p class="meta">Filtre les entités et documents visibles.</p>
+        </div>
+      </section>
+
+      <section class="metrics" aria-label="Indicateurs">
+        <div class="metric">
+          <span>Fichiers utiles</span>
+          <strong>119</strong>
+          <small>hors métadonnées Mac</small>
+        </div>
+        <div class="metric">
+          <span>Citations</span>
+          <strong>13</strong>
+          <small>documents reliés</small>
+        </div>
+        <div class="metric">
+          <span>Dette emails</span>
+          <strong>279</strong>
+          <small>sur 299 entités</small>
+        </div>
+        <div class="metric">
+          <span>Priorité</span>
+          <strong>3</strong>
+          <small>marques max à qualifier</small>
+        </div>
+      </section>
+
+      <div class="board">
+        <div>
+          <section class="panel" id="entities">
+            <div class="panel-head">
+              <div>
+                <h2>Entités normalisées</h2>
+                <p>Noms propres retenus et statut opérationnel.</p>
+              </div>
+              <span class="pill info" id="entityCount">8 visibles</span>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th>Type</th>
+                  <th>Statut</th>
+                  <th>Prochaine action</th>
+                </tr>
+              </thead>
+              <tbody id="entityRows">
+                <tr data-kind="core" data-search="mirae cha fondatrice coiffeuse preuves formations chiffres comptables">
+                  <td><strong>Mirae Cha</strong><br><span class="meta">ENT-001</span></td>
+                  <td>Personne</td>
+                  <td><span class="pill ok">Actif</span></td>
+                  <td>Consolider CV, preuves formations et chiffres comptables.</td>
+                </tr>
+                <tr data-kind="core" data-search="hair by mirae salon service geneve business plan rendez-vous">
+                  <td><strong>Hair by Mirae</strong><br><span class="meta">ENT-002</span></td>
+                  <td>Salon/service</td>
+                  <td><span class="pill ok">Cœur</span></td>
+                  <td>Séparer du projet By Mirae import/curation.</td>
+                </tr>
+                <tr data-kind="curation" data-search="by mirae maison curation seoul geneve import skincare objets culture">
+                  <td><strong>By Mirae</strong><br><span class="meta">ENT-003</span></td>
+                  <td>Maison de curation</td>
+                  <td><span class="pill mid">Concept</span></td>
+                  <td>Définir offre exacte : K-Hair, skincare, objets, B2B ou retail.</td>
+                </tr>
+                <tr data-kind="legal" data-search="les bergues coiffure local remise commerce bail convention etat lieux">
+                  <td><strong>Les Bergues Coiffure</strong><br><span class="meta">ENT-004</span></td>
+                  <td>Local/remise</td>
+                  <td><span class="pill mid">En cours</span></td>
+                  <td>Finaliser champs vides et version signée.</td>
+                </tr>
+                <tr data-kind="curation" data-search="k-hair suisse romande import distribution coiffure coreenne">
+                  <td><strong>K-Hair Suisse romande</strong><br><span class="meta">ENT-005</span></td>
+                  <td>Dossier marché</td>
+                  <td><span class="pill mid">Prospection</span></td>
+                  <td>Transformer en base actions avec preuves externes.</td>
+                </tr>
+                <tr data-kind="curation" data-search="k-hair seoul sources marques salons influence institutions coree">
+                  <td><strong>K-Hair Seoul</strong><br><span class="meta">ENT-006</span></td>
+                  <td>Corpus sources</td>
+                  <td><span class="pill info">Base</span></td>
+                  <td>Vérifier sources primaires et contacts nominatifs.</td>
+                </tr>
+                <tr data-kind="market" data-search="operating system v3 data quality action book watch protocol">
+                  <td><strong>K-Hair Operating System V3</strong><br><span class="meta">ENT-007</span></td>
+                  <td>Système pilotage</td>
+                  <td><span class="pill ok">Source active</span></td>
+                  <td>En faire la source of truth unique.</td>
+                </tr>
+                <tr data-kind="market" data-search="cadeaux entreprise suisse 2025 2026 coffrets premium k-beauty b2b">
+                  <td><strong>Cadeaux d’entreprise Suisse 2025-2026</strong><br><span class="meta">ENT-008</span></td>
+                  <td>Étude marché</td>
+                  <td><span class="pill mid">Secondaire</span></td>
+                  <td>Garder séparé tant que non validé commercialement.</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel" id="documents">
+            <div class="panel-head">
+              <div>
+                <h2>Documents</h2>
+                <p>Liens locaux vers les pièces inspectées.</p>
+              </div>
+              <a class="link-btn" href="mirae_index_cliquable_v1.html">Index complet</a>
+            </div>
+            <div class="doc-grid" id="docGrid">
+              <article class="doc-card" data-search="business plan hair by mirae locatif ca loyer bergues">
+                <strong>Hair by Mirae — Business plan locatif</strong>
+                <p>CA, loyer, seuil, prévision, positionnement salon.</p>
+                <div class="actions"><a class="link-btn" href="../work/mirae_readonly_extract_20260831_1/Mirae/MIRAE-BP-FINAL-2026-07.pdf">Ouvrir</a><a class="link-btn" href="#cit-001">CIT-001</a></div>
+              </article>
+              <article class="doc-card" data-search="convention remise commerce les bergues bail droit materiel">
+                <strong>Les Bergues — Convention remise commerce</strong>
+                <p>Droit au bail, matériel, exclusion clientèle, condition bailleur.</p>
+                <div class="actions"><a class="link-btn" href="../work/mirae_readonly_extract_20260831_1/Mirae/MIRAE%20-%20BERGUES/Convention_remise_commerce_Les_Bergues.docx">Ouvrir</a><a class="link-btn" href="#cit-002">CIT-002</a></div>
+              </article>
+              <article class="doc-card" data-search="etat lieux bergues sous location place travail">
+                <strong>Les Bergues — État des lieux entrée</strong>
+                <p>Place sous-louée, parties communes, photos.</p>
+                <div class="actions"><a class="link-btn" href="../work/mirae_readonly_extract_20260831_1/Mirae/MIRAE%20-%20BERGUES/Etat%20des%20lieux%206.12.2025-Light.pdf">Ouvrir</a><a class="link-btn" href="#cit-006">CIT-006</a></div>
+              </article>
+              <article class="doc-card" data-search="by mirae dossier collection k-hair marques conformite distribution">
+                <strong>By Mirae — Dossier collection K-Hair</strong>
+                <p>Shortlist, inconnues conformité, accès et curation.</p>
+                <div class="actions"><a class="link-btn" href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_premier_dossier_collection.md">Ouvrir</a><a class="link-btn" href="#cit-008">CIT-008</a></div>
+              </article>
+              <article class="doc-card" data-search="seoul action book marques institutions salons influence terrain">
+                <strong>Seoul Action Book V2</strong>
+                <p>Marques, institutions, salons, influence, protocole terrain.</p>
+                <div class="actions"><a class="link-btn" href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_v3/02_ACTION/SEOUL_ACTION_BOOK_V2.md">Ouvrir</a><a class="link-btn" href="#cit-010">CIT-010</a></div>
+              </article>
+              <article class="doc-card" data-search="data quality register emails manquants inconnus 299">
+                <strong>Data Quality Register V3</strong>
+                <p>Dette de données : emails, Instagram, LinkedIn, sites.</p>
+                <div class="actions"><a class="link-btn" href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_v3/01_DATA/DATA_QUALITY_REGISTER_V3.md">Ouvrir</a><a class="link-btn" href="#cit-011">CIT-011</a></div>
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <div>
+          <section class="panel" id="pipeline">
+            <div class="panel-head">
+              <div>
+                <h2>Étapes</h2>
+                <p>Chemin court vers dossier exploitable.</p>
+              </div>
+            </div>
+            <div class="timeline">
+              <div class="stage active"><strong>01 · Identité</strong><span>Hair by Mirae ≠ By Mirae.</span></div>
+              <div class="stage active"><strong>02 · Local</strong><span>Version Bergues finale, champs remplis.</span></div>
+              <div class="stage"><strong>03 · Finance</strong><span>Clarifier résultat, salaire, marge.</span></div>
+              <div class="stage"><strong>04 · K-Hair</strong><span>3 marques max à qualifier.</span></div>
+              <div class="stage"><strong>05 · Conformité</strong><span>DIP, sécurité, mandataire CH, étiquetage.</span></div>
+              <div class="stage"><strong>06 · Terrain Seoul</strong><span>Chaque visite produit preuve ou décision.</span></div>
+              <div class="stage"><strong>07 · Data</strong><span>Contacts et sources primaires.</span></div>
+            </div>
+          </section>
+
+          <section class="panel" id="risks">
+            <div class="panel-head">
+              <div>
+                <h2>Risques</h2>
+                <p>À traiter avant présentation externe.</p>
+              </div>
+            </div>
+            <div class="risk-list">
+              <article class="risk-item">
+                <header><strong>Positionnement mélangé</strong><span class="pill risk">P1</span></header>
+                <p>Salon, import K-Hair, skincare, objets et cadeaux B2B sont dans le même dossier.</p>
+              </article>
+              <article class="risk-item">
+                <header><strong>Conformité non prouvée</strong><span class="pill risk">P1</span></header>
+                <p>Aucune marque ne doit passer en GO sans dossier réglementaire.</p>
+              </article>
+              <article class="risk-item">
+                <header><strong>Versions juridiques</strong><span class="pill risk">P1</span></header>
+                <p>Convention Bergues en plusieurs copies, champs encore ouverts.</p>
+              </article>
+              <article class="risk-item">
+                <header><strong>Dette contacts</strong><span class="pill mid">P2</span></header>
+                <p>279 emails manquants ou inconnus sur 299 entités consolidées.</p>
+              </article>
+              <article class="risk-item">
+                <header><strong>Scoring avant preuve</strong><span class="pill mid">P2</span></header>
+                <p>Scores utiles pour trier, insuffisants pour décider.</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="panel" id="sources">
+            <div class="panel-head">
+              <div>
+                <h2>Citations</h2>
+                <p>Références internes exploitables.</p>
+              </div>
+            </div>
+            <div class="citations">
+              <a class="cite" id="cit-001" href="../work/mirae_readonly_extract_20260831_1/Mirae/MIRAE-BP-FINAL-2026-07.pdf"><code>CIT-001</code><p>Business plan Hair by Mirae.</p></a>
+              <a class="cite" id="cit-002" href="../work/mirae_readonly_extract_20260831_1/Mirae/MIRAE%20-%20BERGUES/Convention_remise_commerce_Les_Bergues.docx"><code>CIT-002</code><p>Convention remise commerce Bergues.</p></a>
+              <a class="cite" id="cit-003" href="../work/mirae_readonly_extract_20260831_1/Mirae/Hair%20by%20Mirae/Hair%20by%20Mirae%20%E2%80%94%20Private%20Hair%20Studio%20%C2%B7%20Geneva.html"><code>CIT-003</code><p>Site Hair by Mirae.</p></a>
+              <a class="cite" id="cit-004" href="../work/mirae_readonly_extract_20260831_1/Mirae/ByMirae_OK/BY%20MIRAE%20%E2%80%94%20Maison%20de%20Curation.html"><code>CIT-004</code><p>Maison de Curation.</p></a>
+              <a class="cite" id="cit-005" href="../work/mirae_readonly_extract_20260831_1/Mirae/Hair%20by%20Mirae/BY%20MIRAE%20%E2%80%94%20Soins%20core%CC%81ens%20d'exception%2C%20se%CC%81lectionne%CC%81s%20a%CC%80%20Gene%CC%80ve.html"><code>CIT-005</code><p>By Mirae soins coréens.</p></a>
+              <a class="cite" id="cit-006" href="../work/mirae_readonly_extract_20260831_1/Mirae/MIRAE%20-%20BERGUES/Etat%20des%20lieux%206.12.2025-Light.pdf"><code>CIT-006</code><p>État des lieux Bergues.</p></a>
+              <a class="cite" id="cit-007" href="../work/mirae_readonly_extract_20260831_1/Mirae/K-hair%20Suisse%20Romande%20-%20Documentation%20Import%20%26%20Distribution.html"><code>CIT-007</code><p>Documentation import K-Hair Suisse romande.</p></a>
+              <a class="cite" id="cit-008" href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_premier_dossier_collection.md"><code>CIT-008</code><p>Dossier collection K-Hair.</p></a>
+              <a class="cite" id="cit-009" href="../work/mirae_readonly_extract_20260831_1/Mirae/K-Hair%20Se%CC%81oul%20%E2%80%94%20Toutes%20les%20sources%20%28704%20URLs%29.md"><code>CIT-009</code><p>Sources 704 URLs.</p></a>
+              <a class="cite" id="cit-010" href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_v3/02_ACTION/SEOUL_ACTION_BOOK_V2.md"><code>CIT-010</code><p>Seoul Action Book V2.</p></a>
+              <a class="cite" id="cit-011" href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_v3/01_DATA/DATA_QUALITY_REGISTER_V3.md"><code>CIT-011</code><p>Data Quality Register V3.</p></a>
+              <a class="cite" id="cit-012" href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_v3/02_ACTION/ACTION_CONTROL_TOWER_V3.md"><code>CIT-012</code><p>Action Control Tower V3.</p></a>
+              <a class="cite" id="cit-013" href="../work/mirae_readonly_extract_20260831_1/Mirae/E%CC%81tude%20de%20marche%CC%81%20%E2%80%94%20Cadeaux%20d'entreprise%20en%20Suisse%202025-2026.md"><code>CIT-013</code><p>Étude cadeaux d’entreprise Suisse.</p></a>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const filterButtons = [...document.querySelectorAll('[data-filter]')];
+    const search = document.querySelector('#search');
+    const entityRows = [...document.querySelectorAll('#entityRows tr')];
+    const docCards = [...document.querySelectorAll('.doc-card')];
+    const entityCount = document.querySelector('#entityCount');
+    let activeFilter = 'all';
+
+    function normalize(value) {
+      return value.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+    }
+
+    function update() {
+      const query = normalize(search.value.trim());
+      let visibleEntities = 0;
+
+      entityRows.forEach(row => {
+        const kindMatch = activeFilter === 'all' || row.dataset.kind === activeFilter;
+        const text = normalize(row.innerText + ' ' + row.dataset.search);
+        const searchMatch = !query || text.includes(query);
+        const visible = kindMatch && searchMatch;
+        row.classList.toggle('hidden', !visible);
+        if (visible) visibleEntities += 1;
+      });
+
+      docCards.forEach(card => {
+        const text = normalize(card.innerText + ' ' + card.dataset.search);
+        card.classList.toggle('hidden', !!query && !text.includes(query));
+      });
+
+      entityCount.textContent = `${visibleEntities} visibles`;
+    }
+
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        activeFilter = button.dataset.filter;
+        filterButtons.forEach(item => item.classList.toggle('active', item === button));
+        update();
+      });
+    });
+    search.addEventListener('input', update);
+  </script>
+</body>
+</html>

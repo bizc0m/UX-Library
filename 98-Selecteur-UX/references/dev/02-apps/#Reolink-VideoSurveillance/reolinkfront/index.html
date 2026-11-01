@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reolink Mass Downloader</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Reolink Mass Downloader</h1>
+        </header>
+
+        <main>
+            <!-- Connection Form -->
+            <section class="connection-section">
+                <h2>Connexion à la caméra</h2>
+                <form id="connectionForm">
+                    <div class="form-group">
+                        <label for="cameraIP">IP de la caméra :</label>
+                        <input type="text" id="cameraIP" name="cameraIP" required value="192.168.1.42">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="port">Port HTTP :</label>
+                        <input type="number" id="port" name="port" required value="80">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="username">Nom d'utilisateur :</label>
+                        <input type="text" id="username" name="username" required value="admin">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Mot de passe :</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    
+                    <button type="submit" id="connectBtn">Se connecter</button>
+                    <button type="button" id="discoverBtn">Découvrir les caméras</button>
+                </form>
+                
+                <div id="connectionStatus"></div>
+                <div id="discoveryResults" style="margin-top: 15px; display: none;">
+                    <h3>Caméras découvertes :</h3>
+                    <div id="camerasList"></div>
+                </div>
+            </section>
+
+            <!-- Record Days -->
+            <section class="record-days-section" id="recordDaysSection" style="display: none;">
+                <h2>Jours d'enregistrements</h2>
+                <div id="calendarContainer">
+                    <div id="daysGrid"></div>
+                    <div style="margin-top: 20px;">
+                        <button id="selectAllBtn">Tout sélectionner</button>
+                        <button id="deselectAllBtn">Tout désélectionner</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Date Range Selection -->
+            <section class="date-range-section" id="dateRangeSection" style="display: none;">
+                <h2>Sélection de la période</h2>
+                <div id="dateRangesContainer">
+                    <!-- Date ranges will be added here dynamically -->
+                </div>
+                <button id="addDateRangeBtn">Ajouter une plage horaire</button>
+                <button id="listClipsBtn">Lister les clips</button>
+                
+                <div id="clipListSection" style="display: none; margin-top: 20px;">
+                    <h3>Clips disponibles</h3>
+                    <div id="clipsContainer">
+                        <!-- Clips will be displayed here -->
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button id="selectAllClipsBtn">Tout sélectionner</button>
+                        <button id="downloadBtn" disabled>Télécharger les clips sélectionnés</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Download Progress -->
+            <section class="progress-section" id="progressSection" style="display: none;">
+                <h2>Progression du téléchargement</h2>
+                <div id="progressContainer">
+                    <!-- Progress will be displayed here -->
+                </div>
+                <button id="resetBtn">Nouveau téléchargement</button>
+            </section>
+        </main>
+
+        <footer>
+            <p>Reolink Mass Downloader &copy; 2025</p>
+        </footer>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>

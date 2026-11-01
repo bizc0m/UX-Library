@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HexTales ✦</title>
+<style>
+:root{
+  --ink:#0d0a18;--ink2:#17132a;--ink3:#211b3a;
+  --parch:#f0e8d8;--parch2:#d8cdb8;
+  --gold:#c8922a;--gold2:#e8b84b;--gold3:#f8d878;
+  --teal:#2a9b8a;--rose:#c05568;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--ink);color:var(--parch);font-family:Georgia,'Times New Roman',serif;height:100vh;overflow:hidden;}
+
+header{
+  height:52px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;
+  background:linear-gradient(90deg,#0d0a18,#181230,#0d0a18);
+  border-bottom:1px solid rgba(200,146,42,0.25);
+  position:relative;z-index:100;flex-shrink:0;
+}
+header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold3),var(--gold),var(--gold3),transparent);}
+.brand{font-size:1.25rem;font-weight:700;letter-spacing:0.15em;
+  background:linear-gradient(135deg,var(--gold3),var(--gold),var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.brand sub{font-size:0.42em;letter-spacing:0.28em;-webkit-text-fill-color:rgba(200,146,42,0.55);}
+.nav{display:flex;gap:4px;}
+.np{background:rgba(255,255,255,0.04);border:1px solid rgba(200,146,42,0.18);
+  color:rgba(240,232,216,0.5);font-family:Georgia,serif;font-size:0.7rem;
+  letter-spacing:0.1em;padding:5px 13px;cursor:pointer;transition:all .2s;}
+.np:hover{border-color:var(--gold);color:var(--gold2);}
+.np.on{background:rgba(200,146,42,0.14);border-color:var(--gold);color:var(--gold3);}
+
+/* MAIN LAYOUT */
+.app{display:grid;grid-template-columns:220px 1fr 370px;height:calc(100vh - 52px);}
+.view{display:none;}.view.on{display:grid;}
+#v-coll.on,#v-rules.on{display:block;overflow-y:auto;padding:20px;grid-column:1/-1;}
+
+/* ── LEFT LIB ── */
+.lib{background:rgba(13,10,24,0.98);border-right:1px solid rgba(200,146,42,0.1);
+  display:flex;flex-direction:column;overflow:hidden;}
+.lib-h{padding:10px 13px 7px;font-size:0.6rem;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--gold);border-bottom:1px solid rgba(255,255,255,0.05);}
+.lib-s{margin:7px 9px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);
+  color:var(--parch);font-family:Georgia,serif;font-size:0.73rem;padding:6px 9px;outline:none;width:calc(100% - 18px);}
+.lib-s:focus{border-color:var(--gold);}
+.lib-f{display:flex;flex-wrap:wrap;gap:3px;padding:0 9px 7px;}
+.lf{background:none;border:1px solid rgba(255,255,255,0.07);color:rgba(240,232,216,0.38);
+  font-size:0.58rem;padding:2px 6px;cursor:pointer;transition:all .14s;}
+.lf:hover,.lf.on{color:var(--parch2);border-color:rgba(255,255,255,0.22);background:rgba(255,255,255,0.05);}
+.clist{flex:1;overflow-y:auto;padding:3px 5px;scrollbar-width:thin;scrollbar-color:rgba(200,146,42,0.18) transparent;}
+.cli{display:flex;align-items:center;gap:7px;padding:5px 7px;cursor:grab;
+  border:1px solid transparent;transition:all .14s;margin-bottom:2px;}
+.cli:hover{background:rgba(255,255,255,0.04);border-color:rgba(200,146,42,0.12);}
+.cli-ico{width:28px;height:32px;flex-shrink:0;overflow:hidden;}
+.cli-info{flex:1;min-width:0;}
+.cli-n{font-size:0.68rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cli-t{font-size:0.55rem;opacity:0.42;letter-spacing:0.1em;text-transform:uppercase;}
+.cli-d{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+
+/* ── BOARD ── */
+.board{position:relative;overflow:hidden;cursor:default;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 50%,rgba(35,25,65,0.45) 0%,transparent 70%),
+    repeating-linear-gradient(0deg,rgba(255,255,255,0.013) 0,transparent 1px,transparent 50px),
+    repeating-linear-gradient(90deg,rgba(255,255,255,0.013) 0,transparent 1px,transparent 50px),
+    var(--ink);}
+.canvas{position:absolute;width:5000px;height:5000px;left:0;top:0;transform-origin:0 0;}
+.zoom-ind{position:absolute;top:9px;right:9px;background:rgba(13,10,24,0.7);
+  border:1px solid rgba(255,255,255,0.07);border-radius:2px;padding:3px 7px;
+  font-size:0.6rem;color:rgba(240,232,216,0.3);pointer-events:none;}
+.bctrl{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  display:flex;gap:5px;z-index:100;background:rgba(13,10,24,0.9);
+  border:1px solid rgba(200,146,42,0.18);border-radius:3px;padding:6px 9px;backdrop-filter:blur(8px);}
+.bb{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);
+  color:var(--parch2);font-family:Georgia,serif;font-size:0.68rem;
+  padding:4px 11px;cursor:pointer;border-radius:2px;transition:all .14s;}
+.bb:hover{background:rgba(200,146,42,0.14);border-color:var(--gold);color:var(--gold3);}
+.bbs{width:1px;background:rgba(255,255,255,0.07);}
+
+/* ── HEX CARD (SVG) placed on board ── */
+/* W=260, H=300, pointy-top hex
+   Vertices: (130,0),(260,75),(260,225),(130,300),(0,225),(0,75)
+   Edge midpoints (side nodes):
+   0: edge(130,0)↔(260,75)   → (195,37)
+   1: edge(260,75)↔(260,225) → (260,150)
+   2: edge(260,225)↔(130,300)→ (195,262)
+   3: edge(130,300)↔(0,225)  → (65,262)
+   4: edge(0,225)↔(0,75)     → (0,150)
+   5: edge(0,75)↔(130,0)     → (65,37)
+*/
+.hcard{position:absolute;width:260px;height:300px;cursor:grab;z-index:2;
+  transition:filter .18s;}
+.hcard:hover{filter:drop-shadow(0 0 18px rgba(200,146,42,0.55));z-index:50;}
+.hcard.sel{filter:drop-shadow(0 0 26px rgba(200,146,42,0.85)) drop-shadow(0 0 8px rgba(248,216,120,0.6));z-index:60;}
+.hcard svg{width:260px;height:300px;overflow:visible;}
+
+/* Side node (on edge) — positioned via SVG foreignObject or absolute div overlay */
+.snode{
+  position:absolute;width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.6rem;font-weight:700;color:#fff;
+  border:2px solid rgba(0,0,0,0.55);
+  z-index:25;cursor:pointer;transition:transform .15s,box-shadow .15s;
+  box-shadow:0 2px 8px rgba(0,0,0,0.6);text-shadow:0 1px 3px rgba(0,0,0,0.9);
+}
+.snode:hover{transform:scale(1.55)!important;z-index:35;}
+
+/* Drop ghost hex */
+.dghex{position:absolute;width:260px;height:300px;cursor:pointer;z-index:1;}
+.dghex svg{width:260px;height:300px;overflow:visible;opacity:0.35;transition:opacity .2s;}
+.dghex:hover svg,.dghex.hl svg{opacity:0.75;}
+
+/* Connection line */
+.cline{position:absolute;height:3px;border-radius:2px;transform-origin:0 50%;
+  pointer-events:none;z-index:1;
+  background:linear-gradient(90deg,rgba(200,146,42,0.5),rgba(248,216,120,0.9),rgba(200,146,42,0.5));
+  box-shadow:0 0 10px rgba(200,146,42,0.35);}
+
+/* ── RIGHT STORY PANEL ── */
+.sp{background:rgba(13,10,24,0.98);border-left:1px solid rgba(200,146,42,0.1);
+  display:flex;flex-direction:column;overflow:hidden;}
+.sp-tabs{display:flex;border-bottom:1px solid rgba(200,146,42,0.1);flex-shrink:0;}
+.st{flex:1;padding:9px 6px;font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;
+  text-align:center;cursor:pointer;color:rgba(240,232,216,0.38);
+  border:none;border-bottom:2px solid transparent;background:none;
+  font-family:Georgia,serif;transition:all .18s;}
+.st:hover{color:var(--parch2);}
+.st.on{color:var(--gold3);border-bottom-color:var(--gold);}
+.sp-body{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(200,146,42,0.18) transparent;}
+.spsec{padding:13px 14px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.splbl{font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);
+  margin-bottom:9px;display:flex;align-items:center;gap:7px;}
+.splbl::after{content:'';flex:1;height:1px;background:rgba(200,146,42,0.16);}
+
+/* Story blocks */
+.sblk{margin-bottom:11px;padding:10px 12px;background:rgba(255,255,255,0.03);
+  border-radius:3px;border-left:3px solid var(--blk-c,rgba(200,146,42,0.4));}
+.sblk-h{font-size:0.55rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--blk-c,var(--gold));opacity:0.7;margin-bottom:4px;}
+.sblk-t{font-size:0.78rem;line-height:1.75;color:rgba(240,232,216,0.85);font-style:italic;}
+.conn-moment{margin-bottom:9px;padding:9px 11px;background:rgba(200,146,42,0.06);
+  border-radius:3px;border:1px solid rgba(200,146,42,0.18);}
+.cm-h{font-size:0.55rem;letter-spacing:0.14em;color:var(--gold2);text-transform:uppercase;margin-bottom:5px;}
+.cm-t{font-size:0.75rem;line-height:1.62;color:rgba(240,232,216,0.72);font-style:italic;}
+
+/* Possibilities */
+.poss-h{display:flex;gap:10px;align-items:flex-start;margin-bottom:11px;}
+.poss-thumb{width:60px;height:69px;flex-shrink:0;overflow:hidden;}
+.poss-meta{flex:1;min-width:0;}
+.poss-name{font-family:'Palatino Linotype',Palatino,Georgia,serif;font-size:0.88rem;
+  font-weight:700;color:var(--gold2);margin-bottom:2px;line-height:1.3;}
+.poss-type{font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;opacity:0.45;margin-bottom:5px;}
+.poss-desc{font-size:0.72rem;line-height:1.58;font-style:italic;
+  color:rgba(240,232,216,0.68);border-left:2px solid rgba(200,146,42,0.28);padding-left:7px;}
+.sa-list{display:flex;flex-direction:column;gap:4px;margin-bottom:11px;}
+.sa{display:flex;gap:8px;align-items:flex-start;background:rgba(255,255,255,0.04);
+  border-radius:2px;padding:8px 10px;border:1px solid rgba(255,255,255,0.04);
+  cursor:pointer;transition:all .14s;}
+.sa:hover{background:rgba(200,146,42,0.07);border-color:rgba(200,146,42,0.22);}
+.sa.act{background:rgba(200,146,42,0.11);border-color:rgba(200,146,42,0.38);}
+.sa-n{width:19px;height:19px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:0.55rem;font-weight:700;color:#fff;flex-shrink:0;margin-top:1px;}
+.sa-c{flex:1;min-width:0;}
+.sa-a{font-size:0.72rem;font-weight:700;color:rgba(240,232,216,0.9);margin-bottom:2px;}
+.sa-k{font-size:0.58rem;color:rgba(200,146,42,0.55);}
+.sa-h{font-size:0.64rem;font-style:italic;color:rgba(240,232,216,0.48);margin-top:3px;line-height:1.45;}
+
+/* Illus thumbs */
+.illus-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:4px;}
+.itm{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;}
+.itm-img{width:44px;height:51px;overflow:hidden;border:2px solid rgba(255,255,255,0.08);
+  transition:all .14s;}
+.itm:hover .itm-img{border-color:rgba(200,146,42,0.45);}
+.itm.sel .itm-img{border-color:var(--gold2);box-shadow:0 0 10px rgba(200,146,42,0.35);}
+.itm-n{font-size:0.5rem;color:rgba(240,232,216,0.38);text-align:center;}
+
+.sp-acts{display:flex;gap:5px;padding:10px 13px;flex-shrink:0;flex-wrap:wrap;
+  border-top:1px solid rgba(255,255,255,0.05);}
+.sab{background:rgba(200,146,42,0.11);border:1px solid rgba(200,146,42,0.32);
+  color:var(--gold2);font-family:Georgia,serif;font-size:0.68rem;
+  padding:6px 13px;cursor:pointer;border-radius:2px;transition:all .18s;letter-spacing:0.06em;}
+.sab:hover{background:rgba(200,146,42,0.22);border-color:var(--gold2);}
+.sab.g{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.09);color:rgba(240,232,216,0.48);}
+.sab.g:hover{border-color:rgba(255,255,255,0.22);color:var(--parch2);}
+
+/* empty state */
+.es{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:120px;gap:8px;opacity:0.3;}
+.es-i{font-size:2.2rem;}.es-t{font-size:0.75rem;text-align:center;line-height:1.55;max-width:180px;}
+
+/* tooltip */
+.tt{position:fixed;background:rgba(13,10,24,0.97);border:1px solid rgba(200,146,42,0.32);
+  border-radius:3px;padding:8px 12px;font-size:0.7rem;color:var(--parch);
+  pointer-events:none;z-index:9999;max-width:230px;line-height:1.5;display:none;
+  box-shadow:0 8px 28px rgba(0,0,0,0.6);}
+.tt-h{color:var(--gold2);font-weight:700;font-size:0.62rem;letter-spacing:0.1em;margin-bottom:3px;}
+.tt-c{color:var(--teal);font-size:0.6rem;margin-top:2px;}
+
+/* COLLECTION */
+.coll-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;
+  max-width:1400px;margin:14px auto 0;}
+.cc{background:rgba(20,16,38,0.9);border:1px solid rgba(200,146,42,0.1);
+  border-radius:6px;overflow:hidden;cursor:pointer;transition:all .22s;}
+.cc:hover{border-color:rgba(200,146,42,0.42);transform:translateY(-4px);box-shadow:0 14px 44px rgba(0,0,0,0.55);}
+.cc-art{height:130px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.cc-art svg{width:100%;height:100%;object-fit:cover;}
+.cc-info{padding:9px 11px;}
+.cc-n{font-family:'Palatino Linotype',Palatino,Georgia,serif;font-size:0.78rem;font-weight:700;color:var(--gold2);margin-bottom:2px;}
+.cc-m{display:flex;justify-content:space-between;align-items:center;margin-top:5px;}
+.cc-type{font-size:0.58rem;letter-spacing:0.14em;text-transform:uppercase;opacity:0.42;}
+.cc-rar{font-size:0.6rem;font-weight:700;}
+.page-t{font-family:'Palatino Linotype',Palatino,Georgia,serif;font-size:1.05rem;color:var(--gold2);
+  display:flex;align-items:center;gap:11px;max-width:1400px;margin:0 auto 10px;}
+.page-t::after{content:'';flex:1;height:1px;background:rgba(200,146,42,0.18);}
+.pf-row{display:flex;gap:5px;flex-wrap:wrap;max-width:1400px;margin:0 auto 16px;}
+.pf{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);
+  color:rgba(240,232,216,0.42);font-size:0.65rem;letter-spacing:0.09em;
+  padding:4px 11px;cursor:pointer;transition:all .14s;font-family:Georgia,serif;}
+.pf:hover,.pf.on{background:rgba(200,146,42,0.11);border-color:rgba(200,146,42,0.32);color:var(--gold2);}
+
+/* RULES */
+.rules-g{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:860px;margin:14px auto 0;}
+.rc{background:rgba(20,16,38,0.85);border:1px solid rgba(200,146,42,0.1);border-radius:4px;padding:14px 16px;}
+.rc-t{font-family:'Palatino Linotype',Palatino,Georgia,serif;font-size:0.85rem;font-weight:700;color:var(--gold2);margin-bottom:6px;}
+.rc-c{font-size:0.75rem;line-height:1.68;color:rgba(240,232,216,0.65);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">✦ HexTales <sub>Le Jeu des Histoires Vivantes</sub></div>
+  <nav class="nav">
+    <button class="np on"  onclick="showView('board',this)">⬡ Plateau</button>
+    <button class="np"     onclick="showView('coll',this)">🃏 Collection</button>
+    <button class="np"     onclick="showView('rules',this)">📜 Règles</button>
+  </nav>
+</header>
+
+<div class="app">
+
+<!-- ═══ BOARD VIEW ═══ -->
+<div id="v-board" class="view on">
+
+  <!-- Left lib -->
+  <div class="lib">
+    <div class="lib-h">✦ Bibliothèque</div>
+    <input class="lib-s" placeholder="Chercher…" oninput="filterLib(this.value)">
+    <div class="lib-f" id="libF"></div>
+    <div class="clist" id="clist"></div>
+  </div>
+
+  <!-- Board -->
+  <div class="board" id="board">
+    <div class="canvas" id="canvas"></div>
+    <div class="zoom-ind" id="zoomInd">100%</div>
+    <div class="bctrl">
+      <button class="bb" onclick="zI()">＋</button>
+      <button class="bb" onclick="zO()">－</button>
+      <button class="bb" onclick="resetV()">⌂</button>
+      <div class="bbs"></div>
+      <button class="bb" onclick="clearBoard()">🗑</button>
+      <button class="bb" onclick="autoArr()">✦ Ranger</button>
+      <div class="bbs"></div>
+      <button class="bb" onclick="buildStory()">📖 Histoire</button>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div class="sp">
+    <div class="sp-tabs">
+      <button class="st on"  onclick="spTab('story',this)">📖 Histoire</button>
+      <button class="st"     onclick="spTab('poss',this)">✦ Possibilités</button>
+      <button class="st"     onclick="spTab('illus',this)">🎨 Illustrateurs</button>
+    </div>
+    <div id="sp-story" class="sp-body">
+      <div class="spsec">
+        <div class="splbl">Fil narratif</div>
+        <div id="storyBlocks"><div class="es"><div class="es-i">📖</div><div class="es-t">Pose des cartes hexagonales sur le plateau. L'histoire se construit ici.</div></div></div>
+      </div>
+      <div class="spsec" id="connSec" style="display:none">
+        <div class="splbl">Moments de connexion</div>
+        <div id="connContent"></div>
+      </div>
+    </div>
+    <div id="sp-poss" class="sp-body" style="display:none">
+      <div class="spsec">
+        <div class="splbl">Carte sélectionnée</div>
+        <div id="possContent"><div class="es"><div class="es-i">👆</div><div class="es-t">Clique sur une carte pour voir ses possibilités narratives.</div></div></div>
+      </div>
+    </div>
+    <div id="sp-illus" class="sp-body" style="display:none">
+      <div class="spsec">
+        <div class="splbl">Versions illustrateurs</div>
+        <div id="illusContent"><div class="es"><div class="es-i">🎨</div><div class="es-t">Sélectionne une carte pour changer son style.</div></div></div>
+      </div>
+    </div>
+    <div class="sp-acts">
+      <button class="sab" onclick="buildStory()">✦ Rafraîchir</button>
+      <button class="sab g" onclick="copyStory()">📋 Copier</button>
+      <button class="sab g" onclick="shareStory()">🔗 Partager</button>
+    </div>
+  </div>
+</div><!-- end board view -->
+
+<!-- ═══ COLLECTION VIEW ═══ -->
+<div id="v-coll" class="view">
+  <div class="page-t">Collection — 85 Cartes Hexagonales</div>
+  <div class="pf-row" id="collF"></div>
+  <div class="coll-grid" id="collGrid"></div>
+</div>
+
+<!-- ═══ RULES VIEW ═══ -->
+<div id="v-rules" class="view">
+  <div class="page-t">📜 Règles du Jeu</div>
+  <div class="rules-g" id="rulesG"></div>
+</div>
+
+</div><!-- end .app -->
+
+<!-- Modal -->
+<div id="modal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.85);backdrop-filter:blur(7px);align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--ink2);border:1px solid rgba(200,146,42,0.28);border-radius:7px;max-width:620px;width:100%;padding:24px;position:relative;max-height:92vh;overflow-y:auto;animation:popIn .25s ease;">
+    <button onclick="closeModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(240,232,216,0.35);font-size:1.2rem;cursor:pointer;">✕</button>
+    <div id="modalC"></div>
+  </div>
+</div>
+@keyframes popIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+
+<div class="tt" id="tt"></div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// HEX GEOMETRY
+// W=260, H=300, pointy-top
+// ════════════════════════════════════════════════════════
+const HW=260, HH=300;
+// 6 vertices
+const VERTS=[
+  [HW/2, 0],          // top
+  [HW,   HH*0.25],    // top-right
+  [HW,   HH*0.75],    // bot-right
+  [HW/2, HH],         // bottom
+  [0,    HH*0.75],    // bot-left
+  [0,    HH*0.25],    // top-left
+];
+// 6 edge midpoints (side node positions)
+// Edge i = between VERTS[i] and VERTS[(i+1)%6]
+const EMIDS=VERTS.map((v,i)=>{
+  const n=VERTS[(i+1)%6];
+  return [(v[0]+n[0])/2,(v[1]+n[1])/2];
+});
+// EMIDS: 0=(195,37), 1=(260,150), 2=(195,262), 3=(65,262), 4=(0,150), 5=(65,37)
+const SIDE_LABELS=['Haut-Droite','Droite','Bas-Droite','Bas-Gauche','Gauche','Haut-Gauche'];
+const SIDE_SHORT=['HD','D','BD','BG','G','HG'];
+function oppSide(n){return(n+3)%6;}
+const POLY_PTS=VERTS.map(v=>v.join(',')).join(' ');
+// Inset polygon (~10px) for inner frame
+const C=[HW/2,HH/2];
+function insetPoly(d){
+  return VERTS.map(v=>{
+    const dx=C[0]-v[0],dy=C[1]-v[1],l=Math.sqrt(dx*dx+dy*dy);
+    return [v[0]+dx/l*d,v[1]+dy/l*d];
+  });
+}
+const INNER=insetPoly(10);
+const INNER_S=INNER.map(v=>v.join(',')).join(' ');
+const INNER2=insetPoly(16);
+const INNER2_S=INNER2.map(v=>v.join(',')).join(' ');
+
+// Neighbor directions (center-to-center offsets)
+const NBR=[
+  [0,        -HH*0.75],    // 0 top (connects to side 3 of neighbor)
+  [HW*0.875, -HH*0.375],  // 1 top-right
+  [HW*0.875,  HH*0.375],  // 2 bot-right
+  [0,         HH*0.75],   // 3 bottom
+  [-HW*0.875, HH*0.375],  // 4 bot-left
+  [-HW*0.875,-HH*0.375],  // 5 top-left
+];
+
+// ════════════════════════════════════════════════════════
+// COLOR HELPERS
+// ════════════════════════════════════════════════════════
+function hsv(h,s,v){
+  h=((h%360)+360)%360;s/=100;v/=100;
+  const c=v*s,x=c*(1-Math.abs((h/60)%2-1)),m=v-c;
+  let r,g,b;
+  if(h<60){r=c;g=x;b=0}else if(h<120){r=x;g=c;b=0}
+  else if(h<180){r=0;g=c;b=x}else if(h<240){r=0;g=x;b=c}
+  else if(h<300){r=x;g=0;b=c}else{r=c;g=0;b=x}
+  return `rgb(${Math.round((r+m)*255)},${Math.round((g+m)*255)},${Math.round((b+m)*255)})`;
+}
+function rnd(a){return a[Math.floor(Math.random()*a.length)];}
+function esc(s){return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;');}
+
+// ════════════════════════════════════════════════════════
+// CARD TYPES & RARITY
+// ════════════════════════════════════════════════════════
+const TYPES={
+  lieu:      {label:'Lieu',       bg:'#081e30',accent:'#4a9fd4',th:210},
+  personnage:{label:'Personnage', bg:'#180828',accent:'#a06fd8',th:270},
+  objet:     {label:'Objet',      bg:'#1e0d04',accent:'#d4843a',th:30},
+  emotion:   {label:'Émotion',    bg:'#1c060e',accent:'#d46880',th:340},
+  action:    {label:'Action',     bg:'#041408',accent:'#3ed47a',th:130},
+  creature:  {label:'Créature',   bg:'#0c1604',accent:'#8ccc42',th:100},
+  magie:     {label:'Magie',      bg:'#140620',accent:'#c060d8',th:285},
+  temps:     {label:'Temps',      bg:'#041018',accent:'#2abccc',th:185},
+  valeur:    {label:'Valeur',     bg:'#1c0e00',accent:'#f0a830',th:40},
+  mystere:   {label:'Mystère',    bg:'#04041c',accent:'#6070d8',th:240},
+};
+const RARITY={
+  common:   {label:'Commun',    color:'#8a9ab0',stars:'★',   gem:'#8a9ab0'},
+  uncommon: {label:'Peu commun',color:'#4caf75',stars:'★★',  gem:'#4caf75'},
+  rare:     {label:'Rare',      color:'#5b9ded',stars:'★★★', gem:'#5b9ded'},
+  epic:     {label:'Épique',    color:'#9b6fd4',stars:'★★★★',gem:'#9b6fd4'},
+  legendary:{label:'Légendaire',color:'#e8b84b',stars:'★×5', gem:'#e8b84b'},
+  mythic:   {label:'Mythique',  color:'#e87060',stars:'◆◆◆◆◆',gem:'#e87060'},
+};
+
+// ════════════════════════════════════════════════════════
+// ILLUSTRATIONS — 4 styles as SVG fill inside hex art zone
+// Art zone is roughly the middle portion of the hex
+// ════════════════════════════════════════════════════════
+const ILLUS=[
+  {id:'aqua',name:'Aquarelle',author:'@mireille_px'},
+  {id:'grav',name:'Gravure',  author:'@leotao_ink'},
+  {id:'naif',name:'Art Naïf', author:'@sunny_naive'},
+  {id:'encre',name:'Encre',   author:'@haiku_brush'},
+];
+
+function genArt(card,styleId,w,h){
+  const seed=card.id.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+  const si=ILLUS.findIndex(s=>s.id===styleId);
+  const s2=seed*137+si*31;
+  const ty=TYPES[card.type];
+  const th=ty.th;
+  const bg1=hsv(th,65,14+si*5),bg2=hsv(th+40,50,28+si*8);
+  const acc=hsv(th+180,68,72),acc2=hsv(th+120,55,62);
+  const cx=w/2,cy=h/2;
+  if(styleId==='aqua')  return artAqua(card,w,h,cx,cy,th,bg1,bg2,acc,seed,s2);
+  if(styleId==='grav')  return artGrav(card,w,h,cx,cy,th,bg1,bg2,acc,seed,s2);
+  if(styleId==='naif')  return artNaif(card,w,h,cx,cy,th,bg1,bg2,acc,acc2,seed,s2);
+  return artEncre(card,w,h,cx,cy,th,bg1,bg2,acc,seed,s2);
+}
+
+function artAqua(card,w,h,cx,cy,th,bg1,bg2,acc,seed,s2){
+  let blobs='';
+  for(let i=0;i<(seed%8)+5;i++){
+    const bx=w*(0.05+((seed*i*37+i*71)%85)/100);
+    const by=h*(0.04+((s2*i*19+i*53)%88)/100);
+    const br=Math.min(w,h)*(0.1+((seed*i*13)%25)/100);
+    blobs+=`<ellipse cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" rx="${br.toFixed(1)}" ry="${(br*0.78).toFixed(1)}" fill="${hsv((th+i*28)%360,48,58)}" opacity="${(0.25+((seed*i+7)%38)/100).toFixed(2)}" filter="url(#bl${card.id})"/>`;
+  }
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+  <defs><filter id="bl${card.id}"><feGaussianBlur stdDeviation="16"/></filter>
+  <radialGradient id="rg${card.id}" cx="42%" cy="38%"><stop offset="0%" stop-color="${bg2}"/><stop offset="100%" stop-color="${bg1}"/></radialGradient></defs>
+  <rect width="${w}" height="${h}" fill="url(#rg${card.id})"/>
+  ${blobs}
+  <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-size="${Math.min(w,h)*0.55}" filter="url(#bl${card.id})" opacity="0.35">${card.icon}</text>
+  <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-size="${Math.min(w,h)*0.52}">${card.icon}</text>
+</svg>`;
+}
+function artGrav(card,w,h,cx,cy,th,bg1,bg2,acc,seed,s2){
+  let hatch='';
+  for(let i=0;i<24;i++){const y=h*i/23;hatch+=`<line x1="0" y1="${y.toFixed(1)}" x2="${w}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,${(0.03+Math.sin(i/23*Math.PI)*0.08).toFixed(3)})" stroke-width="1.2"/>`;}
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+  <defs><linearGradient id="lg${card.id}" x1="0" y1="0" x2="0.4" y2="1"><stop offset="0%" stop-color="${bg1}"/><stop offset="100%" stop-color="${hsv(th+40,42,10)}"/></linearGradient></defs>
+  <rect width="${w}" height="${h}" fill="url(#lg${card.id})"/>
+  ${hatch}
+  <circle cx="${cx}" cy="${cy}" r="${Math.min(w,h)*0.32}" fill="none" stroke="${acc}" stroke-width="0.7" opacity="0.28"/>
+  <circle cx="${cx}" cy="${cy}" r="${Math.min(w,h)*0.21}" fill="${hsv(th+15,32,20)}" opacity="0.9"/>
+  <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-size="${Math.min(w,h)*0.44}">${card.icon}</text>
+</svg>`;
+}
+function artNaif(card,w,h,cx,cy,th,bg1,bg2,acc,acc2,seed,s2){
+  const cols=[hsv(th,52,65),hsv(th+55,58,70),hsv(th+110,48,62),hsv(th+165,60,58)];
+  let sh='';
+  for(let i=0;i<5;i++){
+    sh+=`<circle cx="${(w*(0.04+((seed*i*23+31)%88)/100)).toFixed(1)}" cy="${(h*(0.04+((s2*i*17+41)%88)/100)).toFixed(1)}" r="${(w*(0.05+((seed*i)%12)/100)).toFixed(1)}" fill="${cols[i%4]}" opacity="0.6"/>`;
+  }
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+  <rect width="${w}" height="${h}" fill="${hsv(th+12,32,18)}"/>
+  ${sh}
+  <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-size="${Math.min(w,h)*0.52}">${card.icon}</text>
+</svg>`;
+}
+function artEncre(card,w,h,cx,cy,th,bg1,bg2,acc,seed,s2){
+  let spl='';
+  for(let i=0;i<(seed%6)+3;i++){
+    const a=(s2*i*47)%360,r=Math.min(w,h)*(0.14+((seed*i)%20)/100);
+    spl+=`<path d="M${cx},${cy} Q${(cx+Math.cos((a+22)*Math.PI/180)*r*0.6).toFixed(1)},${(cy+Math.sin((a+22)*Math.PI/180)*r*0.6).toFixed(1)} ${(cx+Math.cos(a*Math.PI/180)*r).toFixed(1)},${(cy+Math.sin(a*Math.PI/180)*r).toFixed(1)}" stroke="${acc}" stroke-width="${(1+i%2*0.5).toFixed(1)}" fill="none" opacity="${(0.22+((seed*i+7)%35)/100).toFixed(2)}"/>`;
+  }
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+  <rect width="${w}" height="${h}" fill="${hsv(th,16,8)}"/>
+  ${spl}
+  <circle cx="${cx}" cy="${cy}" r="${Math.min(w,h)*0.28}" fill="none" stroke="${acc}" stroke-width="0.65" opacity="0.45" stroke-dasharray="5,4"/>
+  <circle cx="${cx}" cy="${cy}" r="${Math.min(w,h)*0.16}" fill="${hsv(th,24,15)}" opacity="0.95"/>
+  <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-size="${Math.min(w,h)*0.42}">${card.icon}</text>
+</svg>`;
+}
+
+// ════════════════════════════════════════════════════════
+// HEXAGONAL CARD SVG — MTG style inside hex shape
+// ════════════════════════════════════════════════════════
+function hexCardSVG(card, illusId, selected){
+  const ty=TYPES[card.type];
+  const rar=RARITY[card.rarity];
+  const art=genArt(card,illusId,HW,HH);
+  const il=ILLUS.find(i=>i.id===illusId)||ILLUS[0];
+
+  // Clip IDs
+  const cid=`clip-${card.id}-${illusId}`;
+  const icid=`iclip-${card.id}`;
+  const tcid=`tclip-${card.id}`;
+
+  // Frame gradient per rarity
+  const rarColor=rar.gem;
+
+  // Art zone: inner hex (inset 10px)
+  // Title zone: top strip inside hex (y: 50→80 area)
+  // Type line: y ~165-178
+  // Text box: y ~180-260
+  // Bottom: y ~270-285
+
+  // Text wrapping helper
+  function wrapText(txt, maxChars){
+    if(txt.length<=maxChars) return [txt];
+    const words=txt.split(' ');
+    const lines=[];let cur='';
+    words.forEach(w=>{
+      if((cur+' '+w).trim().length>maxChars){lines.push(cur.trim());cur=w;}
+      else cur=(cur+' '+w).trim();
+    });
+    if(cur) lines.push(cur.trim());
+    return lines;
+  }
+  const flavorLines=wrapText(card.flavor||card.desc,32);
+  const sideLines=card.sides.slice(0,3).map((s,i)=>`‹${i}› ${s.substring(0,22)}${s.length>22?'…':''}`);
+  const sideLines2=card.sides.slice(3).map((s,i)=>`‹${i+3}› ${s.substring(0,22)}${s.length>22?'…':''}`);
+
+  return `<svg width="${HW}" height="${HH}" viewBox="0 0 ${HW} ${HH}" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+  <defs>
+    <clipPath id="${cid}"><polygon points="${POLY_PTS}"/></clipPath>
+    <clipPath id="${icid}"><polygon points="${INNER_S}"/></clipPath>
+    <clipPath id="${tcid}"><polygon points="${INNER2_S}"/></clipPath>
+    <filter id="glow-${card.id}"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <radialGradient id="frame-${card.id}" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="${rarColor}" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="${rarColor}" stop-opacity="0.15"/>
+    </radialGradient>
+    <linearGradient id="fg-${card.id}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="${rarColor}"/>
+      <stop offset="40%" stop-color="#f8d878"/>
+      <stop offset="100%" stop-color="${rarColor}"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Outer glow if selected -->
+  ${selected?`<polygon points="${POLY_PTS}" fill="none" stroke="${rarColor}" stroke-width="6" opacity="0.7" filter="url(#glow-${card.id})"/>`:''}
+
+  <!-- Frame outer (rarity color) -->
+  <polygon points="${POLY_PTS}" fill="url(#fg-${card.id})" stroke="${rarColor}" stroke-width="2.5"/>
+
+  <!-- Frame inner border -->
+  <polygon points="${INNER_S}" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+
+  <!-- Dark background (type color) -->
+  <polygon points="${INNER_S}" fill="${ty.bg}" clip-path="url(#${cid})"/>
+
+  <!-- ART — full hex art zone, masked to inner hex, then overlaid with frame elements -->
+  <g clip-path="url(#${icid})">
+    ${art.replace(/width="\d+" height="\d+"/,`width="${HW}" height="${HH}"`)}
+  </g>
+
+  <!-- Dark gradient overlay for text readability -->
+  <defs>
+    <linearGradient id="ov-${card.id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(0,0,0,0.7)"/>
+      <stop offset="20%" stop-color="rgba(0,0,0,0.0)"/>
+      <stop offset="55%" stop-color="rgba(0,0,0,0.0)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0.85)"/>
+    </linearGradient>
+  </defs>
+  <polygon points="${INNER_S}" fill="url(#ov-${card.id})"/>
+
+  <!-- TITLE BAR (top of inner hex) -->
+  <g clip-path="url(#${cid})">
+    <rect x="28" y="40" width="204" height="26" rx="2" fill="rgba(8,5,18,0.88)"/>
+    <line x1="28" y1="40" x2="232" y2="40" stroke="${rarColor}" stroke-width="0.8" opacity="0.6"/>
+    <line x1="28" y1="66" x2="232" y2="66" stroke="${rarColor}" stroke-width="0.8" opacity="0.6"/>
+    <text x="${HW/2}" y="57" text-anchor="middle" font-family="'Palatino Linotype',Georgia,serif" font-size="11.5" font-weight="bold" fill="#f8d878">${card.name}</text>
+  </g>
+
+  <!-- RARITY stars top-right -->
+  <g clip-path="url(#${cid})">
+    <text x="222" y="35" text-anchor="middle" font-family="Georgia,serif" font-size="9" fill="${rarColor}" opacity="0.9">${rar.stars}</text>
+  </g>
+
+  <!-- TYPE LINE (mid) -->
+  <g clip-path="url(#${cid})">
+    <rect x="22" y="167" width="216" height="17" fill="rgba(8,5,18,0.82)"/>
+    <line x1="22" y1="167" x2="238" y2="167" stroke="${rarColor}" stroke-width="0.6" opacity="0.5"/>
+    <line x1="22" y1="184" x2="238" y2="184" stroke="${rarColor}" stroke-width="0.6" opacity="0.5"/>
+    <text x="${HW/2}" y="179" text-anchor="middle" font-family="Georgia,serif" font-size="8.5" fill="${ty.accent}" letter-spacing="1.5">${ty.label.toUpperCase()} · HEXTALES</text>
+  </g>
+
+  <!-- TEXT BOX (bottom) -->
+  <g clip-path="url(#${cid})">
+    <rect x="20" y="186" width="220" height="90" fill="rgba(8,5,18,0.82)"/>
+    <!-- Flavor text -->
+    ${flavorLines.slice(0,2).map((l,i)=>`<text x="${HW/2}" y="${200+i*12}" text-anchor="middle" font-family="Georgia,serif" font-size="8.5" font-style="italic" fill="rgba(240,232,216,0.65)">${l}</text>`).join('')}
+    <!-- Divider -->
+    <line x1="30" y1="${200+Math.min(flavorLines.length,2)*12+3}" x2="230" y2="${200+Math.min(flavorLines.length,2)*12+3}" stroke="rgba(200,146,42,0.25)" stroke-width="0.6"/>
+    <!-- Side actions preview -->
+    ${sideLines.map((l,i)=>`<text x="28" y="${216+Math.min(flavorLines.length,2)*12+i*11}" font-family="Georgia,serif" font-size="7.8" fill="rgba(240,232,216,0.55)">${l}</text>`).join('')}
+    ${sideLines2.map((l,i)=>`<text x="${HW/2+2}" y="${216+Math.min(flavorLines.length,2)*12+i*11}" font-family="Georgia,serif" font-size="7.8" fill="rgba(240,232,216,0.55)">${l}</text>`).join('')}
+  </g>
+
+  <!-- BOTTOM BAR -->
+  <g clip-path="url(#${cid})">
+    <rect x="22" y="278" width="216" height="14" fill="rgba(8,5,18,0.75)"/>
+    <text x="30" y="288" font-family="Georgia,serif" font-size="7" fill="rgba(240,232,216,0.3)">${il.name} · ${il.author}</text>
+    <!-- QR mini -->
+    <rect x="220" y="279" width="16" height="12" rx="1" fill="rgba(255,255,255,0.85)"/>
+    <rect x="222" y="281" width="4" height="4" fill="#333"/>
+    <rect x="228" y="281" width="4" height="4" fill="#333"/>
+    <rect x="222" y="287" width="4" height="2" fill="#333"/>
+    <rect x="228" y="287" width="2" height="2" fill="#333"/>
+    <rect x="231" y="287" width="2" height="2" fill="#333"/>
+  </g>
+
+  <!-- Rarity gem center bottom -->
+  <circle cx="${HW/2}" cy="${HH-8}" r="5" fill="${rarColor}" stroke="rgba(255,255,255,0.4)" stroke-width="0.8" clip-path="url(#${cid})"/>
+</svg>`;
+}
+
+// ════════════════════════════════════════════════════════
+// SIDE NODE POSITIONS (absolute divs overlaid on card)
+// EMIDS: 0=(195,37), 1=(260,150), 2=(195,262), 3=(65,262), 4=(0,150), 5=(65,37)
+// Offset by -10 to center the 20×20 node
+// ════════════════════════════════════════════════════════
+const NODE_POS=[
+  {x:195-10, y:37-10},    // 0
+  {x:260-10, y:150-10},   // 1
+  {x:195-10, y:262-10},   // 2
+  {x:65-10,  y:262-10},   // 3
+  {x:0-10,   y:150-10},   // 4
+  {x:65-10,  y:37-10},    // 5
+];
+
+// ════════════════════════════════════════════════════════
+// CARD DATA
+// ════════════════════════════════════════════════════════
+const CARDS=[
+{id:'L01',type:'lieu',rarity:'uncommon',icon:'🌲',name:'La Forêt Enchantée',
+ desc:'Une forêt ancienne où les arbres murmurent des sagesses oubliées.',
+ sides:['Entrer avec curiosité','Trouver un refuge','Écouter les arbres','Ressortir transformé·e','Partager le chemin','Laisser une trace belle'],
+ combinesWith:['C01','O02','M01'],flavor:'« Les arbres savent attendre. Ils ont tout le temps du monde. »'},
+{id:'L02',type:'lieu',rarity:'rare',icon:'☁️',name:'Le Village Céleste',
+ desc:'Un village dans les nuages où tous pratiquent l\'art d\'offrir.',
+ sides:['Accueillir l\'étranger','Enseigner une compétence','Bâtir ensemble','Chanter en chœur','Partager le repas','Contempler l\'horizon'],
+ combinesWith:['P03','V01','A02'],flavor:'« Ici, les portes s\'ouvrent avant qu\'on frappe. »'},
+{id:'L03',type:'lieu',rarity:'epic',icon:'📚',name:'La Bibliothèque Vivante',
+ desc:'Chaque livre respire. Les histoires sortent des pages pour accompagner les lecteurs.',
+ sides:['Ouvrir un livre inconnu','Écrire une page nouvelle','Écouter une histoire','Illustrer un rêve','Partager un savoir','Garder un secret'],
+ combinesWith:['T01','M02','E01'],flavor:'« Chaque livre est un ami qui n\'a jamais faim. »'},
+{id:'L04',type:'lieu',rarity:'rare',icon:'💎',name:'Le Désert de Cristal',
+ desc:'Un désert de cristaux où chaque reflet révèle une vérité douce.',
+ sides:['Marcher sans se perdre','Partager l\'ombre','Trouver de l\'eau','Laisser une pierre-message','Lire les étoiles','S\'émerveiller du silence'],
+ combinesWith:['O03','E06','T02'],flavor:'« Dans le silence, la vérité parle enfin. »'},
+{id:'L05',type:'lieu',rarity:'legendary',icon:'🏝️',name:'L\'Île des Origines',
+ desc:'Une île où toutes les cultures ont laissé une empreinte bienveillante.',
+ sides:['Accoster avec respect','Goûter le repas offert','Apprendre la langue','Repartir avec un lien','Enseigner en retour','Planter un arbre'],
+ combinesWith:['V02','P07','A05'],flavor:'« Nous venons tous du même océan. »'},
+{id:'L06',type:'lieu',rarity:'common',icon:'🕳️',name:'La Grotte des Rêves',
+ desc:'Une grotte profonde où la peur devient courage.',
+ sides:['Entrer dans le noir','Dessiner sur la paroi','Apprivoiser sa peur','Ressortir avec une idée','Écouter l\'écho','Dormir et rêver'],
+ combinesWith:['E03','M04','Mys07'],flavor:'« L\'obscurité ne dure que jusqu\'à ce qu\'on allume quelque chose. »'},
+{id:'L07',type:'lieu',rarity:'common',icon:'🏪',name:'Le Marché des Possibles',
+ desc:'Un marché où les échanges se font en sourires et en savoir-faire.',
+ sides:['Observer sans acheter','Offrir sans marchandage','Échanger un talent','Rentrer les mains pleines','Découvrir l\'inconnu','Partager une recette'],
+ combinesWith:['A01','V05','P09'],flavor:'« Ce qui compte ne se vend pas ; ça se donne. »'},
+{id:'L08',type:'lieu',rarity:'epic',icon:'⛰️',name:'La Montagne qui Écoute',
+ desc:'Une montagne qui absorbe les peines et renvoie de la force.',
+ sides:['Gravir avec patience','Aider celui qui glisse','Souffler ensemble','Raconter l\'ascension','Contempler au sommet','Redescendre ensemble'],
+ combinesWith:['E03','P08','T04'],flavor:'« Le sommet n\'a de valeur que partagé. »'},
+{id:'L09',type:'lieu',rarity:'uncommon',icon:'🌻',name:'Le Jardin Secret',
+ desc:'Un jardin caché où chaque plante représente une relation nourrie.',
+ sides:['Trouver l\'entrée cachée','Planter une graine','Arroser chaque jour','Inviter un ami','Partager la récolte','Protéger la biodiversité'],
+ combinesWith:['P09','V05','T02'],flavor:'« Un jardin sans partage est un jardin à moitié vide. »'},
+{id:'L10',type:'lieu',rarity:'mythic',icon:'🌆',name:'La Ville de Demain',
+ desc:'Une ville imaginée et bâtie ensemble, chaque habitant contribuant.',
+ sides:['Imaginer ensemble','Construire avec soin','Dessiner les plans','Célébrer l\'achèvement','Accueillir tous','Soigner les espaces verts'],
+ combinesWith:['P10','A03','V06'],flavor:'« Le futur se construit brique par brique, avec amour. »'},
+{id:'P01',type:'personnage',rarity:'common',icon:'🧒',name:'L\'Enfant Curieux',
+ desc:'Sa curiosité transforme l\'ordinaire en magie.',
+ sides:['Poser une question','Rire ensemble','Tendre la main','Rêver à voix haute','Pleurer sans honte','Protéger un ami'],
+ combinesWith:['L01','E01','A01'],flavor:'« Pourquoi ? — La plus belle question du monde. »'},
+{id:'P02',type:'personnage',rarity:'rare',icon:'👵',name:'La Gardienne des Contes',
+ desc:'Une conteuse sage qui porte les histoires de mille générations.',
+ sides:['Raconter une légende','Consoler la tristesse','Écouter sans juger','Bénir le voyage','Transmettre la sagesse','Rire des erreurs'],
+ combinesWith:['T01','L03','V02'],flavor:'« Une histoire racontée ne meurt jamais. »'},
+{id:'P03',type:'personnage',rarity:'uncommon',icon:'🔬',name:'L\'Inventeur Rêveur',
+ desc:'Ses créations servent toujours à aider les autres.',
+ sides:['Imaginer une solution','Partager la découverte','Demander de l\'aide','Célébrer le succès','Accepter l\'échec','Recommencer avec joie'],
+ combinesWith:['O03','M03','A03'],flavor:'« L\'erreur n\'est que la prochaine tentative. »'},
+{id:'P04',type:'personnage',rarity:'epic',icon:'🌫️',name:'L\'Ombre Solitaire',
+ desc:'Isolé par la peur. Derrière ses actes, un cœur cherche la chaleur.',
+ sides:['Montrer sa peur','Faire un pas vers l\'autre','Accepter l\'aide','Rejoindre le groupe','Trouver sa lumière','Pardonner sa tristesse'],
+ combinesWith:['E02','V03','A02'],flavor:'« La méchanceté n\'est que de la douleur qui ne sait pas s\'exprimer. »'},
+{id:'P05',type:'personnage',rarity:'uncommon',icon:'🎵',name:'Le Musicien Errant',
+ desc:'Sa musique guérit sans qu\'il le sache.',
+ sides:['Jouer pour un inconnu','Composer ensemble','Apprendre un air local','Partir en laissant la musique','Offrir une chanson','Enseigner un rythme'],
+ combinesWith:['E01','L07','V05'],flavor:'« La musique : la seule frontière qui s\'efface en un accord. »'},
+{id:'P06',type:'personnage',rarity:'rare',icon:'🧵',name:'La Tisserande des Liens',
+ desc:'Elle tisse des liens invisibles entre les personnes seules.',
+ sides:['Repérer l\'isolé','Nourrir la relation','Tisser un premier lien','Transmettre l\'art','Réparer la rupture','Célébrer le lien'],
+ combinesWith:['V01','A09','L07'],flavor:'« Les liens invisibles sont les plus solides. »'},
+{id:'P07',type:'personnage',rarity:'legendary',icon:'📜',name:'Le Gardien de la Mémoire',
+ desc:'Il porte les histoires de ceux sans voix.',
+ sides:['Collecter les témoignages','Raconter sans déformer','Honorer les ancêtres','Veiller sur l\'archive','Transmettre aux enfants','Corriger les oublis'],
+ combinesWith:['L03','T04','V02'],flavor:'« Oublier, c\'est perdre une partie de soi. »'},
+{id:'P08',type:'personnage',rarity:'common',icon:'👧',name:'La Petite Sœur Courageuse',
+ desc:'Elle ose la première et demande de l\'aide sans honte.',
+ sides:['Oser la première','Admettre ses doutes','Encourager son frère','Grandir ensemble','Demander de l\'aide','Protéger le plus petit'],
+ combinesWith:['E03','L08','A01'],flavor:'« Le courage, c\'est avoir peur et y aller quand même. »'},
+{id:'P09',type:'personnage',rarity:'uncommon',icon:'🌱',name:'L\'Ancien Jardinier',
+ desc:'Il voit dans chaque graine le potentiel d\'une forêt.',
+ sides:['Planter sans urgence','Enseigner la patience','Nommer chaque plante','Transmettre le soin','Offrir la récolte','Accepter l\'aide jeune'],
+ combinesWith:['L09','T02','V05'],flavor:'« Il n\'a jamais planté un arbre pour lui-même. »'},
+{id:'P10',type:'personnage',rarity:'epic',icon:'🕊️',name:'L\'Ambassadrice de Paix',
+ desc:'Elle entre dans les conflits portant uniquement des mots justes.',
+ sides:['Entrer sans armes','Trouver le pont','Écouter les deux camps','Partir sans gloire','Proposer l\'accord','Célébrer la paix'],
+ combinesWith:['A02','V04','L10'],flavor:'« La vraie force n\'a pas besoin de se montrer. »'},
+{id:'P11',type:'personnage',rarity:'rare',icon:'🎭',name:'Le Clown Triste',
+ desc:'Il fait rire le monde mais souffre seul.',
+ sides:['Faire rire malgré tout','Montrer sa vraie peine','Accepter les larmes','Trouver sa joie vraie','Rire de soi','Recevoir la consolation'],
+ combinesWith:['E02','E01','V01'],flavor:'« Derrière chaque masque, un visage cherche à être vu. »'},
+{id:'P12',type:'personnage',rarity:'mythic',icon:'🌟',name:'La Navigatrice des Étoiles',
+ desc:'Elle trace de nouvelles routes au service de ceux qui sont perdus.',
+ sides:['Lire le ciel','Partager la carte','Tracer une nouvelle route','Rentrer différent·e','Accueillir l\'imprévu','Guider sans imposer'],
+ combinesWith:['L05','T05','Mys02'],flavor:'« Les étoiles guident tout le monde. »'},
+{id:'O01',type:'objet',rarity:'uncommon',icon:'🏮',name:'La Lanterne de l\'Espoir',
+ desc:'Une lanterne qui s\'allume quand quelqu\'un a besoin d\'être guidé.',
+ sides:['Allumer dans l\'obscurité','Offrir la lumière','Guider sans dominer','Éteindre avec douceur','Protéger la flamme','Partager la chaleur'],
+ combinesWith:['L02','E01','V01'],flavor:'« Même une petite flamme fait reculer toute l\'obscurité. »'},
+{id:'O02',type:'objet',rarity:'rare',icon:'📖',name:'Le Grimoire des Possibles',
+ desc:'Un livre vierge — jusqu\'à ce que les rêves y soient inscrits.',
+ sides:['Écrire un souhait','Offrir une page','Lire à voix haute','Signer de son nom','Effacer avec tendresse','Inventer une fin'],
+ combinesWith:['P02','T01','L03'],flavor:'« La page blanche est une invitation. »'},
+{id:'O03',type:'objet',rarity:'legendary',icon:'🧭',name:'La Boussole du Cœur',
+ desc:'Cette boussole pointe vers ce qui compte vraiment.',
+ sides:['Trouver sa direction','Attendre quelqu\'un','Partager le cap','Arriver ensemble','Corriger sa route','S\'émerveiller du chemin'],
+ combinesWith:['P03','L01','V02'],flavor:'« Le bon chemin est celui du cœur. »'},
+{id:'O04',type:'objet',rarity:'uncommon',icon:'🥁',name:'Le Tambour de l\'Union',
+ desc:'Toutes les différences s\'effacent dans le rythme partagé.',
+ sides:['Battre le premier rythme','Adapter son rythme','Inviter à rejoindre','Passer le tambour','Jouer à l\'unisson','S\'arrêter ensemble'],
+ combinesWith:['P05','A09','V02'],flavor:'« Un seul battement peut rassembler mille cœurs. »'},
+{id:'O05',type:'objet',rarity:'rare',icon:'🪞',name:'Le Miroir de Vérité Douce',
+ desc:'Un miroir qui montre non ce qu\'on est, mais ce qu\'on peut devenir.',
+ sides:['Regarder sans juger','Montrer la beauté cachée','Refléter le potentiel','Briser le faux reflet','Partager le reflet','Accepter ce qu\'on voit'],
+ combinesWith:['E07','V07','P11'],flavor:'« La vraie beauté se voit avec les yeux du cœur. »'},
+{id:'O06',type:'objet',rarity:'epic',icon:'🌰',name:'La Graine de l\'Impossible',
+ desc:'Une graine qui ne pousse que si on y croit et qu\'on la partage.',
+ sides:['Planter l\'idée','Arroser de croyance','Attendre sans forcer','Protéger la fragilité','Observer la pousse','Cueillir ensemble'],
+ combinesWith:['P09','T02','V08'],flavor:'« L\'impossible, c\'est ce qu\'on n\'a pas encore essayé ensemble. »'},
+{id:'O07',type:'objet',rarity:'common',icon:'🧶',name:'Le Fil d\'Ariane Bienveillant',
+ desc:'Un fil qui mène non à la sortie mais vers les autres.',
+ sides:['Dérouler avec confiance','Laisser un repère','Suivre sans perdre l\'autre','Aider celui perdu','Retrouver son chemin','Tisser un lien permanent'],
+ combinesWith:['P06','L01','A02'],flavor:'« Se perdre peut être un cadeau, si quelqu\'un tient l\'autre bout. »'},
+{id:'O08',type:'objet',rarity:'uncommon',icon:'🔔',name:'La Cloche de l\'Éveil',
+ desc:'Elle sonne au bon moment, jamais pour déranger, toujours pour éveiller.',
+ sides:['Sonner doucement','Réveiller avec tendresse','Inviter à l\'attention','Appeler au rassemblement','Célébrer le moment','Laisser le son se dissiper'],
+ combinesWith:['T01','A09','L02'],flavor:'« Le bon moment est toujours maintenant, si c\'est avec douceur. »'},
+{id:'O09',type:'objet',rarity:'common',icon:'📓',name:'Le Carnet des Gratitudes',
+ desc:'Un carnet qui transforme chaque moment difficile en leçon de beauté.',
+ sides:['Écrire une gratitude','Offrir une page','Lire à voix haute','Passer le carnet','Relire les moments difficiles','Trouver le beau caché'],
+ combinesWith:['E01','V05','T01'],flavor:'« Écrire ce pour quoi on est reconnaissant change tout. »'},
+{id:'O10',type:'objet',rarity:'mythic',icon:'🗝️',name:'La Clé des Cœurs Fermés',
+ desc:'Une clé ancienne qui ne force aucune porte — elle attend d\'être invitée.',
+ sides:['Approcher avec douceur','Frapper, ne pas forcer','Écouter avant d\'ouvrir','Ne jamais refermer','Entrer quand invité·e','Laisser ouvert derrière soi'],
+ combinesWith:['P04','E02','V03'],flavor:'« Certaines portes ne s\'ouvrent que de l\'intérieur. »'},
+{id:'E01',type:'emotion',rarity:'common',icon:'☀️',name:'La Joie Partagée',
+ desc:'La joie qui grandit en étant partagée.',
+ sides:['Sourire à un inconnu','Offrir sa joie','Danser sans raison','Célébrer la vie','Recevoir avec gratitude','Rire ensemble'],
+ combinesWith:['V01','A01','P01'],flavor:'« La joie double quand on la partage. »'},
+{id:'E02',type:'emotion',rarity:'uncommon',icon:'🌧️',name:'La Tristesse Honorée',
+ desc:'Pleurer est un acte de courage.',
+ sides:['Pleurer librement','Rester présent·e','Accueillir la peine','Trouver la paix','Consoler sans mots','Laisser du temps'],
+ combinesWith:['P04','V03','A02'],flavor:'« Les larmes nettoient les fenêtres de l\'âme. »'},
+{id:'E03',type:'emotion',rarity:'rare',icon:'🦁',name:'Le Courage Doux',
+ desc:'Le courage qui avance malgré la peur, avec tendresse.',
+ sides:['Oser malgré tout','Avancer un pas','Reconnaître sa peur','Célébrer la bravoure','Encourager l\'autre','Accepter l\'aide'],
+ combinesWith:['P01','A08','V01'],flavor:'« Le vrai courage : les genoux qui tremblent, et on y va. »'},
+{id:'E04',type:'emotion',rarity:'common',icon:'😲',name:'La Surprise Émerveillée',
+ desc:'L\'étonnement qui ouvre les yeux sur ce qu\'on ne voyait plus.',
+ sides:['Ouvrir grand les yeux','Dire "je ne savais pas"','Partager l\'étonnement','Chercher encore','Remercier l\'inattendu','Garder l\'émerveillement'],
+ combinesWith:['M02','M07','L01'],flavor:'« L\'émerveillement est la première forme de la sagesse. »'},
+{id:'E05',type:'emotion',rarity:'epic',icon:'🔥',name:'La Colère Transformée',
+ desc:'Une colère nommée qui devient moteur de justice.',
+ sides:['Nommer la colère','Trouver la blessure dessous','Ne pas la retenir seul','Canaliser en action juste','Demander ce dont on a besoin','Réconcilier après'],
+ combinesWith:['A02','V04','V06'],flavor:'« La colère bien dirigée bâtit. »'},
+{id:'E06',type:'emotion',rarity:'rare',icon:'🌊',name:'La Sérénité Partagée',
+ desc:'Un calme qui se transmet par la seule présence bienveillante.',
+ sides:['Respirer ensemble','Contempler sans agir','Ralentir le monde','Transmettre l\'équilibre','Offrir la paix','Garder le calme'],
+ combinesWith:['T01','L04','V07'],flavor:'« La paix n\'est pas l\'absence de bruit. C\'est la présence du calme. »'},
+{id:'E07',type:'emotion',rarity:'uncommon',icon:'🏅',name:'La Fierté Humble',
+ desc:'Être fier sans écraser l\'autre. La réussite qui grandit partagée.',
+ sides:['Reconnaître son effort','Remercier les autres','Partager la réussite','Inspirer sans dominer','Accepter les compliments','Rester accessible'],
+ combinesWith:['A09','V07','P03'],flavor:'« L\'humilité, c\'est connaître sa juste mesure. »'},
+{id:'E08',type:'emotion',rarity:'mythic',icon:'💞',name:'L\'Amour Inconditionnel',
+ desc:'Aimer sans condition. La force la plus rare et la plus puissante.',
+ sides:['Aimer sans raison','Rester quand c\'est difficile','Aimer même les défauts','Transmettre l\'amour','Aimer sans posséder','Lâcher avec amour'],
+ combinesWith:['V01','V03','P04'],flavor:'« L\'amour vrai ne demande rien et donne tout. »'},
+{id:'A01',type:'action',rarity:'common',icon:'🤲',name:'L\'Acte de Partager',
+ desc:'Partager sans calcul, créer des liens durables.',
+ sides:['Donner sans attendre','Diviser en parts égales','Recevoir avec joie','Construire ensemble','Offrir le meilleur','Partager un secret'],
+ combinesWith:['V01','E01','P01'],flavor:'« Ce qu\'on donne revient toujours, en mieux. »'},
+{id:'A02',type:'action',rarity:'uncommon',icon:'🕊️',name:'L\'Art de Réconcilier',
+ desc:'La réconciliation transforme les conflits en opportunités.',
+ sides:['Tendre la main en premier','Dire je suis désolé·e','Écouter l\'autre côté','Recommencer à zéro','Accepter les excuses','Trouver un terrain commun'],
+ combinesWith:['P04','E02','V03'],flavor:'« Le premier pas vers la paix est toujours le plus difficile. »'},
+{id:'A03',type:'action',rarity:'epic',icon:'⚙️',name:'La Grande Invention',
+ desc:'Inventer pour rendre la vie meilleure pour tous.',
+ sides:['Observer un problème','Tester et rater','Imaginer une solution','Enseigner à d\'autres','Améliorer encore','Partager gratuitement'],
+ combinesWith:['P03','O03','T02'],flavor:'« Les meilleures inventions se partagent. »'},
+{id:'A04',type:'action',rarity:'rare',icon:'🎒',name:'Le Voyage Initiatique',
+ desc:'Partir sans tout savoir pour revenir transformé.',
+ sides:['Partir sans tout savoir','Apprendre en chemin','Accepter les imprévus','Raconter pour transmettre','Aider un compagnon','Revenir transformé·e'],
+ combinesWith:['L05','P12','T02'],flavor:'« On part pour découvrir le monde. On revient pour se découvrir. »'},
+{id:'A05',type:'action',rarity:'uncommon',icon:'🍽️',name:'Le Festin de l\'Inclusion',
+ desc:'Une grande table où personne n\'est exclu.',
+ sides:['Dresser une grande table','Cuisiner ensemble','Inviter l\'exclu·e','Danser après','Partager les recettes','Manger sans hiérarchie'],
+ combinesWith:['L05','V02','P06'],flavor:'« La plus belle table est celle qui ne refuse personne. »'},
+{id:'A06',type:'action',rarity:'rare',icon:'🔧',name:'La Réparation Créative',
+ desc:'Réparer pour rendre plus beau qu\'avant — le kintsugi.',
+ sides:['Reconnaître l\'erreur','Réparer avec soin','Comprendre la blessure','Apprendre pour ne plus recommencer','Embellir la réparation','Montrer la cicatrice'],
+ combinesWith:['V03','O05','E05'],flavor:'« Les cicatrices dorent ce qu\'elles ont réparé. »'},
+{id:'A07',type:'action',rarity:'uncommon',icon:'🎓',name:'L\'Enseignement Patient',
+ desc:'Enseigner en rencontrant l\'autre là où il est.',
+ sides:['Comprendre où l\'autre en est','Célébrer chaque progrès','Expliquer autrement','Passer le flambeau','Ne jamais humilier','Apprendre aussi'],
+ combinesWith:['P09','P07','V07'],flavor:'« Enseigner, c\'est apprendre deux fois. »'},
+{id:'A08',type:'action',rarity:'epic',icon:'🦸',name:'Le Sauvetage Sans Gloire',
+ desc:'Agir pour l\'autre sans attendre reconnaissance.',
+ sides:['Agir sans attendre','Agir sans témoin','Ne pas attendre les remerciements','Rester humble','Prendre soin de soi après','Raconter pour inspirer'],
+ combinesWith:['E03','V05','P08'],flavor:'« Les héros les plus importants n\'ont pas de cape. »'},
+{id:'A09',type:'action',rarity:'common',icon:'🎉',name:'La Célébration Collective',
+ desc:'Célébrer ensemble pour que chacun sente que sa part compte.',
+ sides:['Reconnaître le travail de chacun','Danser ensemble','Inclure les timides','Recommencer demain','Manger ce que chacun apporte','Raconter l\'histoire commune'],
+ combinesWith:['P06','E01','V02'],flavor:'« On célèbre ensemble ce qu\'on a bâti ensemble. »'},
+{id:'A10',type:'action',rarity:'legendary',icon:'🌿',name:'Le Grand Pardon Public',
+ desc:'Demander pardon devant tous — l\'acte de courage ultime.',
+ sides:['Reconnaître devant tous','Demander sans condition','Attendre sans forcer','Avancer ensemble','Recevoir avec grâce','Sceller par un geste'],
+ combinesWith:['V03','P10','E05'],flavor:'« Demander pardon demande plus de courage que tout combat. »'},
+{id:'C01',type:'creature',rarity:'uncommon',icon:'🦊',name:'Le Renard Sage',
+ desc:'Son intelligence sert à guider les perdus, jamais à tromper.',
+ sides:['Guider subtilement','Déjouer le piège','Poser la bonne question','Partir quand c\'est l\'heure','Partager sa connaissance','Accompagner en silence'],
+ combinesWith:['L01','M01','P02'],flavor:'« La sagesse n\'a pas besoin de crier pour être entendue. »'},
+{id:'C02',type:'creature',rarity:'legendary',icon:'🐋',name:'La Baleine Chanteuse',
+ desc:'Sa chanson traverse les océans et rappelle ce qui nous unit.',
+ sides:['Chanter pour tous','Traverser ensemble','Porter un message','Chanter la joie','Plonger dans le profond','Remonter à la surface'],
+ combinesWith:['T02','V02','M02'],flavor:'« Les océans ne nous séparent pas. Ils nous relient. »'},
+{id:'C03',type:'creature',rarity:'common',icon:'🦋',name:'Le Papillon Passeur',
+ desc:'Il transporte les rêves d\'une fleur à l\'autre.',
+ sides:['Transporter un rêve','Se transformer','Polliniser les idées','Laisser une trace de couleur','Montrer que ça vaut la peine','Voler avec légèreté'],
+ combinesWith:['E04','M07','T02'],flavor:'« La chenille ne sait pas encore qu\'elle deviendra papillon. »'},
+{id:'C04',type:'creature',rarity:'rare',icon:'🐘',name:'L\'Éléphant de Mémoire',
+ desc:'Il se souvient pour ceux qui oublient.',
+ sides:['Se souvenir pour les autres','Revenir aux sources','Porter le deuil collectif','Transmettre aux petits','Protéger le plus fragile','Marcher en troupeau'],
+ combinesWith:['P07','T04','V02'],flavor:'« Oublier les anciens, c\'est perdre ses racines. »'},
+{id:'C05',type:'creature',rarity:'epic',icon:'🐉',name:'Le Dragon Incompris',
+ desc:'Ses flammes sont ses larmes. Derrière la peur, un gardien bienveillant attend.',
+ sides:['Rugir de solitude','Accepter l\'approche douce','Montrer ses larmes sous les flammes','Devenir gardien bienveillant','Protéger sans écraser','Apprendre à doser'],
+ combinesWith:['P04','E02','M01'],flavor:'« Le monstre que tu fuis cache quelqu\'un qui souffre. »'},
+{id:'C06',type:'creature',rarity:'uncommon',icon:'🐢',name:'La Tortue Philosophe',
+ desc:'Elle avance lentement, mais elle arrive toujours.',
+ sides:['Avancer sans se presser','Rentrer dans sa carapace','Ressortir quand c\'est sûr','Vivre très longtemps','Enseigner la lenteur','Porter sa maison'],
+ combinesWith:['T01','E06','V07'],flavor:'« Lentement, mais sûrement — et avec style. »'},
+{id:'C07',type:'creature',rarity:'rare',icon:'🦅',name:'L\'Aigle des Sommets',
+ desc:'Il voit loin et descend vers ceux qui en ont besoin.',
+ sides:['Voir de haut','Descendre vers les autres','Partager la vision','Protéger les faibles','Porter un message urgent','Voler en duo'],
+ combinesWith:['P10','L08','M04'],flavor:'« La hauteur de vue est un don à mettre au service des autres. »'},
+{id:'C08',type:'creature',rarity:'mythic',icon:'🐺',name:'Le Loup Bienveillant',
+ desc:'Il protège sa meute avec douceur et accueille l\'étranger.',
+ sides:['Protéger la meute','Hurler la vérité','Chasser le nécessaire','Respecter le territoire de l\'autre','Accueillir l\'étranger','Enseigner aux louveteaux'],
+ combinesWith:['V04','V06','P06'],flavor:'« La meute la plus forte est celle qui ne laisse personne derrière. »'},
+{id:'M01',type:'magie',rarity:'rare',icon:'🔮',name:'Le Sort de Compréhension',
+ desc:'Voir avec les yeux de l\'autre — le sort le plus puissant.',
+ sides:['Écouter vraiment','Voir avec ses yeux','Ressentir son vécu','Parler avec douceur','Trouver le commun','Grandir ensemble'],
+ combinesWith:['P04','E02','A02'],flavor:'« Comprendre l\'autre, c\'est déjà l\'aimer un peu. »'},
+{id:'M02',type:'magie',rarity:'epic',icon:'🧪',name:'La Potion d\'Émerveillement',
+ desc:'Sous son effet, une fleur dans le béton devient miraculeuse.',
+ sides:['Regarder différemment','Trouver la beauté','Partager l\'émerveillement','Créer de la magie','Inviter à voir','Garder la mémoire'],
+ combinesWith:['L03','E01','C01'],flavor:'« La magie n\'est pas rare. C\'est notre regard qui l\'est. »'},
+{id:'M03',type:'magie',rarity:'mythic',icon:'🌙',name:'Le Vœu de la Lune',
+ desc:'Un vœu accordé une seule fois, uniquement pour le bien de tous.',
+ sides:['Formuler avec soin','Offrir le vœu','Penser aux autres','Remercier l\'univers','Attendre avec patience','Accueillir le cadeau'],
+ combinesWith:['T02','V02','L02'],flavor:'« Un vœu pour les autres revient comme une bénédiction. »'},
+{id:'M04',type:'magie',rarity:'uncommon',icon:'🌫️',name:'L\'Enchantement de Clarté',
+ desc:'Dissipe les malentendus pour révéler la réalité douce.',
+ sides:['Dissiper le brouillard','Montrer la réalité douce','Voir sans illusion','Garder les yeux ouverts','Aider à accepter','Révéler la beauté vraie'],
+ combinesWith:['E06','A07','P10'],flavor:'« La clarté est un cadeau qu\'on peut offrir. »'},
+{id:'M05',type:'magie',rarity:'rare',icon:'🍞',name:'Le Charme de l\'Abondance',
+ desc:'Plus on donne, plus il reste. La magie de la générosité.',
+ sides:['Multiplier le pain','Partager avant de garder','Créer du surplus pour tous','Ne jamais gaspiller','Enseigner la gestion','Remercier la terre'],
+ combinesWith:['A05','V05','L07'],flavor:'« L\'abondance naît du partage, pas de l\'accumulation. »'},
+{id:'M06',type:'magie',rarity:'epic',icon:'🌸',name:'Le Sortilège de Mémoire Heureuse',
+ desc:'Retrouver un souvenir de joie et l\'offrir à celui qui oublie.',
+ sides:['Retrouver un souvenir beau','Le revivre ensemble','L\'offrir à celui qui oublie','Créer de nouveaux souvenirs','Documenter pour demain','Garder sans s\'y accrocher'],
+ combinesWith:['P07','E01','T05'],flavor:'« Les souvenirs heureux sont une lumière à partager. »'},
+{id:'M07',type:'magie',rarity:'common',icon:'✨',name:'La Magie du Quotidien',
+ desc:'Voir le miracle dans l\'ordinaire — le don le plus accessible.',
+ sides:['Trouver le miracle ordinaire','Le partager','Le nommer à voix haute','L\'enseigner aux enfants','Le célébrer','Le pratiquer chaque jour'],
+ combinesWith:['E04','T01','P01'],flavor:'« La magie est partout. Il suffit de regarder au bon endroit. »'},
+{id:'T01',type:'temps',rarity:'common',icon:'⏰',name:'L\'Instant Présent',
+ desc:'Maintenant est le seul moment où l\'on peut agir, aimer, créer.',
+ sides:['S\'arrêter un moment','Observer ce qui est','Respirer ensemble','Recommencer demain','Savourer la présence','Rien faire avec joie'],
+ combinesWith:['E01','V01','P02'],flavor:'« Seul le présent est réel. »'},
+{id:'T02',type:'temps',rarity:'uncommon',icon:'🌀',name:'Le Cycle des Saisons',
+ desc:'Tout change, tout revient. Rien n\'est permanent.',
+ sides:['Planter en printemps','Récolter en automne','Cultiver en été','Accueillir le changement','Se reposer en hiver','Commencer un nouveau cycle'],
+ combinesWith:['L09','C02','M03'],flavor:'« Chaque fin est le début d\'une autre saison. »'},
+{id:'T03',type:'temps',rarity:'rare',icon:'🌅',name:'L\'Aube Nouvelle',
+ desc:'Chaque matin est une deuxième chance.',
+ sides:['Se réveiller avec espoir','Commencer sans le passé','Effacer les rancœurs','Avancer léger·ère','Saluer le soleil','Formuler une intention'],
+ combinesWith:['E02','V03','A02'],flavor:'« Chaque matin, le monde recommence. »'},
+{id:'T04',type:'temps',rarity:'epic',icon:'🌳',name:'Le Temps Long',
+ desc:'Penser aux sept générations à venir. Agir pour demain.',
+ sides:['Penser aux 7 générations','Planter un arbre','Décider avec sagesse','Créer pour demain','Transmettre sans accaparer','Respecter l\'héritage'],
+ combinesWith:['L10','V06','P07'],flavor:'« Nos ancêtres ont planté des arbres. Nous en mangeons les fruits. »'},
+{id:'T05',type:'temps',rarity:'legendary',icon:'💫',name:'L\'Éternité du Moment',
+ desc:'Certains instants durent pour toujours dans le cœur.',
+ sides:['Figer le beau','Partager avant que ça passe','Prendre une photo du cœur','Revenir chaque année','Raconter pour immortaliser','Créer une tradition'],
+ combinesWith:['E01','M06','L09'],flavor:'« Certains moments ne finissent jamais vraiment. »'},
+{id:'V01',type:'valeur',rarity:'uncommon',icon:'💚',name:'La Bienveillance Radicale',
+ desc:'Être bon même quand c\'est difficile.',
+ sides:['Choisir la gentillesse','Inclure l\'exclu·e','Agir sans raison','Transmettre la bonté','Nourrir la relation','Pardonner vraiment'],
+ combinesWith:['A02','E03','P04'],flavor:'« La bonté est la forme la plus avancée du courage. »'},
+{id:'V02',type:'valeur',rarity:'rare',icon:'🌈',name:'Le Respect de la Différence',
+ desc:'Voir dans la différence une richesse.',
+ sides:['Écouter une autre façon','Apprendre une langue','Goûter un autre monde','Célébrer la diversité','Partager sa culture','Trouver le commun'],
+ combinesWith:['L02','P03','A01'],flavor:'« Nos différences sont notre force. Notre humanité est notre lien. »'},
+{id:'V03',type:'valeur',rarity:'epic',icon:'🌸',name:'Le Pardon Libérateur',
+ desc:'Pardonner, c\'est choisir de ne plus porter le poids du passé.',
+ sides:['Reconnaître la blessure','Choisir de lâcher','Nommer sa douleur','Tourner la page','Offrir le pardon','Se libérer aussi'],
+ combinesWith:['P04','E02','A02'],flavor:'« Pardonner, c\'est se libérer soi-même. »'},
+{id:'V04',type:'valeur',rarity:'rare',icon:'⚖️',name:'La Justice Douce',
+ desc:'Une justice qui répare plutôt que punit.',
+ sides:['Nommer l\'injustice','Proposer la réparation','Entendre tous les côtés','Créer un monde plus juste','Appliquer avec humanité','Enseigner pourquoi'],
+ combinesWith:['P10','E05','A06'],flavor:'« La justice sans humanité est vengeance masquée. »'},
+{id:'V05',type:'valeur',rarity:'uncommon',icon:'🎁',name:'La Générosité Silencieuse',
+ desc:'Donner anonymement, sans attente de retour.',
+ sides:['Donner anonymement','Donner quand on a peu','Ne pas attendre','Donner sa joie','Donner du temps','Donner son attention'],
+ combinesWith:['A08','P09','O09'],flavor:'« La vraie générosité ne laisse pas de trace visible. »'},
+{id:'V06',type:'valeur',rarity:'epic',icon:'🗽',name:'La Liberté Responsable',
+ desc:'Exercer sa liberté en protégeant celle des autres.',
+ sides:['Exercer sa liberté','Choisir en conscience','Respecter celle de l\'autre','Créer des conditions de liberté','Assumer ses choix','Défendre la liberté d\'autrui'],
+ combinesWith:['T04','P10','V04'],flavor:'« Ma liberté s\'arrête où la vraie liberté commence. »'},
+{id:'V07',type:'valeur',rarity:'rare',icon:'🙏',name:'L\'Humilité du Sage',
+ desc:'Apprendre de plus jeune que soi, sans honte.',
+ sides:['Admettre ne pas savoir','Partager sans imposer','Apprendre de plus jeune','Grandir toujours','Reconnaître ses erreurs','Écouter la critique'],
+ combinesWith:['P09','A07','E07'],flavor:'« Le sage sait qu\'il a encore tout à apprendre. »'},
+{id:'V08',type:'valeur',rarity:'legendary',icon:'🌱',name:'L\'Espoir Têtu',
+ desc:'Espérer quand tout semble sombre. Agir comme si c\'était possible.',
+ sides:['Espérer quand tout semble sombre','Agir comme si c\'était possible','Partager l\'espoir','Résister au découragement','Inspirer par l\'exemple','Voir le germe dans le chaos'],
+ combinesWith:['E03','A08','T03'],flavor:'« L\'espoir est la forme la plus lucide du courage. »'},
+{id:'Mys01',type:'mystere',rarity:'rare',icon:'🚪',name:'La Porte des Possibles',
+ desc:'Une porte qui s\'ouvre quand on ose frapper avec espoir.',
+ sides:['Frapper avec douceur','Franchir le seuil','Attendre sans peur','Laisser la porte ouverte','Découvrir l\'inattendu','Inviter quelqu\'un'],
+ combinesWith:['L03','M03','E03'],flavor:'« Les portes les plus importantes n\'ont pas de serrure. »'},
+{id:'Mys02',type:'mystere',rarity:'legendary',icon:'⭐',name:'L\'Étoile Inconnue',
+ desc:'Une étoile hors de tout atlas. Elle guide ceux qui voyagent vers le bien.',
+ sides:['Lever les yeux','Marcher dans la nuit','Choisir une direction','Nommer l\'étoile','Trouver un compagnon','Arriver quelque part'],
+ combinesWith:['T02','C02','M03'],flavor:'« Certaines étoiles n\'existent que pour toi. »'},
+{id:'Mys03',type:'mystere',rarity:'uncommon',icon:'📬',name:'Le Message sans Expéditeur',
+ desc:'Un message qui répond exactement à ce qu\'on cherchait.',
+ sides:['Trouver sans chercher','Déchiffrer avec patience','Partager la découverte','Envoyer un message en retour','Chercher à qui répondre','Attendre la suite'],
+ combinesWith:['O02','P07','Mys05'],flavor:'« L\'univers envoie des messages à qui sait les recevoir. »'},
+{id:'Mys04',type:'mystere',rarity:'rare',icon:'💤',name:'Le Rêve Éveillé',
+ desc:'Un état entre rêve et réalité où les réponses arrivent.',
+ sides:['Tomber dans le rêve','Explorer librement','Inviter un autre dans le rêve','Ramener quelque chose au réveil','Trouver une réponse','Raconter sans retenue'],
+ combinesWith:['M06','T05','E04'],flavor:'« Les rêves sont les messages que l\'âme s\'envoie. »'},
+{id:'Mys05',type:'mystere',rarity:'epic',icon:'❓',name:'L\'Énigme du Vieux Sage',
+ desc:'Une question qu\'on comprend seulement par l\'action.',
+ sides:['Recevoir la question','Ne pas chercher trop vite','Chercher ensemble','Comprendre après coup','Accepter de ne pas savoir','Trouver dans l\'action'],
+ combinesWith:['P02','P07','V07'],flavor:'« La bonne question vaut mille réponses. »'},
+{id:'Mys06',type:'mystere',rarity:'mythic',icon:'📕',name:'Le Livre qui se Réécrit',
+ desc:'Un livre dont les mots changent selon qui le lit.',
+ sides:['Lire ce qui est écrit','Voir que ça change','Comprendre que c\'est vivant','Laisser les autres écrire','Écrire sa propre ligne','Accepter la fin ouverte'],
+ combinesWith:['L03','O02','Mys03'],flavor:'« Chaque lecteur écrit le livre qu\'il lit. »'},
+{id:'Mys07',type:'mystere',rarity:'uncommon',icon:'🌑',name:'L\'Ombre qui Danse',
+ desc:'Son ombre refusait l\'obscurité. Elle dansait pour attirer la lumière.',
+ sides:['Apprivoiser son ombre','Lui parler franchement','La laisser exprimer','Ne plus en avoir peur','La réconcilier avec la lumière','Danser ensemble'],
+ combinesWith:['P04','E02','M01'],flavor:'« Nos ombres prouvent qu\'une lumière brille en nous. »'},
+];
+
+// ════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════
+const S={
+  placed:[], conns:[], selected:null, selSide:null,
+  zoom:1, panX:280, panY:60,
+  libF:'all', libS:'',
+  illusMap:{}, // cardId->illusId
+};
+function getBC(id){return S.placed.find(b=>b.id===id);}
+function getCard(cid){return CARDS.find(c=>c.id===cid);}
+
+// ════════════════════════════════════════════════════════
+// RENDER BOARD
+// ════════════════════════════════════════════════════════
+function renderBoard(){
+  const cvs=document.getElementById('canvas');
+  cvs.style.transform=`translate(${S.panX}px,${S.panY}px) scale(${S.zoom})`;
+  document.getElementById('zoomInd').textContent=Math.round(S.zoom*100)+'%';
+  cvs.innerHTML='';
+
+  // Drop ghosts
+  if(S.placed.length===0){
+    cvs.appendChild(makeGhost(200,80));
+  } else {
+    const occ=new Set(S.placed.map(b=>`${Math.round(b.x)},${Math.round(b.y)}`));
+    const drops=new Set();
+    S.placed.forEach(bc=>{
+      NBR.forEach(([dx,dy])=>{
+        const nx=Math.round(bc.x+dx),ny=Math.round(bc.y+dy);
+        const k=`${nx},${ny}`;
+        if(!occ.has(k)) drops.add(k);
+      });
+    });
+    drops.forEach(k=>{
+      const[x,y]=k.split(',').map(Number);
+      cvs.appendChild(makeGhost(x,y));
+    });
+  }
+
+  // Detect connections
+  detectConns();
+
+  // Connection lines
+  S.conns.forEach(c=>{
+    const ba=getBC(c.aId),bb=getBC(c.bId);if(!ba||!bb)return;
+    const ma=EMIDS[c.aSide],mb=EMIDS[c.bSide];
+    const x1=ba.x+ma[0],y1=ba.y+ma[1],x2=bb.x+mb[0],y2=bb.y+mb[1];
+    const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+    const angle=Math.atan2(dy,dx)*180/Math.PI;
+    const line=document.createElement('div');
+    line.className='cline';
+    line.style.cssText=`left:${x1}px;top:${y1-1.5}px;width:${len}px;transform:rotate(${angle}deg);`;
+    cvs.appendChild(line);
+  });
+
+  // Cards
+  S.placed.forEach(bc=>{
+    const card=getCard(bc.cardId);if(!card)return;
+    const ty=TYPES[card.type];
+    const illusId=S.illusMap[card.id]||'aqua';
+    const isSel=S.selected===bc.id;
+
+    // Wrapper div
+    const wrap=document.createElement('div');
+    wrap.className='hcard'+(isSel?' sel':'');
+    wrap.id='bp-'+bc.id;
+    wrap.style.cssText=`left:${bc.x}px;top:${bc.y}px;`;
+    wrap.innerHTML=hexCardSVG(card,illusId,isSel);
+    wrap.addEventListener('mousedown',e=>startDrag(e,bc.id));
+    wrap.addEventListener('click',e=>{ if(!didDrag) selectCard(bc.id); });
+
+    // Side nodes (6 absolute divs)
+    card.sides.forEach((action,si)=>{
+      const p=NODE_POS[si];
+      const isHL=isSel && S.selSide===si;
+      const isConn=S.conns.some(c=>(c.aId===bc.id&&c.aSide===si)||(c.bId===bc.id&&c.bSide===si));
+      const nd=document.createElement('div');
+      nd.className='snode';
+      nd.style.cssText=`left:${p.x}px;top:${p.y}px;background:${ty.accent};box-shadow:${isConn?`0 0 12px ${ty.accent},`:''}0 2px 8px rgba(0,0,0,0.6);${isHL?'outline:3px solid #f8d878;outline-offset:2px;':''}`; 
+      nd.textContent=si;
+      nd.title=`${SIDE_LABELS[si]}: ${action}`;
+      nd.addEventListener('mouseenter',e=>showTT(e,si,action,bc.id));
+      nd.addEventListener('mouseleave',hideTT);
+      nd.addEventListener('click',e=>{e.stopPropagation();S.selSide=si;renderBoard();selectCard(bc.id);});
+      wrap.appendChild(nd);
+    });
+
+    cvs.appendChild(wrap);
+  });
+
+  buildStory();
+}
+
+function makeGhost(x,y){
+  const d=document.createElement('div');
+  d.className='dghex';
+  d.style.cssText=`left:${x}px;top:${y}px;`;
+  d.innerHTML=`<svg width="${HW}" height="${HH}" viewBox="0 0 ${HW} ${HH}" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="${POLY_PTS}" fill="rgba(200,146,42,0.04)" stroke="rgba(200,146,42,0.35)" stroke-width="2" stroke-dasharray="8,5"/>
+    <text x="${HW/2}" y="${HH/2+6}" text-anchor="middle" font-family="Georgia,serif" font-size="28" fill="rgba(200,146,42,0.25)">⬡</text>
+  </svg>`;
+  d.addEventListener('dragover',e=>{e.preventDefault();d.classList.add('hl');});
+  d.addEventListener('dragleave',()=>d.classList.remove('hl'));
+  d.addEventListener('drop',e=>{e.preventDefault();dropCard(e,x,y);d.classList.remove('hl');});
+  return d;
+}
+
+// ════════════════════════════════════════════════════════
+// CONNECTIONS
+// ════════════════════════════════════════════════════════
+const CONN_THRESH=HW*0.72;
+function detectConns(){
+  S.conns=[];
+  for(let i=0;i<S.placed.length;i++){
+    for(let j=i+1;j<S.placed.length;j++){
+      const a=S.placed[i],b=S.placed[j];
+      const cx_a=a.x+HW/2,cy_a=a.y+HH/2,cx_b=b.x+HW/2,cy_b=b.y+HH/2;
+      const dist=Math.sqrt((cx_b-cx_a)**2+(cy_b-cy_a)**2);
+      if(dist<CONN_THRESH*2.6){
+        let best=Infinity,aSide=0,bSide=0;
+        NBR.forEach(([nax,nay],sa){
+          const ob=(sa+3)%6;
+          const[nbx,nby]=NBR[ob];
+          const ex=cx_a+nax-(cx_b+nbx),ey=cy_a+nay-(cy_b+nby);
+          const score=ex*ex+ey*ey;
+          if(score<best){best=score;aSide=sa;bSide=ob;}
+        });
+        if(best<CONN_THRESH*CONN_THRESH*1.8){
+          S.conns.push({aId:a.id,aSide,bId:b.id,bSide});
+        }
+      }
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// DRAG FROM LIB
+// ════════════════════════════════════════════════════════
+let libDragId=null;
+function initLibDrag(el,cardId){
+  el.draggable=true;
+  el.addEventListener('dragstart',e=>{libDragId=cardId;e.dataTransfer.setData('text',cardId);el.style.opacity='0.4';});
+  el.addEventListener('dragend',()=>{el.style.opacity='1';libDragId=null;});
+  el.addEventListener('dblclick',()=>{
+    const x=(350-S.panX)/S.zoom-HW/2+Math.random()*60-30;
+    const y=(200-S.panY)/S.zoom-HH/2+Math.random()*40-20;
+    addToBoard(cardId,x,y);
+  });
+}
+function dropCard(e,x,y){
+  const cid=e.dataTransfer.getData('text')||libDragId;
+  if(cid) addToBoard(cid,x,y);
+}
+const boardEl=document.getElementById('board');
+boardEl.addEventListener('dragover',e=>e.preventDefault());
+boardEl.addEventListener('drop',e=>{
+  e.preventDefault();
+  const cid=e.dataTransfer.getData('text')||libDragId;
+  if(!cid)return;
+  const r=boardEl.getBoundingClientRect();
+  addToBoard(cid,(e.clientX-r.left-S.panX)/S.zoom-HW/2,(e.clientY-r.top-S.panY)/S.zoom-HH/2);
+});
+function addToBoard(cardId,x,y){
+  const id='bc'+(Date.now()%1e7);
+  S.placed.push({id,cardId,x,y});
+  S.selected=id;S.selSide=null;
+  renderBoard();selectCard(id);
+}
+
+// ════════════════════════════════════════════════════════
+// DRAG ON BOARD
+// ════════════════════════════════════════════════════════
+let drg=null,didDrag=false;
+function startDrag(e,id){
+  e.stopPropagation();
+  const bc=getBC(id);if(!bc)return;
+  drg={id,mx:e.clientX,my:e.clientY,bx:bc.x,by:bc.y};didDrag=false;
+  const mv=ev=>{
+    if(!drg)return;
+    const dx=(ev.clientX-drg.mx)/S.zoom,dy=(ev.clientY-drg.my)/S.zoom;
+    if(Math.abs(dx)>4||Math.abs(dy)>4)didDrag=true;
+    bc.x=drg.bx+dx;bc.y=drg.by+dy;
+    const el=document.getElementById('bp-'+id);
+    if(el){el.style.left=bc.x+'px';el.style.top=bc.y+'px';}
+  };
+  const up=()=>{
+    if(drg){detectConns();renderBoard();}
+    drg=null;
+    window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);
+  };
+  window.addEventListener('mousemove',mv);window.addEventListener('mouseup',up);
+}
+
+// ════════════════════════════════════════════════════════
+// PAN / ZOOM
+// ════════════════════════════════════════════════════════
+let pan=false,ps={x:0,y:0};
+boardEl.addEventListener('mousedown',e=>{
+  if(e.target===boardEl||e.target.id==='canvas'){
+    pan=true;ps={x:e.clientX-S.panX,y:e.clientY-S.panY};boardEl.style.cursor='grabbing';
+  }
+});
+window.addEventListener('mousemove',e=>{
+  if(!pan)return;
+  S.panX=e.clientX-ps.x;S.panY=e.clientY-ps.y;
+  document.getElementById('canvas').style.transform=`translate(${S.panX}px,${S.panY}px) scale(${S.zoom})`;
+  document.getElementById('zoomInd').textContent=Math.round(S.zoom*100)+'%';
+});
+window.addEventListener('mouseup',()=>{pan=false;boardEl.style.cursor='default';});
+boardEl.addEventListener('wheel',e=>{
+  e.preventDefault();
+  S.zoom=Math.max(0.22,Math.min(2.2,S.zoom*(e.deltaY>0?.87:1.15)));
+  renderBoard();
+},{passive:false});
+function zI(){S.zoom=Math.min(2.2,S.zoom*1.18);renderBoard();}
+function zO(){S.zoom=Math.max(0.22,S.zoom*.85);renderBoard();}
+function resetV(){S.zoom=1;S.panX=280;S.panY=60;renderBoard();}
+function clearBoard(){
+  if(!S.placed.length||confirm('Vider le plateau ?')){
+    S.placed=[];S.conns=[];S.selected=null;S.selSide=null;renderBoard();
+  }
+}
+function autoArr(){
+  if(!S.placed.length)return;
+  const n=S.placed.length;
+  S.placed.forEach((bc,i)=>{
+    if(i===0){bc.x=300;bc.y=200;}
+    else{const a=(i-1)/(n-1)*Math.PI*2;bc.x=300+Math.cos(a)*HW*1.05;bc.y=200+Math.sin(a)*HH*0.78;}
+  });
+  detectConns();renderBoard();
+}
+
+// ════════════════════════════════════════════════════════
+// SELECT CARD → possibilities panel
+// ════════════════════════════════════════════════════════
+function selectCard(boardId){
+  S.selected=boardId;
+  const bc=getBC(boardId);if(!bc){renderBoard();return;}
+  const card=getCard(bc.cardId);if(!card)return;
+  const ty=TYPES[card.type];
+  const rar=RARITY[card.rarity];
+  const illusId=S.illusMap[card.id]||'aqua';
+
+  // Connected sides
+  const connSides=new Set();
+  S.conns.forEach(c=>{
+    if(c.aId===bc.id)connSides.add(c.aSide);
+    if(c.bId===bc.id)connSides.add(c.bSide);
+  });
+
+  const HINTS=[
+    ['Commence l\'histoire ici','Voici comment tout a débuté','Le décor se met en place…'],
+    ['Un nouveau personnage entre en scène','Quelque chose arrive de l\'est','Une surprise surgit'],
+    ['L\'action s\'intensifie','Un choix important se présente','Le moment de vérité'],
+    ['L\'histoire trouve sa résolution','Tout converge vers cet instant','La leçon se révèle'],
+    ['Un allié inattendu apparaît','Le passé refait surface','Une aide arrive'],
+    ['Un secret se dévoile','Les choses ne sont pas ce qu\'elles semblent','Un retournement commence'],
+  ];
+
+  const sidesHTML=card.sides.map((action,si)=>{
+    const isConn=connSides.has(si);
+    const hint=rnd(HINTS[si]);
+    return `<div class="sa${isConn?' act':''}" onclick="S.selSide=${si};renderBoard()">
+      <div class="sa-n" style="background:${ty.accent}">${si}</div>
+      <div class="sa-c">
+        <div class="sa-a">${action}</div>
+        <div class="sa-k">${SIDE_LABELS[si]} → se connecte au côté ${oppSide(si)} du voisin${isConn?' ✦ Connecté':''}</div>
+        <div class="sa-h">${hint}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('possContent').innerHTML=`
+    <div class="poss-h">
+      <div class="poss-thumb">${genArt(card,illusId,60,69)}</div>
+      <div class="poss-meta">
+        <div class="poss-name">${card.icon} ${card.name}</div>
+        <div class="poss-type" style="color:${ty.accent}">${ty.label} · <span style="color:${rar.color}">${rar.label}</span></div>
+        <div class="poss-desc">${card.desc}</div>
+      </div>
+    </div>
+    <div class="splbl">6 Côtés — Ce que tu peux raconter</div>
+    <div class="sa-list">${sidesHTML}</div>
+    <div class="splbl">Se marie bien avec</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap">
+      ${card.combinesWith.map(cid=>{
+        const c=getCard(cid);
+        return c?`<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);padding:3px 8px;font-size:0.65rem;cursor:pointer;transition:all .14s;border-radius:2px"
+          onclick="addToBoard('${c.id}',${bc.x+NBR[Math.floor(Math.random()*6)][0]},${bc.y+NBR[Math.floor(Math.random()*6)][1]})"
+          title="${c.desc}">${c.icon} ${c.name}</div>`:''
+      }).join('')}
+    </div>`;
+
+  renderIllus(bc,card,ty,rar);
+  spTab('poss',document.querySelector('.st:nth-child(2)'));
+  renderBoard();
+}
+
+function renderIllus(bc,card,ty,rar){
+  const cur=S.illusMap[card.id]||'aqua';
+  document.getElementById('illusContent').innerHTML=`
+    <div class="poss-h" style="margin-bottom:12px">
+      <div class="poss-meta">
+        <div class="poss-name">${card.icon} ${card.name}</div>
+        <div class="poss-desc" style="margin-top:5px">Même carte, mêmes règles — 4 ambiances d'illustrateurs différents.</div>
+      </div>
+    </div>
+    <div class="splbl">4 Versions</div>
+    <div class="illus-row">
+      ${ILLUS.map(st=>`
+        <div class="itm ${cur===st.id?'sel':''}" onclick="S.illusMap['${card.id}']='${st.id}';renderBoard();renderIllus(getBC('${bc.id}'),getCard('${card.id}'),TYPES['${card.type}'],RARITY['${card.rarity}'])">
+          <div class="itm-img">${genArt(card,st.id,44,51)}</div>
+          <div class="itm-n">${st.name}</div>
+          <div class="itm-n" style="opacity:0.55">${st.author}</div>
+        </div>`).join('')}
+    </div>
+    <div style="margin-top:14px;font-size:0.68rem;color:rgba(240,232,216,0.35);line-height:1.6">
+      ✦ Membres VIP : soumettez vos illustrations<br>✦ Contributeurs partagent les revenus du pack
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════════
+// STORY BUILDER
+// ════════════════════════════════════════════════════════
+const INTROS=['Il était une fois','Par un matin de lumière douce','Dans ce monde où les cœurs guidaient les pas','Une histoire commença comme toujours','Ce jour-là, quelque chose de rare se mit en mouvement'];
+const LINK=['Et c\'est alors que','Peu après','Sans le chercher','Le cœur plein d\'espoir','Et quelque chose d\'inattendu se produisit :'];
+const CONN_P=['Dans ce moment suspendu, deux chemins se croisèrent :','Et là, une connexion rare se noua :','C\'est là que tout prit son sens :','L\'histoire trouva son nœud :'];
+const ENDS=['Et depuis ce jour, quelque chose d\'invisible mais solide reliait chacun à cette histoire.','La fin n\'était qu\'un commencement déguisé.','Chacun repartit avec quelque chose qu\'il n\'avait pas en arrivant.','L\'histoire continue — peut-être même dans ton cœur, en ce moment.'];
+
+function buildStory(){
+  const cards=S.placed.map(bc=>({bc,card:getCard(bc.cardId)})).filter(x=>x.card);
+  const blEl=document.getElementById('storyBlocks');
+  const csEl=document.getElementById('connSec');
+  const ccEl=document.getElementById('connContent');
+  if(!cards.length){
+    blEl.innerHTML=`<div class="es"><div class="es-i">📖</div><div class="es-t">Glisse des cartes hexagonales sur le plateau pour construire l'histoire ici.</div></div>`;
+    csEl.style.display='none';return;
+  }
+  let html='';
+  cards.forEach(({bc,card},i)=>{
+    const ty=TYPES[card.type];
+    const sideAction=rnd(card.sides);
+    const txt=i===0
+      ?`${rnd(INTROS)}, ${card.icon} <strong>${card.name}</strong> entra dans le récit. ${card.desc.split('.')[0]}.\n\nSon premier geste : <em>${sideAction.toLowerCase()}</em>.`
+      :`${rnd(LINK)}, ${card.icon} <strong>${card.name}</strong> rejoignit l'histoire.\n\nEt avec lui·elle : <em>${sideAction.toLowerCase()}</em>.`;
+    html+=`<div class="sblk" style="--blk-c:${ty.accent}">
+      <div class="sblk-h">${card.icon} ${card.name} · ${ty.label}</div>
+      <div class="sblk-t">${txt}</div>
+    </div>`;
+  });
+  html+=`<div class="sblk" style="--blk-c:rgba(200,146,42,0.45);border-left-style:dashed">
+    <div class="sblk-h">✦ Pour terminer</div>
+    <div class="sblk-t" style="font-style:italic">${rnd(ENDS)}</div>
+  </div>`;
+  blEl.innerHTML=html;
+  if(S.conns.length){
+    csEl.style.display='block';
+    ccEl.innerHTML=S.conns.map(conn=>{
+      const ca=getCard(getBC(conn.aId)?.cardId),cb=getCard(getBC(conn.bId)?.cardId);
+      if(!ca||!cb)return'';
+      return `<div class="conn-moment">
+        <div class="cm-h">✦ Moment de connexion</div>
+        <div class="cm-t">
+          ${ca.icon} <strong>${ca.name}</strong> : « <em>${ca.sides[conn.aSide].toLowerCase()}</em> »<br>
+          <span style="color:var(--gold2)"> ⟺ </span>
+          ${cb.icon} <strong>${cb.name}</strong> : « <em>${cb.sides[conn.bSide].toLowerCase()}</em> »<br>
+          <span style="opacity:0.6;font-size:0.72rem">${rnd(CONN_P)} ${ca.icon} et ${cb.icon} s'influencèrent — l'une provoquant l'autre, l'autre répondant. Ici l'histoire prend sa profondeur.</span>
+        </div>
+      </div>`;
+    }).join('');
+  } else csEl.style.display='none';
+}
+
+function copyStory(){
+  const t=[...document.querySelectorAll('.sblk-t')].map(e=>e.innerText).join('\n\n');
+  navigator.clipboard?.writeText(t);
+}
+function shareStory(){
+  alert('Code : HT-'+Math.random().toString(36).substr(2,4).toUpperCase()+'-'+Math.random().toString(36).substr(2,4).toUpperCase()+'\n(Fonctionnalité Premium)');
+}
+
+// ════════════════════════════════════════════════════════
+// TOOLTIP
+// ════════════════════════════════════════════════════════
+function showTT(e,si,action,boardId){
+  const tt=document.getElementById('tt');
+  const isConn=S.conns.some(c=>(c.aId===boardId&&c.aSide===si)||(c.bId===boardId&&c.bSide===si));
+  tt.innerHTML=`<div class="tt-h">${SIDE_LABELS[si]} (côté ${si})</div><div>${action}</div><div class="tt-c">↔ Côté ${oppSide(si)} (${SIDE_LABELS[oppSide(si)]}) du voisin${isConn?' · ✦ CONNECTÉ':''}</div>`;
+  tt.style.cssText=`display:block;left:${e.clientX+14}px;top:${e.clientY+8}px;`;
+}
+function hideTT(){document.getElementById('tt').style.display='none';}
+
+// ════════════════════════════════════════════════════════
+// PANEL TABS
+// ════════════════════════════════════════════════════════
+function spTab(id,btn){
+  ['story','poss','illus'].forEach(t=>{
+    const el=document.getElementById('sp-'+t);
+    if(el)el.style.display=t===id?'flex':'none';
+    if(el)el.style.flexDirection='column';
+  });
+  document.querySelectorAll('.st').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+}
+
+// ════════════════════════════════════════════════════════
+// LIBRARY
+// ════════════════════════════════════════════════════════
+function buildLib(){
+  const f=document.getElementById('libF');
+  f.innerHTML=`<button class="lf on" onclick="setLF('all',this)">Tous</button>`
+    +Object.entries(TYPES).map(([k,v])=>`<button class="lf" onclick="setLF('${k}',this)">${v.label}</button>`).join('');
+  renderLib();
+}
+function setLF(t,btn){
+  S.libF=t;
+  document.querySelectorAll('.lf').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');renderLib();
+}
+function filterLib(s){S.libS=s.toLowerCase();renderLib();}
+function renderLib(){
+  const el=document.getElementById('clist');
+  const list=CARDS.filter(c=>{
+    if(S.libF!=='all'&&c.type!==S.libF)return false;
+    if(S.libS&&!c.name.toLowerCase().includes(S.libS))return false;
+    return true;
+  });
+  el.innerHTML=list.map(card=>{
+    const ty=TYPES[card.type],rar=RARITY[card.rarity];
+    return `<div class="cli" id="cli-${card.id}">
+      <div class="cli-ico">${genArt(card,'aqua',28,32)}</div>
+      <div class="cli-info">
+        <div class="cli-n">${card.icon} ${card.name}</div>
+        <div class="cli-t" style="color:${ty.accent}">${ty.label}</div>
+      </div>
+      <div class="cli-d" style="background:${rar.gem}" title="${rar.label}"></div>
+    </div>`;
+  }).join('');
+  list.forEach(card=>{
+    const el2=document.getElementById('cli-'+card.id);
+    if(el2)initLibDrag(el2,card.id);
+  });
+}
+
+// ════════════════════════════════════════════════════════
+// COLLECTION
+// ════════════════════════════════════════════════════════
+function buildColl(){
+  const f=document.getElementById('collF');
+  f.innerHTML=`<button class="pf on" onclick="collF('all',this)">Tous</button>`
+    +Object.entries(TYPES).map(([k,v])=>`<button class="pf" onclick="collF('${k}',this)">${v.label}</button>`).join('');
+  renderColl('all');
+}
+function collF(t,btn){
+  document.querySelectorAll('.pf').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');renderColl(t);
+}
+function renderColl(t){
+  const grid=document.getElementById('collGrid');
+  const list=t==='all'?CARDS:CARDS.filter(c=>c.type===t);
+  grid.innerHTML=list.map(card=>{
+    const ty=TYPES[card.type],rar=RARITY[card.rarity];
+    return `<div class="cc" onclick="openModal('${card.id}')">
+      <div class="cc-art" style="background:${ty.bg}">${genArt(card,'aqua',240,130)}</div>
+      <div class="cc-info">
+        <div class="cc-n">${card.icon} ${card.name}</div>
+        <div style="font-size:0.7rem;font-style:italic;color:rgba(240,232,216,0.42);margin:2px 0 5px">${(card.flavor||'').replace(/«|»/g,'').trim().substring(0,50)}…</div>
+        <div class="cc-m">
+          <span class="cc-type" style="color:${ty.accent}">${ty.label}</span>
+          <span class="cc-rar" style="color:${rar.color}">${rar.stars} ${rar.label}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════
+// MODAL
+// ════════════════════════════════════════════════════════
+function openModal(cardId){
+  const card=getCard(cardId);if(!card)return;
+  const ty=TYPES[card.type],rar=RARITY[card.rarity];
+  let selId=S.illusMap[cardId]||'aqua';
+
+  const render=()=>{
+    const art=genArt(card,selId,HW,HH);
+    document.getElementById('modalC').innerHTML=`
+      <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+        <div style="width:${HW}px;height:${HH}px;flex-shrink:0;position:relative">
+          ${hexCardSVG(card,selId,false)}
+        </div>
+        <div style="flex:1;min-width:200px">
+          <div style="font-family:'Palatino Linotype',Palatino,Georgia,serif;font-size:1.05rem;font-weight:700;color:var(--gold2);margin-bottom:2px">${card.icon} ${card.name}</div>
+          <div style="font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:${ty.accent};margin-bottom:2px">${ty.label}</div>
+          <div style="font-size:0.65rem;color:${rar.color};margin-bottom:8px">${rar.stars} ${rar.label}</div>
+          <div style="font-size:0.75rem;font-style:italic;color:rgba(240,232,216,0.65);border-left:2px solid rgba(200,146,42,0.28);padding-left:7px;line-height:1.58;margin-bottom:10px">${card.flavor||card.desc}</div>
+          <div style="font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:5px">Illustrateur</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+            ${ILLUS.map(st=>`
+              <div style="text-align:center;cursor:pointer" onclick="S.illusMap['${cardId}']='${st.id}';selId='${st.id}';document.getElementById('modalC').innerHTML='';openModal('${cardId}')">
+                <div style="width:38px;height:44px;overflow:hidden;border:2px solid ${selId===st.id?'var(--gold2)':'rgba(255,255,255,0.07)'}">${genArt(card,st.id,38,44)}</div>
+                <div style="font-size:0.5rem;color:rgba(240,232,216,0.38);margin-top:2px">${st.name}</div>
+              </div>`).join('')}
+          </div>
+          <div style="font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:5px">6 Côtés</div>
+          <div style="display:flex;flex-direction:column;gap:3px;max-height:200px;overflow-y:auto">
+            ${card.sides.map((s,i)=>`<div style="display:flex;gap:7px;align-items:flex-start;background:rgba(255,255,255,0.04);padding:6px 8px;font-size:0.7rem">
+              <div style="width:17px;height:17px;border-radius:50%;background:${ty.accent};display:flex;align-items:center;justify-content:center;font-size:0.52rem;font-weight:700;flex-shrink:0">${i}</div>
+              <div><div style="font-weight:700;color:rgba(240,232,216,0.9)">${s}</div><div style="font-size:0.58rem;color:rgba(200,146,42,0.55)">${SIDE_LABELS[i]} ↔ ${SIDE_LABELS[oppSide(i)]} du voisin</div></div>
+            </div>`).join('')}
+          </div>
+          <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
+            <button class="sab" onclick="addToBoard('${cardId}',200,80);closeModal()">⬡ Poser sur le plateau</button>
+            <button class="sab g" onclick="closeModal()">Fermer</button>
+          </div>
+        </div>
+      </div>`;
+  };
+  render();
+  document.getElementById('modal').style.display='flex';
+}
+function closeModal(){document.getElementById('modal').style.display='none';}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
+
+// ════════════════════════════════════════════════════════
+// RULES
+// ════════════════════════════════════════════════════════
+function buildRules(){
+  const rules=[
+    {t:'⬡ Vraies Cartes Hexagonales',c:'Les cartes ont la forme hexagonale pointue (pointy-top). 6 côtés, 6 arêtes, 6 nœuds d\'action positionnés exactement sur chaque arête. Style visuel inspiré de Magic: The Gathering avec cadre doré, zone d\'art, ligne de type, texte de règles.'},
+    {t:'🔄 Règle d\'Alignement des Côtés',c:'Côté 0 (Haut-Droite) ↔ Côté 3 (Bas-Gauche) du voisin. Côté 1 (Droite) ↔ Côté 4 (Gauche). Côté 2 (Bas-Droite) ↔ Côté 5 (Haut-Gauche). Quand deux hexagones sont proches, leurs côtés opposés créent un moment-clé de l\'histoire.'},
+    {t:'📖 Panneau Histoire',c:'L\'histoire se construit carte par carte dans le panneau droit. Chaque carte contribue un paragraphe. Les connexions entre cartes adjacentes génèrent des moments de dialogue narratif — l\'action d\'un côté provoque la réponse du côté opposé de la carte voisine.'},
+    {t:'✦ Onglet Possibilités',c:'Clique sur une carte pour voir ses 6 côtés avec des pistes narratives concrètes : ce que le parent peut dire à cet instant, comment le côté se connecte au voisin, et si une connexion est déjà active (nœud brillant).'},
+    {t:'🎨 4 Versions Illustrateurs',c:'Aquarelle · Gravure · Art Naïf · Encre de Chine. Chaque version a un rendu visuel différent mais les mêmes règles. Les membres VIP peuvent soumettre leurs propres illustrations.'},
+    {t:'⭐ Rareté & Valeurs',c:'Plus une valeur est humaniste et vertueuse, plus la carte est rare. Les cartes Mythiques (Amour Inconditionnel, Vœu de la Lune, Loup Bienveillant…) sont les plus puissantes narrativement.'},
+    {t:'💚 Charte Bienveillance',c:'Les antagonistes sont motivés par la peur ou la solitude — jamais par leur appartenance à un groupe humain. Aucune carte n\'associe le mal à une race, religion ou ethnie. Tout antagoniste peut se racheter.'},
+    {t:'♾️ Mode Autisme',c:'Histoires séquentielles et prévisibles. Structure claire début/milieu/fin. Envoi du QR par mail pour réécouter à l\'infini. Pictogrammes ARASAAC sur chaque action de côté.'},
+  ];
+  document.getElementById('rulesG').innerHTML=rules.map(r=>`
+    <div class="rc"><div class="rc-t">${r.t}</div><div class="rc-c">${r.c}</div></div>`).join('');
+}
+
+// ════════════════════════════════════════════════════════
+// VIEWS
+// ════════════════════════════════════════════════════════
+function showView(id,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.getElementById('v-'+id).classList.add('on');
+  document.querySelectorAll('.np').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+// ════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════
+buildLib();buildColl();buildRules();renderBoard();
+setTimeout(()=>{
+  addToBoard('L01',160,60);
+  addToBoard('P01',430,60);
+  addToBoard('E01',295,280);
+  setTimeout(()=>{autoArr();selectCard(S.placed[0]?.id);},60);
+},80);
+</script>
+</body>
+</html>

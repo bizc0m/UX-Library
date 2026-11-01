@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./assets/three.module.js"
+    }
+  }
+  </script>
+  <title>MadameGlitch V4 — Rack Modulaire (COMPLET)</title>
+  <style>
+    :root {
+      --bg: #000;
+      --fg: #fff;
+      --accent: #f0f;
+      --panel-bg: rgba(0,0,0,0.8);
+      --node-bg: #222;
+      --node-fg: #f0f;
+      --cable-audio: #f00;
+      --cable-video: #00f;
+      --cable-param: #0f0;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Courier New", monospace;
+      overflow: hidden;
+    }
+    #rack-container {
+      position: fixed;
+      top: 50px;
+      left: 180px;
+      right: 0;
+      bottom: 0;
+      z-index: 0;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      gap: 4px;
+      padding: 8px;
+    }
+    .slot {
+      background: var(--panel-bg);
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: var(--accent);
+    }
+    .node {
+      background: var(--node-bg);
+      border: 1px solid var(--node-fg);
+      border-radius: 8px;
+      padding: 8px;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .node h4 {
+      margin: 0;
+      font-size: 12px;
+      color: var(--node-fg);
+    }
+    .node-controls {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px;
+    }
+    .node-controls input[type="range"] {
+      width: 100%;
+      accent-color: var(--node-fg);
+    }
+    .node-outputs {
+      display: flex;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .output {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid var(--node-fg);
+      cursor: pointer;
+    }
+    .output.audio { background: var(--cable-audio); }
+    .output.video { background: var(--cable-video); }
+    .output.param { background: var(--cable-param); }
+    .node-inputs {
+      display: flex;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .input {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid var(--node-fg);
+      cursor: pointer;
+    }
+    .input.audio { background: var(--cable-audio); }
+    .input.video { background: var(--cable-video); }
+    .input.param { background: var(--cable-param); }
+    #canvas-container {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      width: 400px;
+      height: 300px;
+      z-index: 1;
+      border: 1px solid var(--accent);
+      border-radius: 8px 0 0 0;
+      background: rgba(0,0,0,0.5);
+      pointer-events: none;
+    }
+    #top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.9), transparent);
+      z-index: 10;
+      pointer-events: auto;
+    }
+    button {
+      background: var(--node-bg);
+      color: var(--node-fg);
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+    }
+    button:hover {
+      background: var(--accent);
+      color: var(--bg);
+    }
+    #node-palette {
+      position: fixed;
+      left: 0;
+      top: 50px;
+      bottom: 0;
+      width: 180px;
+      background: var(--panel-bg);
+      border: 1px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 8px;
+      z-index: 5;
+      overflow-y: auto;
+    }
+    #node-palette h4 {
+      margin: 0 0 8px;
+      font-size: 12px;
+      color: var(--accent);
+    }
+    .palette-node {
+      background: var(--node-bg);
+      border: 1px solid var(--node-fg);
+      border-radius: 4px;
+      padding: 4px;
+      margin-bottom: 4px;
+      font-size: 10px;
+      cursor: grab;
+    }
+    .palette-node:active {
+      cursor: grabbing;
+    }
+    #logo {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--accent);
+      text-shadow: 0 0 10px var(--accent);
+    }
+    textarea {
+      width: 100%;
+      background: var(--node-bg);
+      color: var(--node-fg);
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      padding: 4px;
+      font-family: monospace;
+      font-size: 10px;
+      resize: vertical;
+    }
+    select, input[type="text"], input[type="number"] {
+      width: 100%;
+      background: var(--node-bg);
+      color: var(--node-fg);
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      padding: 4px;
+      font-family: inherit;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="top-bar">
+    <div id="logo">🎛️ MadameGlitch V4</div>
+    <div>
+      <span id="fps-counter" style="margin-right:12px;color:var(--accent)">FPS: 0</span>
+      <button id="btn-new-rack">📄 New Rack</button>
+      <button id="btn-save-rack">💾 Save Rack</button>
+      <button id="btn-load-rack">📂 Load Rack</button>
+      <button id="btn-export">🎬 Export</button>
+    </div>
+  </div>
+
+  <div id="node-palette">
+    <h4>Nodes</h4>
+    <div class="palette-node" draggable="true" data-node="deck">Deck</div>
+    <div class="palette-node" draggable="true" data-node="mixer">Mixer</div>
+    <div class="palette-node" draggable="true" data-node="fx">FX</div>
+    <div class="palette-node" draggable="true" data-node="plasma">Plasma</div>
+    <div class="palette-node" draggable="true" data-node="glitch">Glitch</div>
+    <div class="palette-node" draggable="true" data-node="bloom">Bloom</div>
+    <div class="palette-node" draggable="true" data-node="crt">CRT</div>
+    <div class="palette-node" draggable="true" data-node="kaleidoscope">Kaleidoscope</div>
+    <div class="palette-node" draggable="true" data-node="rotozoomer">Rotozoomer</div>
+    <div class="palette-node" draggable="true" data-node="sine-scroller">Sine Scroller</div>
+    <div class="palette-node" draggable="true" data-node="chrome-logo">Chrome Logo</div>
+    <div class="palette-node" draggable="true" data-node="timeline">Timeline</div>
+    <div class="palette-node" draggable="true" data-node="shader">Shader Editor</div>
+    <div class="palette-node" draggable="true" data-node="presets">Presets</div>
+    <div class="palette-node" draggable="true" data-node="midi">MIDI</div>
+    <div class="palette-node" draggable="true" data-node="websocket">WebSocket</div>
+    <div class="palette-node" draggable="true" data-node="switch">Switch</div>
+    <div class="palette-node" draggable="true" data-node="export">Export</div>
+    <div class="palette-node" draggable="true" data-node="templates">Templates</div>
+    <div class="palette-node" draggable="true" data-node="output">Output</div>
+  </div>
+
+  <div id="rack-container"></div>
+
+  <canvas id="canvas-container"></canvas>
+
+  <svg id="cables-svg" style="position:fixed;inset:0;z-index:2;pointer-events:none"></svg>
+
+  <script type="module" src="madameglitch_v4_rack_app.js"></script>
+</body>
+</html>

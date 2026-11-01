@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mirae — Prospection & Business</title>
+  <style>
+    :root {
+      --bg: #eef2f3;
+      --panel: #ffffff;
+      --ink: #172124;
+      --muted: #627074;
+      --line: #ccd8db;
+      --soft: #f7fafb;
+      --accent: #08756f;
+      --accent-soft: #e0f5f2;
+      --danger: #a93531;
+      --danger-soft: #ffecea;
+      --warn: #936100;
+      --warn-soft: #fff3d8;
+      --good: #21663b;
+      --good-soft: #e8f6ed;
+      --blue: #285f8f;
+      --blue-soft: #e7f1fb;
+      --shadow: 0 12px 28px rgba(19, 36, 41, .08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 14px/1.42 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    button, input, select { font: inherit; }
+    .shell {
+      min-height: 100dvh;
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+    }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100dvh;
+      overflow: auto;
+      background: #fbfcfc;
+      border-right: 1px solid var(--line);
+      padding: 18px 14px;
+    }
+    .brand {
+      border-bottom: 1px solid var(--line);
+      padding: 4px 8px 16px;
+      margin-bottom: 14px;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+    .brand p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .side-title {
+      margin: 16px 8px 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .navlink, .filter {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--ink);
+      padding: 9px 10px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .navlink:hover, .filter:hover, .filter.active {
+      background: #e9eef0;
+      text-decoration: none;
+    }
+    .filter.active {
+      border-color: #bac8cb;
+      font-weight: 750;
+    }
+    .count {
+      display: inline-grid;
+      place-items: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: white;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    main {
+      min-width: 0;
+      padding: 22px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .hero-main, .control {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+    .hero-main h2 {
+      margin: 0;
+      max-width: 900px;
+      font-size: 27px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+    .hero-main p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      max-width: 86ch;
+    }
+    .control {
+      display: grid;
+      gap: 10px;
+    }
+    label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    input, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfc;
+      padding: 10px 11px;
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 13px;
+      min-height: 105px;
+    }
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .metric strong {
+      display: block;
+      margin-top: 12px;
+      font-size: 29px;
+      line-height: 1;
+    }
+    .metric small {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(340px, .55fr);
+      gap: 14px;
+      align-items: start;
+    }
+    .panel {
+      margin-bottom: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 15px;
+      background: #fbfcfc;
+      border-bottom: 1px solid var(--line);
+    }
+    .panel-head h2 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+    .panel-head p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      color: var(--ink);
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      text-decoration: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 11px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f5f8f8;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      white-space: nowrap;
+    }
+    tbody tr:hover { background: #f8fbfb; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .name strong { display: block; }
+    .name span { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 23px;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .p1 { color: var(--danger); background: var(--danger-soft); }
+    .p2 { color: var(--warn); background: var(--warn-soft); }
+    .p3 { color: var(--blue); background: var(--blue-soft); }
+    .todo { color: var(--warn); background: var(--warn-soft); }
+    .proof { color: var(--green); background: var(--green-soft); }
+    .unknown { color: var(--danger); background: var(--danger-soft); }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 10px;
+      padding: 13px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+      padding: 12px;
+      min-height: 128px;
+      display: grid;
+      gap: 8px;
+    }
+    .card strong { font-size: 14px; }
+    .card p { margin: 0; color: var(--muted); font-size: 12px; }
+    .card .bottom { align-self: end; display: flex; gap: 7px; flex-wrap: wrap; }
+    .stack {
+      padding: 13px;
+      display: grid;
+      gap: 10px;
+    }
+    .item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+      padding: 12px;
+    }
+    .item header {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .item strong { display: block; }
+    .item p { margin: 0; color: var(--muted); font-size: 12px; }
+    .lane {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(140px, 1fr));
+      gap: 8px;
+      padding: 13px;
+      overflow-x: auto;
+    }
+    .stage {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+      padding: 11px;
+      min-height: 110px;
+    }
+    .stage strong { display: block; }
+    .stage span { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }
+    .stage.active { border-color: var(--accent); background: var(--accent-soft); }
+    .note {
+      margin: 13px;
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+      padding: 11px 12px;
+      border-radius: 4px;
+    }
+    .note strong { display: block; margin-bottom: 4px; }
+    .note p { margin: 0; color: #31504c; }
+    .hidden { display: none !important; }
+    @media (max-width: 1120px) {
+      .shell { grid-template-columns: 1fr; }
+      aside {
+        position: relative;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .hero, .grid { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 680px) {
+      main { padding: 14px; }
+      .metrics { grid-template-columns: 1fr; }
+      .panel { overflow-x: auto; }
+      th, td { min-width: 150px; }
+      .hero-main h2 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside>
+      <div class="brand">
+        <h1>Prospection & Business</h1>
+        <p>Dashboard Mirae centré revenus, cibles, contacts, négociation, preuves.</p>
+      </div>
+      <div class="side-title">Vues</div>
+      <a class="navlink" href="#pipeline">Pipeline <span class="count">9</span></a>
+      <a class="navlink" href="#brands">Marques <span class="count">9</span></a>
+      <a class="navlink" href="#partners">Partenaires <span class="count">5</span></a>
+      <a class="navlink" href="#money">Business <span class="count">4</span></a>
+      <a class="navlink" href="#actions">Actions 0 budget <span class="count">7</span></a>
+      <a class="navlink" href="#sources">Sources <span class="count">6</span></a>
+
+      <div class="side-title">Filtre</div>
+      <button class="filter active" data-filter="all" type="button">Toutes cibles <span class="count">19</span></button>
+      <button class="filter" data-filter="brand" type="button">Marques <span class="count">9</span></button>
+      <button class="filter" data-filter="institution" type="button">Institutions <span class="count">5</span></button>
+      <button class="filter" data-filter="partner" type="button">Partenaires CH <span class="count">5</span></button>
+    </aside>
+
+    <main>
+      <section class="hero">
+        <div class="hero-main">
+          <h2>Objectif : signer ou éliminer vite, pas collectionner des tableaux.</h2>
+          <p>Le dossier utile est la prospection : marques K-Hair à implanter, relais institutionnels, partenaires suisses capables d’opérer, demandes commerciales à envoyer, et preuves nécessaires avant décision.</p>
+        </div>
+        <div class="control">
+          <label for="search">Recherche</label>
+          <input id="search" type="search" placeholder="Narka, MOQ, KOTRA, distributeur, conformité">
+          <label for="priority">Priorité</label>
+          <select id="priority">
+            <option value="all">Toutes priorités</option>
+            <option value="P1">P1 seulement</option>
+            <option value="P2">P2 seulement</option>
+            <option value="P3">P3 seulement</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="metrics">
+        <div class="metric"><span>Marques à qualifier</span><strong>9</strong><small>dont 4 P1 strictes</small></div>
+        <div class="metric"><span>Modèle cible</span><strong>15%</strong><small>redevance sur CA net ou marge</small></div>
+        <div class="metric"><span>Profils/pistes</span><strong>127</strong><small>prospection artistes/coiffeurs</small></div>
+        <div class="metric"><span>Emails manquants</span><strong>279</strong><small>sur 299 entités</small></div>
+        <div class="metric"><span>Go condition</span><strong>4</strong><small>export, prix, conformité, test</small></div>
+      </section>
+
+      <div class="grid">
+        <div>
+          <section class="panel" id="pipeline">
+            <div class="panel-head">
+              <div>
+                <h2>Pipeline business</h2>
+                <p>Chaque cible doit passer par les mêmes portes.</p>
+              </div>
+            </div>
+            <div class="lane">
+              <div class="stage active"><strong>G1 Identifier</strong><span>Nom, site, canal, présence CH/EU.</span></div>
+              <div class="stage active"><strong>G2 Vérifier</strong><span>Présence réelle, contact export, source primaire.</span></div>
+              <div class="stage"><strong>G3 Contacter</strong><span>Email/Instagram/site + pitch Mirae.</span></div>
+              <div class="stage"><strong>G4 Négocier</strong><span>MOQ, prix, Incoterms, territoire, exclusivité.</span></div>
+              <div class="stage"><strong>G5 Décider</strong><span>Conformité + samples + test salon + marge.</span></div>
+            </div>
+            <div class="note">
+              <strong>Règle dure</strong>
+              <p>Aucune marque ne devient GO sur storytelling ou score. Minimum : contact export, conditions commerciales, dossier conformité disponible, test salon.</p>
+            </div>
+          </section>
+
+          <section class="panel" id="targets">
+            <div class="panel-head">
+              <div>
+                <h2>Cibles à contacter</h2>
+                <p>Vue opérationnelle marques + institutions + opérateurs suisses.</p>
+              </div>
+              <div class="toolbar">
+                <button class="btn" type="button" id="exportCsv">Export CSV</button>
+                <span class="pill proof" id="visibleCount">19 visibles</span>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Cible</th>
+                  <th>Type</th>
+                  <th>Priorité</th>
+                  <th>Contacts cliquables</th>
+                  <th>Demande business</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody id="targetRows"></tbody>
+            </table>
+          </section>
+
+          <section class="panel" id="brands">
+            <div class="panel-head">
+              <div>
+                <h2>Shortlist marques K-Hair</h2>
+                <p>Marques à qualifier pour implantation Suisse.</p>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Marque</th>
+                  <th>Pourquoi</th>
+                  <th>Présence</th>
+                  <th>Blocage</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>Narka</strong><br><span class="pill p1">P1</span></td><td>Rare, tendance, zéro CH documenté.</td><td>CH non, EU non vérifiée.</td><td>Contact export absent.</td><td>Demander intérêt Suisse + MOQ + conformité + samples.</td></tr>
+                <tr><td><strong>ViveLab</strong><br><span class="pill p1">P1</span></td><td>Scalp premium, contact direct, export hors CH.</td><td>CH non trouvée, EU Qudo Beauty.</td><td>Claims anti-chute sensibles.</td><td>Contacter global@soonnoc.com.</td></tr>
+                <tr><td><strong>Anillo</strong><br><span class="pill p1">P1</span></td><td>Premium fragrance-hair, rare en CH.</td><td>CH non trouvée, EU/FR via MiiN.</td><td>Canal EU peut limiter exclusivité.</td><td>Qualifier territoire Suisse.</td></tr>
+                <tr><td><strong>Treecell</strong><br><span class="pill p1">P1</span></td><td>Scalp specialist, niche.</td><td>CH non trouvée, EU Cosibella/Little Wonderland.</td><td>Email direct non documenté.</td><td>Identifier export manager.</td></tr>
+                <tr><td><strong>Equlib</strong><br><span class="pill p2">P2</span></td><td>Niche lifestyle, hair parfumé.</td><td>CH non trouvée, EU via Baekho.</td><td>Distribution France/Benelux existante.</td><td>Vérifier possibilité Suisse.</td></tr>
+                <tr><td><strong>Dr.FORHAIR</strong><br><span class="pill p2">P2</span></td><td>Spécialiste scalp, export actif.</td><td>CH non trouvée, EU Peacock Wholesale.</td><td>Claims dermatologiques.</td><td>Canal global + conformité claims.</td></tr>
+              </tbody>
+            </table>
+          </section>
+        </div>
+
+        <div>
+          <section class="panel" id="money">
+            <div class="panel-head">
+              <div>
+                <h2>Business model</h2>
+                <p>Ce qui peut vraiment produire du revenu.</p>
+              </div>
+            </div>
+            <div class="stack">
+              <article class="item">
+                <header><strong>Option A · Licence/distribution opérée</strong><span class="pill proof">prioritaire</span></header>
+                <p>Mirae sécurise les droits et garde une redevance cible autour de 15% ; un distributeur gère import, conformité, stock, vente, SAV.</p>
+              </article>
+              <article class="item">
+                <header><strong>Option B · Test salon privé</strong><span class="pill p2">validation</span></header>
+                <p>Samples testés sur clientes Hair by Mirae pour prouver désir, usage, réachat et discours professionnel.</p>
+              </article>
+              <article class="item">
+                <header><strong>Option C · Coffrets B2B</strong><span class="pill p3">secondaire</span></header>
+                <p>Intéressant si produits conformes et marge claire. À ne pas mélanger avec la prospection marque tant que non validé.</p>
+              </article>
+              <article class="item">
+                <header><strong>Option D · Artiste/formation coréenne</strong><span class="pill p2">levier image</span></header>
+                <p>Proposition : lancement exclusif Suisse + 1 jour formation + 4 jours clientèle privée. Financement probable seulement si intérêt commercial concret.</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="panel" id="partners">
+            <div class="panel-head">
+              <div>
+                <h2>Partenaires suisses</h2>
+                <p>À utiliser seulement après marque sécurisée.</p>
+              </div>
+            </div>
+            <div class="stack">
+              <article class="item"><header><strong>GNT SA</strong><span class="pill p1">9/10</span></header><p>Import, stock, commerciaux, SAV, facturation. Contact dossier à vérifier : <a href="https://www.gntgroupe.com/le-groupe/" target="_blank" rel="noreferrer">site trouvé</a>.</p></article>
+              <article class="item"><header><strong>Keller Trading SA</strong><span class="pill p2">7/10</span></header><p>Distribution/logistique B2B. <a href="https://kellertrading.ch/" target="_blank" rel="noreferrer">Site</a> · <a href="mailto:info@kellertrading.ch">info@kellertrading.ch</a> · <a href="tel:+41323582171">+41 32 358 21 71</a>.</p></article>
+              <article class="item"><header><strong>La Boutique du Coiffeur Suisse</strong><span class="pill p3">5/10</span></header><p>Volume retail/pro. <a href="https://www.laboutiqueducoiffeur.ch/fr-ch/magasins" target="_blank" rel="noreferrer">Magasins CH</a> · Genève Les Cygnes <a href="tel:+41227321726">+41 22 732 17 26</a>.</p></article>
+              <article class="item"><header><strong>PerfectHair.ch</strong><span class="pill p3">5/10</span></header><p>E-commerce/logistique. <a href="https://www.perfecthair.ch/fr/contact" target="_blank" rel="noreferrer">Contact</a> · source externe à valider pour B2B.</p></article>
+              <article class="item"><header><strong>Master distributeur sous licence</strong><span class="pill proof">modèle</span></header><p>Contrat tripartite marque — titulaire des droits — opérateur, avec redevance.</p></article>
+            </div>
+          </section>
+
+          <section class="panel" id="actions">
+            <div class="panel-head">
+              <div>
+                <h2>Actions 0 budget</h2>
+                <p>À lancer avant dépenses.</p>
+              </div>
+            </div>
+            <div class="stack">
+              <article class="item"><header><strong>Mini dossier PDF Mirae</strong><span class="pill p1">1 jour</span></header><p>Concept Genève + marques coréennes + modèle partenaire/distribution.</p></article>
+              <article class="item"><header><strong>Email pro dédié</strong><span class="pill p1">30 min</span></header><p>Partnerships/hello/contact commercial pour crédibilité.</p></article>
+              <article class="item"><header><strong>Pipeline de suivi</strong><span class="pill p1">1 h</span></header><p>Statuts : à contacter, contacté, relance, réponse, RDV, perdu.</p></article>
+              <article class="item"><header><strong>3 modèles d’emails</strong><span class="pill p1">2 h</span></header><p>Marques, artistes/salons, distributeurs/institutions.</p></article>
+              <article class="item"><header><strong>Page vitrine simple</strong><span class="pill p2">1 jour</span></header><p>Projet réel, formulaire, proposition claire, pas une idée floue.</p></article>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <section class="panel" id="sources">
+        <div class="panel-head">
+          <div>
+            <h2>Sources internes</h2>
+            <p>Documents utilisés pour ce dashboard.</p>
+          </div>
+        </div>
+        <div class="cards">
+          <article class="card"><strong>Seoul Action Book V2</strong><p>Gate business : preuve terrain, contact nominatif, condition commerciale, décision.</p><div class="bottom"><a class="btn" href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_v3/02_ACTION/SEOUL_ACTION_BOOK_V2.md">Ouvrir</a></div></article>
+          <article class="card"><strong>KHAIR Implantation V2.2</strong><p>Shortlist, contacts et actions précréées : MOQ, EXW, Incoterms, conformité, samples.</p><div class="bottom"><a class="btn" href="../work/mirae_readonly_extract_20260831_1/Mirae/KHAIR_IMPLANTATION_V2_2_KHAIR.xlsx">Ouvrir</a></div></article>
+          <article class="card"><strong>Prospection actionnable</strong><p>Partenaires suisses, actions gratuites, proposition lancement exclusif.</p><div class="bottom"><a class="btn" href="../work/mirae_readonly_extract_20260831_1/Mirae/!%20Seoul-mirae_prospection_actionnable.xlsx">Ouvrir</a></div></article>
+          <article class="card"><strong>Curation premium V3</strong><p>Produits prioritaires : Anillo, Dr.FORHAIR, Narka, ViveLab.</p><div class="bottom"><a class="btn" href="../work/mirae_readonly_extract_20260831_1/Mirae/KHAIR_CURATION_PREMIUM_V3_PRIORITAIRE.xlsx">Ouvrir</a></div></article>
+          <article class="card"><strong>Dossier collection</strong><p>Règle objet, droit, accès, curation avant intégration.</p><div class="bottom"><a class="btn" href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_premier_dossier_collection.md">Ouvrir</a></div></article>
+          <article class="card"><strong>Data Quality Register</strong><p>Dette de contacts et règle INCONNU.</p><div class="bottom"><a class="btn" href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_v3/01_DATA/DATA_QUALITY_REGISTER_V3.md">Ouvrir</a></div></article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const targets = [
+      {name:'Narka', type:'brand', priority:'P1', contact:'https://www.instagram.com/narka_you/ https://x.com/narka_you https://narka.co.kr/', ask:'Intérêt Suisse, MOQ, prix, Incoterms, exclusivité, conformité, samples', status:'À contacter'},
+      {name:'ViveLab', type:'brand', priority:'P1', contact:'global@soonnoc.com https://www.instagram.com/vivelab.global/ https://www.instagram.com/vivelab.kr/ https://vivelab.kr/', ask:'Scalp premium : export CH, claims admis, dossier sécurité, samples', status:'À contacter'},
+      {name:'Anillo', type:'brand', priority:'P1', contact:'https://www.instagram.com/anillo.global/ https://www.instagram.com/anillo_official/ https://anillobeauty.com/', ask:'Territoire Suisse malgré présence EU/FR, prix pro, coffrets, conformité', status:'À contacter'},
+      {name:'Treecell', type:'brand', priority:'P1', contact:'https://treecell.co.kr/', ask:'Identifier export manager, conditions B2B, conformité scalp', status:'À contacter'},
+      {name:'Equlib', type:'brand', priority:'P2', contact:'https://equlib.com/', ask:'Possibilité Suisse hors distributeur FR/Benelux, prix/MOQ', status:'À contacter'},
+      {name:'Dr.FORHAIR', type:'brand', priority:'P2', contact:'https://www.instagram.com/dr.forhair.global/ https://www.instagram.com/dr.forhair.official/ https://drforhair.com/', ask:'Export CH, claims anti-chute, formation salon, conformité', status:'À contacter'},
+      {name:'DASHU', type:'brand', priority:'P3', contact:'dashu.youngeel@gmail.com https://en.dashukorea.com/', ask:'Capsule grooming masculin, export, prix, exclusivité', status:'À qualifier'},
+      {name:'MILK BAOBAB', type:'brand', priority:'P3', contact:'hcho@taenam.co.kr wjlee@taenam.co.kr https://en.milkbaobab.com/ https://www.instagram.com/milkbaobab_official/', ask:'Formats parfumés, wholesale, coffrets, esthétique premium', status:'À qualifier'},
+      {name:'OdiD', type:'brand', priority:'P3', contact:'https://www.instagram.com/odid.official/ https://www.instagram.com/odid.jp/ https://odidkorea.com/', ask:'Territoire Suisse, distributeur EU, hair fragrance, MOQ', status:'À qualifier'},
+      {name:'Swiss Business Hub Korea', type:'institution', priority:'P1', contact:'seoul.sbhkorea@eda.admin.ch https://www.s-ge.com/export/en/swiss-business-hub-korea https://www.linkedin.com/company/sbhkorea', ask:'Introductions nominatives fabricants/export managers', status:'À contacter'},
+      {name:'KOTRA', type:'institution', priority:'P1', contact:'https://www.kotra.or.kr/ https://www.linkedin.com/company/kotra', ask:'Marques export-ready, appels d’offres, introductions', status:'À contacter'},
+      {name:'FKCCI', type:'institution', priority:'P1', contact:'https://www.fkcci.com/ https://www.linkedin.com/company/french-korean-chamber-of-commerce-and-industry', ask:'RDV Seoul, réseau franco-coréen beauté/export', status:'À contacter'},
+      {name:'Korea Cosmetic Association', type:'institution', priority:'P1', contact:'https://kcia.or.kr/', ask:'Cadre cosmétique, membres, relais fabricants', status:'À contacter'},
+      {name:'KGCCI / AHK Korea', type:'institution', priority:'P2', contact:'info@kgcci.com https://korea.ahk.de/ https://www.linkedin.com/company/kgcci', ask:'Réseau B2B, introductions sectorielles', status:'À contacter'},
+      {name:'GNT SA', type:'partner', priority:'P1', contact:'https://www.gntgroupe.com/le-groupe/', ask:'Opérer import, stock, SAV, commerciaux contre redevance. Contact dossier à vérifier.', status:'Après marque sécurisée'},
+      {name:'Keller Trading SA', type:'partner', priority:'P2', contact:'info@kellertrading.ch tel:+41323582171 https://kellertrading.ch/', ask:'Logistique/distribution beauté B2B', status:'Après marque sécurisée'},
+      {name:'La Boutique du Coiffeur Suisse', type:'partner', priority:'P3', contact:'https://www.laboutiqueducoiffeur.ch/fr-ch/magasins tel:+41227321726 tel:+41227358929', ask:'Distribution volume pro/retail si gamme secondaire', status:'Attendre'},
+      {name:'PerfectHair.ch', type:'partner', priority:'P3', contact:'https://www.perfecthair.ch/fr/contact https://www.perfecthair.ch/', ask:'E-commerce/logistique de réassort client', status:'Attendre'},
+      {name:'Master distributeur sous licence', type:'partner', priority:'P1', contact:'Modèle contractuel', ask:'Contrat tripartite + redevance cible 15%', status:'Modèle cible'}
+    ];
+
+    const rows = document.querySelector('#targetRows');
+    const buttons = [...document.querySelectorAll('.filter')];
+    const search = document.querySelector('#search');
+    const priority = document.querySelector('#priority');
+    const visibleCount = document.querySelector('#visibleCount');
+    let activeType = 'all';
+
+    function norm(value) {
+      return value.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+    }
+    function pillClass(p) {
+      if (p === 'P1') return 'p1';
+      if (p === 'P2') return 'p2';
+      return 'p3';
+    }
+    function linkifyContact(value) {
+      return value.split(/\s+/).filter(Boolean).map(part => {
+        const clean = part.replace(/[;,]+$/g, '');
+        if (/^https?:\/\//i.test(clean)) {
+          let label = clean.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/,'');
+          if (label.length > 34) label = label.slice(0, 31) + '...';
+          return `<a class="btn" href="${clean}" target="_blank" rel="noreferrer">${label}</a>`;
+        }
+        if (/^tel:/i.test(clean)) {
+          return `<a class="btn" href="${clean}">${clean.replace('tel:', '')}</a>`;
+        }
+        if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) {
+          return `<a class="btn" href="mailto:${clean}">${clean}</a>`;
+        }
+        return `<span class="btn">${clean}</span>`;
+      }).join(' ');
+    }
+
+    function render() {
+      const q = norm(search.value.trim());
+      const p = priority.value;
+      const filtered = targets.filter(t => {
+        const typeMatch = activeType === 'all' || t.type === activeType;
+        const priorityMatch = p === 'all' || t.priority === p;
+        const text = norm(`${t.name} ${t.type} ${t.priority} ${t.contact} ${t.ask} ${t.status}`);
+        return typeMatch && priorityMatch && (!q || text.includes(q));
+      });
+      rows.innerHTML = filtered.map(t => `
+        <tr>
+          <td class="name"><strong>${t.name}</strong><span>${t.type}</span></td>
+          <td>${t.type === 'brand' ? 'Marque' : t.type === 'institution' ? 'Institution' : 'Partenaire CH'}</td>
+          <td><span class="pill ${pillClass(t.priority)}">${t.priority}</span></td>
+          <td>${linkifyContact(t.contact)}</td>
+          <td>${t.ask}</td>
+          <td><span class="pill todo">${t.status}</span></td>
+        </tr>
+      `).join('');
+      visibleCount.textContent = `${filtered.length} visibles`;
+    }
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        activeType = button.dataset.filter;
+        buttons.forEach(b => b.classList.toggle('active', b === button));
+        render();
+      });
+    });
+    search.addEventListener('input', render);
+    priority.addEventListener('change', render);
+    document.querySelector('#exportCsv').addEventListener('click', () => {
+      const header = ['name','type','priority','contact','ask','status'];
+      const lines = [header.join(',')].concat(targets.map(t => header.map(k => `"${String(t[k]).replaceAll('"','""')}"`).join(',')));
+      const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'mirae_prospection_business_targets.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+    render();
+  </script>
+</body>
+</html>

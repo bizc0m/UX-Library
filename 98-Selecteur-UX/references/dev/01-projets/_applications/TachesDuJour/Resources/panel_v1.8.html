@@ -1,0 +1,213 @@
+<!doctype html>
+<!--
+v1.8 2026-10-28 EXPÉRIMENTAL
+DEMANDE: flèches avancer / reculer dans un carré noir, plus lisibles
+SORTIE: ‹ › blancs sur carré noir 16 px, coins légèrement arrondis
+PREUVE: lancement réel + capture, voir README
+Fichier précédent: panel_v1.6.html
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<!-- Aucune ressource externe : tout est inline, aucune connexion autorisée. -->
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2e3135; --muted: #8b9097; --line: #e5e5e2;
+    --accent: #3a78c9; --hover: #eef3fa;
+    --p3: #cf4a3c; --p2: #dc7d2a; --p1: #c3a03a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%; background: var(--bg); color: var(--fg);
+    font: 11px/17px -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    overflow: hidden; -webkit-user-select: none; cursor: default;
+  }
+  body { display: flex; flex-direction: column; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; outline: none; }
+
+  #head { flex: none; display: flex; align-items: center; height: 24px; padding: 0 4px 0 22px; }
+  #head .title { font-weight: 600; cursor: pointer; }
+  .nav { width: 16px; height: 16px; line-height: 15px; margin: 0 3px; color: #fff; background: #1f2226;
+         border-radius: 3px; font-size: 13px; font-weight: 700; }
+  .nav:hover { background: var(--accent); }
+  #date { flex: 1; min-width: 0; margin-left: 6px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .icon { width: 24px; height: 22px; line-height: 22px; color: var(--muted); border-radius: 4px; font-size: 16px; }
+  .icon:hover { color: var(--accent); background: var(--hover); }
+
+  #bar { flex: none; display: flex; gap: 3px; padding: 0 6px 4px; border-bottom: 1px solid var(--line); }
+  #bar button { height: 17px; line-height: 15px; padding: 0 6px; border: 1px solid var(--line); border-radius: 3px; background: #fff; }
+  #bar button:hover { border-color: #cfd6e0; }
+  #bar button.on { color: var(--accent); border-color: #b9cde9; }
+
+  #list { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  /* Barre fine visible dès que la liste dépasse (les barres macOS par défaut se cachent). */
+  #list::-webkit-scrollbar { width: 8px; }
+  #list::-webkit-scrollbar-track { background: transparent; }
+  #list::-webkit-scrollbar-thumb { background: #c9ced6; border-radius: 4px; border: 2px solid var(--bg); }
+  #list::-webkit-scrollbar-thumb:hover { background: #a9b0ba; }
+  .row { display: flex; align-items: center; height: 17px; line-height: 17px; padding: 0 2px 0 6px; }
+  .row:hover { background: var(--hover); }
+  .prio { flex: none; width: 18px; font-size: 10px; font-weight: 700; letter-spacing: -1px; }
+  .p3 { color: var(--p3); } .p2 { color: var(--p2); } .p1 { color: var(--p1); }
+  .t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+  .lk { flex: none; width: 18px; height: 17px; line-height: 17px; text-align: center; color: var(--accent); border-radius: 3px; }
+  .lk:hover { background: #dde7f5; }
+  .lk.blocked { color: var(--muted); opacity: .5; cursor: not-allowed; }
+  .lk.blocked:hover { background: none; }
+  .tg { flex: none; width: 11px; color: var(--muted); font-size: 8px; cursor: pointer; text-align: center; }
+  .tg:hover { color: var(--accent); }
+  .box { flex: none; width: 9px; height: 9px; margin: 0 5px 0 1px; border: 1px solid #b4bac3; border-radius: 2px; cursor: pointer; }
+  .box:hover { border-color: var(--accent); }
+  .box.on { background: var(--accent); border-color: var(--accent); }
+  .grp .t { color: #5b6068; font-weight: 600; }
+
+  .msg { padding: 5px 8px; color: var(--muted); line-height: 15px; }
+  .msg.err { color: #b0402f; }
+  .msg .detail { font-size: 10px; }
+  .msg .act { display: block; margin-top: 3px; color: var(--accent); }
+  .msg .act:hover { text-decoration: underline; }
+
+  #foot { flex: none; border-top: 1px solid var(--line); }
+  #open { display: flex; width: 100%; height: 20px; line-height: 20px; padding: 0 2px 0 6px; color: var(--accent); text-align: left; }
+  #open:hover { background: var(--hover); }
+  #open:disabled { color: var(--muted); cursor: default; background: none; }
+  #open .t { cursor: inherit; }
+  #open .lk { background: none; color: inherit; }
+</style>
+</head>
+<body>
+  <div id="head">
+    <button id="prev" class="nav" title="Jour précédent">‹</button>
+    <span id="title" class="title" title="Revenir à aujourd’hui">Aujourd’hui</span>
+    <button id="next" class="nav" title="Jour suivant">›</button>
+    <span id="date"></span>
+    <button id="prefs" class="icon" title="Préférences">⚙</button>
+    <button id="refresh" class="icon" title="Actualiser">↻</button>
+  </div>
+  <div id="bar">
+    <button id="day" class="on" title="Tâches de la note du jour">Jour</button>
+    <button data-menu="projets">Projets ▾</button>
+    <button data-menu="donnees">Données ▾</button>
+    <button data-menu="liens">Liens ▾</button>
+  </div>
+  <div id="list"><div id="inner"></div></div>
+  <div id="foot">
+    <button id="open" disabled><span class="t" id="openLabel">Ouvrir la note du jour dans NotePlan</span><span class="lk">↗</span></button>
+  </div>
+<script>
+  "use strict";
+  const post = (m) => window.webkit.messageHandlers.bridge.postMessage(m);
+  const $ = (id) => document.getElementById(id);
+  const PRIO = { 3: "!!!", 2: "!!", 1: "!" };
+  const ACTIONS = { reselect: "Sélectionner à nouveau le dossier…", pickNote: "Sélectionner la note du jour…" };
+
+  // Construction DOM par textContent uniquement : aucun contenu de note n'est interprété comme HTML.
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  function reportHeight() {
+    const h = $("head").offsetHeight + $("bar").offsetHeight + $("inner").offsetHeight + $("foot").offsetHeight;
+    post({ type: "height", h });
+  }
+
+  let last = null;
+  function toggle(key) {
+    const f = new Set(last.folded || []);
+    const now = !f.has(key);
+    if (now) f.add(key); else f.delete(key);
+    last.folded = [...f];
+    post({ type: "fold", key, folded: now });
+    window.render(last);
+  }
+
+  window.render = function (d) {
+    last = d;
+    $("date").textContent = d.date || "";
+    $("title").textContent = d.title || "Aujourd’hui";
+    $("day").classList.toggle("on", d.offset === 0);
+    $("openLabel").textContent = d.offset === 0 ? "Ouvrir la note du jour dans NotePlan" : "Ouvrir cette note dans NotePlan";
+    $("open").disabled = !d.canOpenNote;
+    const inner = $("inner");
+    inner.replaceChildren();
+
+    if (d.state === "ok" && d.rows.length) {
+      const folded = new Set(d.folded || []);
+      const anyKids = d.rows.some((r) => r.kids);
+      let hideBelow = null;
+      d.rows.forEach((r) => {
+        // Descendants d'un nœud plié : masqués jusqu'au retour à sa profondeur.
+        if (hideBelow !== null && r.d > hideBelow) return;
+        hideBelow = null;
+        const isFolded = r.kids && folded.has(r.key);
+        const row = el("div", "row" + (r.k === "g" ? " grp" : ""));
+        row.style.paddingLeft = (6 + r.d * 12) + "px";
+        if (anyKids) {
+          const tg = el("span", "tg", r.kids ? (isFolded ? "▸" : "▾") : "");
+          if (r.kids) tg.addEventListener("click", (e) => { e.stopPropagation(); toggle(r.key); });
+          row.appendChild(tg);
+        }
+        if (r.k === "t") {
+          const box = el("span", "box");
+          box.title = "Cocher dans la note";
+          box.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (box.classList.contains("on")) return;
+            box.classList.add("on");
+            post({ type: "complete", i: r.id });
+          });
+          row.appendChild(box);
+          row.appendChild(el("span", "prio p" + r.p, PRIO[r.p] || ""));
+        }
+        const title = el("span", "t", r.t);
+        title.title = r.tip;
+        if (r.k === "g") title.addEventListener("click", () => toggle(r.key));
+        else title.addEventListener("click", () => post({ type: "openTask", i: r.id }));
+        row.appendChild(title);
+        if (r.link !== "none") {
+          const b = el("button", "lk" + (r.link === "blocked" ? " blocked" : ""), "↗");
+          b.title = r.link === "blocked" ? "Lien non autorisé : " + r.url : r.url;
+          if (r.link === "ok") b.addEventListener("click", (e) => { e.stopPropagation(); post({ type: "openLink", i: r.id }); });
+          row.appendChild(b);
+        }
+        inner.appendChild(row);
+        if (isFolded) hideBelow = r.d;
+      });
+    } else {
+      const err = d.state === "error" || d.state === "accessLost" || d.state === "ambiguous";
+      const box = el("div", "msg" + (err ? " err" : ""));
+      box.appendChild(el("div", "", d.message || ""));
+      if (d.detail) box.appendChild(el("div", "detail", d.detail));
+      if (d.action && ACTIONS[d.action]) {
+        const a = el("button", "act", ACTIONS[d.action]);
+        a.addEventListener("click", () => post({ type: d.action }));
+        box.appendChild(a);
+      }
+      inner.appendChild(box);
+    }
+    requestAnimationFrame(reportHeight);
+  };
+
+  $("prev").addEventListener("click", () => post({ type: "shiftDay", delta: -1 }));
+  $("next").addEventListener("click", () => post({ type: "shiftDay", delta: 1 }));
+  $("title").addEventListener("click", () => post({ type: "today" }));
+  $("prefs").addEventListener("click", () => post({ type: "prefs" }));
+  $("refresh").addEventListener("click", () => post({ type: "refresh" }));
+  $("day").addEventListener("click", () => post({ type: "day" }));
+  $("open").addEventListener("click", () => post({ type: "openDay" }));
+  document.querySelectorAll("[data-menu]").forEach((b) => {
+    b.addEventListener("click", () => {
+      const r = b.getBoundingClientRect();
+      post({ type: "menu", name: b.dataset.menu, x: r.left, y: r.bottom + 2 });
+    });
+  });
+  document.addEventListener("contextmenu", (e) => e.preventDefault());
+  post({ type: "ready" });
+</script>
+</body>
+</html>

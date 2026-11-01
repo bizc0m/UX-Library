@@ -1,0 +1,141 @@
+<!--
+v1.0 2026-09-13 STABLE-DÉPENDANT
+DEMANDE: Base MadameGlitch — plasma animé fullscreen avec Three.js r183.
+SORTIE: Fichier HTML autonome, shader plasma GLSL, 60 fps, resize géré.
+PREUVE: Serveur local lancé, HTTP 200, JS syntaxe validée avec node --check, ouverture navigateur OK.
+Fichier précédent: —
+-->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MadameGlitch V1 — Base Plasma</title>
+  <style>
+    /* Plein écran sans marges ni barres de défilement */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+    canvas { display: block; }
+    /* Petite info en overlay */
+    #info {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      color: rgba(255,255,255,0.7);
+      font-family: monospace;
+      font-size: 12px;
+      pointer-events: none;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">MadameGlitch V1 — Plasma Base | Three.js r183</div>
+
+  <!-- Three.js r183 en local -->
+  <script>
+    (async function() {
+      const THREE = await import('./assets/three.module.js');
+      window.THREE = THREE;
+
+      // ============================================================
+      // MADAMEGLITCH V1 — BASE PLASMA
+      // Objectif : afficher un plasma animé en WebGL fullscreen à 60 fps.
+      // ============================================================
+
+      let camera, scene, renderer, material;
+      const clock = new THREE.Clock();
+
+    init();
+    animate();
+
+    function init() {
+      // --- Scène & caméra orthographique (2D fullscreen) ---
+      scene = new THREE.Scene();
+      camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+      // --- Renderer WebGL antialiasé et transparent ---
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // --- Shader plasma ---
+      // On envoie le temps et la résolution au fragment shader.
+      material = new THREE.ShaderMaterial({
+        uniforms: {
+          u_time: { value: 0.0 },
+          u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+        },
+        vertexShader: `
+          void main() {
+            // Quad plein écran : position directe en clip space
+            gl_Position = vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          precision mediump float;
+
+          uniform float u_time;
+          uniform vec2 u_resolution;
+
+          // Fonction de bruit pseudo-aléatoire simple
+          float rand(vec2 st) {
+            return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+          }
+
+          void main() {
+            // Coordonnées normalisées centrées
+            vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / min(u_resolution.x, u_resolution.y);
+
+            // Déformation temporelle pour l'effet plasma
+            float t = u_time * 0.6;
+
+            // Deux couches de sinus décalées
+            float v1 = sin(uv.x * 4.0 + t);
+            float v2 = sin(uv.y * 3.0 + t * 1.3);
+            float v3 = sin((uv.x + uv.y) * 2.5 + t * 0.7);
+
+            // Mélange non linéaire
+            float plasma = v1 + v2 + v3;
+            plasma = sin(plasma * 1.5 + t) * 0.5 + 0.5;
+
+            // Palette cyber/violet-rose
+            vec3 col = vec3(
+              0.5 + 0.5 * sin(plasma * 6.28 + 0.0),
+              0.5 + 0.5 * sin(plasma * 6.28 + 2.09),
+              0.5 + 0.5 * sin(plasma * 6.28 + 4.18)
+            );
+
+            // Légère granule pour l'effet "glitch analogique"
+            float grain = rand(uv + u_time) * 0.06;
+            col += grain;
+
+            gl_FragColor = vec4(col, 1.0);
+          }
+        `
+      });
+
+      // --- Quad plein écran ---
+      const geometry = new THREE.PlaneGeometry(2, 2);
+      const mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+
+      // --- Gestion du redimensionnement ---
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    function onWindowResize() {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      material.uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      material.uniforms.u_time.value = clock.getElapsedTime();
+      renderer.render(scene, camera);
+    }
+    })();
+  </script>
+</body>
+</html>

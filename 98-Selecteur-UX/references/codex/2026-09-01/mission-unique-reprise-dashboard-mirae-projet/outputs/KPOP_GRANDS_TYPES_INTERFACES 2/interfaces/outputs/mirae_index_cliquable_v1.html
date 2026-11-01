@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mirae — Index structuré cliquable</title>
+  <style>
+    :root {
+      --bg: #f7f7f4;
+      --ink: #1d1d1b;
+      --muted: #64645e;
+      --line: #d7d5cc;
+      --panel: #ffffff;
+      --accent: #0f6b5f;
+      --warn: #9b5c00;
+      --risk: #a12d2d;
+      --ok: #1f6f3f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header {
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 22px; }
+    .topline {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.08; letter-spacing: 0; }
+    h2 { margin: 0 0 14px; font-size: 20px; letter-spacing: 0; }
+    h3 { margin: 18px 0 8px; font-size: 15px; letter-spacing: 0; }
+    p { margin: 0 0 10px; }
+    .meta { color: var(--muted); font-size: 14px; }
+    .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .badge {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      background: #fbfbf9;
+      white-space: nowrap;
+    }
+    nav {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+      margin-top: 22px;
+    }
+    nav a {
+      display: block;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfbf9;
+      padding: 11px 12px;
+      color: var(--ink);
+      font-weight: 650;
+    }
+    section {
+      border-bottom: 1px solid var(--line);
+      scroll-margin-top: 18px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .card strong { display: block; margin-bottom: 6px; }
+    .status {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #edf7f1;
+      color: var(--ok);
+    }
+    .status.mid { background: #fff6e7; color: var(--warn); }
+    .status.risk { background: #fdecec; color: var(--risk); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 14px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 11px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #efeee8; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+    tr:last-child td { border-bottom: 0; }
+    .steps {
+      counter-reset: step;
+      display: grid;
+      gap: 10px;
+    }
+    .step {
+      counter-increment: step;
+      position: relative;
+      padding: 12px 14px 12px 48px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+    .step::before {
+      content: counter(step);
+      position: absolute;
+      left: 14px;
+      top: 12px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: white;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .doc-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 10px;
+    }
+    .doc {
+      min-height: 86px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 12px;
+    }
+    .doc a { font-weight: 750; }
+    .doc span { display: block; margin-top: 4px; color: var(--muted); font-size: 13px; }
+    .citation {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      color: #30302c;
+    }
+    .note {
+      border-left: 4px solid var(--accent);
+      background: #eef6f4;
+      padding: 12px 14px;
+      border-radius: 4px;
+      margin-top: 12px;
+    }
+    footer { color: var(--muted); font-size: 13px; }
+    @media (max-width: 720px) {
+      .wrap { padding: 22px 16px; }
+      h1 { font-size: 24px; }
+      table { display: block; overflow-x: auto; white-space: nowrap; }
+      th, td { white-space: normal; min-width: 160px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="topline">
+        <div>
+          <h1>Mirae — Index structuré cliquable</h1>
+          <p class="meta">Version 1 · 2026-08-31 · généré depuis l’inspection locale de Mirae.zip</p>
+          <div class="badge-row">
+            <span class="badge">Zip original intact</span>
+            <span class="badge">119 fichiers utiles hors metadata Mac</span>
+            <span class="badge">Citations internes</span>
+            <span class="badge">Noms normalisés</span>
+          </div>
+        </div>
+        <div class="meta">
+          Source locale :<br>
+          <a href="../work/mirae_readonly_extract_20260831_1/Mirae/">dossier extrait de lecture</a><br>
+          Registre : <a href="mirae_registre_structure_v1.md">mirae_registre_structure_v1.md</a>
+        </div>
+      </div>
+      <nav aria-label="Index">
+        <a href="#lecture">Ordre de lecture</a>
+        <a href="#entites">Entités</a>
+        <a href="#documents">Documents cliquables</a>
+        <a href="#etapes">Étapes</a>
+        <a href="#citations">Citations</a>
+        <a href="#risques">Risques</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section id="lecture">
+      <div class="wrap">
+        <h2>Ordre de lecture recommandé</h2>
+        <div class="steps">
+          <div class="step"><strong>Comprendre le cœur opérationnel</strong><br>Lire d’abord Hair by Mirae : business plan, site salon, pièces Bergues.</div>
+          <div class="step"><strong>Séparer le salon du projet d’import</strong><br>Hair by Mirae = service coiffure. By Mirae = maison de curation/import. Les deux ne doivent pas être fusionnés dans un même pitch.</div>
+          <div class="step"><strong>Lire la base K-Hair</strong><br>Utiliser K-Hair Operating System V3 comme source active, puis le dossier collection et les tableaux Seoul Mirae.</div>
+          <div class="step"><strong>Traiter les preuves</strong><br>Contacts export, conformité, prix/MOQ, samples et tests salon avant toute promesse commerciale.</div>
+          <div class="step"><strong>Nettoyer les versions</strong><br>Choisir la convention Bergues active, le support marketing actif et une seule source pour les 704 URLs.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="entites">
+      <div class="wrap">
+        <h2>Entités normalisées</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nom officiel</th>
+              <th>Type</th>
+              <th>Rôle</th>
+              <th>Statut</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>ENT-001</td>
+              <td>Mirae Cha</td>
+              <td>Personne</td>
+              <td>Fondatrice et coiffeuse porteuse du projet</td>
+              <td><span class="status">Actif</span></td>
+              <td><a href="#cit-001">CIT-001</a>, <a href="#cit-002">CIT-002</a></td>
+            </tr>
+            <tr>
+              <td>ENT-002</td>
+              <td>Hair by Mirae</td>
+              <td>Salon/service</td>
+              <td>Activité coiffure Genève, rendez-vous privés, prestations spécialisées</td>
+              <td><span class="status">Cœur opérationnel</span></td>
+              <td><a href="#cit-001">CIT-001</a>, <a href="#cit-003">CIT-003</a></td>
+            </tr>
+            <tr>
+              <td>ENT-003</td>
+              <td>By Mirae</td>
+              <td>Maison de curation</td>
+              <td>Concept Seoul-Genève pour sélection/import beauté, objets, culture</td>
+              <td><span class="status mid">Concept à clarifier</span></td>
+              <td><a href="#cit-004">CIT-004</a>, <a href="#cit-005">CIT-005</a></td>
+            </tr>
+            <tr>
+              <td>ENT-004</td>
+              <td>Les Bergues Coiffure</td>
+              <td>Local/remise commerce</td>
+              <td>Local, droit au bail, matériel, état des lieux</td>
+              <td><span class="status mid">Juridique en cours</span></td>
+              <td><a href="#cit-002">CIT-002</a>, <a href="#cit-006">CIT-006</a></td>
+            </tr>
+            <tr>
+              <td>ENT-005</td>
+              <td>K-Hair Suisse romande</td>
+              <td>Dossier marché</td>
+              <td>Import/distribution de marques capillaires coréennes</td>
+              <td><span class="status mid">Prospection</span></td>
+              <td><a href="#cit-007">CIT-007</a>, <a href="#cit-008">CIT-008</a></td>
+            </tr>
+            <tr>
+              <td>ENT-006</td>
+              <td>K-Hair Seoul</td>
+              <td>Corpus sources</td>
+              <td>Marques, salons, influence, institutions, parcours terrain</td>
+              <td><span class="status mid">Base documentaire</span></td>
+              <td><a href="#cit-009">CIT-009</a>, <a href="#cit-010">CIT-010</a></td>
+            </tr>
+            <tr>
+              <td>ENT-007</td>
+              <td>K-Hair Operating System V3</td>
+              <td>Système de pilotage</td>
+              <td>Data quality, actions, questions, watch protocol</td>
+              <td><span class="status">Source active proposée</span></td>
+              <td><a href="#cit-011">CIT-011</a>, <a href="#cit-012">CIT-012</a></td>
+            </tr>
+            <tr>
+              <td>ENT-008</td>
+              <td>Cadeaux d’entreprise Suisse 2025-2026</td>
+              <td>Étude marché</td>
+              <td>Opportunité coffrets premium/K-Beauty B2B</td>
+              <td><span class="status mid">Étude secondaire</span></td>
+              <td><a href="#cit-013">CIT-013</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="documents">
+      <div class="wrap">
+        <h2>Documents cliquables</h2>
+        <div class="doc-list">
+          <div class="doc">
+            <a href="../work/mirae_readonly_extract_20260831_1/Mirae/MIRAE-BP-FINAL-2026-07.pdf">Hair by Mirae — Business plan locatif — 2026-07</a>
+            <span>CA, loyer, rentabilité, Bergues, positionnement salon. Citation : <a href="#cit-001">CIT-001</a>.</span>
+          </div>
+          <div class="doc">
+            <a href="../work/mirae_readonly_extract_20260831_1/Mirae/MIRAE%20-%20BERGUES/Convention_remise_commerce_Les_Bergues.docx">Les Bergues Coiffure — Convention remise commerce</a>
+            <span>Droit au bail, matériel, exclusions, condition bailleur. Citation : <a href="#cit-002">CIT-002</a>.</span>
+          </div>
+          <div class="doc">
+            <a href="../work/mirae_readonly_extract_20260831_1/Mirae/MIRAE%20-%20BERGUES/Etat%20des%20lieux%206.12.2025-Light.pdf">Les Bergues Coiffure — État des lieux entrée</a>
+            <span>Place sous-louée, parties communes, date 2025-12-06. Citation : <a href="#cit-006">CIT-006</a>.</span>
+          </div>
+          <div class="doc">
+            <a href="../work/mirae_readonly_extract_20260831_1/Mirae/Hair%20by%20Mirae/Hair%20by%20Mirae%20%E2%80%94%20Private%20Hair%20Studio%20%C2%B7%20Geneva.html">Hair by Mirae — Private Hair Studio · Geneva</a>
+            <span>Prototype/site salon et prestations. Citation : <a href="#cit-003">CIT-003</a>.</span>
+          </div>
+          <div class="doc">
+            <a href="../work/mirae_readonly_extract_20260831_1/Mirae/ByMirae_OK/BY%20MIRAE%20%E2%80%94%20Maison%20de%20Curation.html">By Mirae — Maison de Curation</a>
+            <span>Concept maison de curation Seoul-Genève. Citation : <a href="#cit-004">CIT-004</a>.</span>
+          </div>
+          <div class="doc">
+            <a href="../work/mirae_readonly_extract_20260831_1/Mirae/Hair%20by%20Mirae/BY%20MIRAE%20%E2%80%94%20Soins%20core%CC%81ens%20d'exception%2C%20se%CC%81lectionne%CC%81s%20a%CC%80%20Gene%CC%80ve.html">By Mirae — Soins coréens d’exception</a>
+            <span>Prototype offre soins coréens et méthode de sélection. Citation : <a href="#cit-005">CIT-005</a>.</span>
+          </div>
+          <div class="doc">
+            <a href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_premier_dossier_collection.md">By Mirae — Dossier collection K-Hair — v0.1</a>
+            <span>Shortlist prudente, inconnues conformité/distribution. Citation : <a href="#cit-008">CIT-008</a>.</span>
+          </div>
+          <div class="doc">
+            <a href="../work/mirae_readonly_extract_20260831_1/Mirae/K-hair%20Suisse%20Romande%20-%20Documentation%20Import%20%26%20Distribution.html">K-Hair Suisse romande — Documentation import distribution</a>
+            <span>Marques, canaux, salons, influenceurs, stratégie. Citation : <a href="#cit-007">CIT-007</a>.</span>
+          </div>
+          <div class="doc">
+            <a href="../work/mirae_readonly_extract_20260831_1/Mirae/K-Hair%20Se%CC%81oul%20%E2%80%94%20Toutes%20les%20sources%20%28704%20URLs%29.md">K-Hair Seoul — Sources 704 URLs</a>
+            <span>Inventaire des sources. Citation : <a href="#cit-009">CIT-009</a>.</span>
+          </div>
+          <div class="doc">
+            <a href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_v3/02_ACTION/SEOUL_ACTION_BOOK_V2.md">Seoul Action Book V2</a>
+            <span>Marques, institutions, salons, influence, protocole terrain. Citation : <a href="#cit-010">CIT-010</a>.</span>
+          </div>
+          <div class="doc">
+            <a href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_v3/01_DATA/DATA_QUALITY_REGISTER_V3.md">Data Quality Register V3</a>
+            <span>Dette de données et champs manquants. Citation : <a href="#cit-011">CIT-011</a>.</span>
+          </div>
+          <div class="doc">
+            <a href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_v3/02_ACTION/ACTION_CONTROL_TOWER_V3.md">Action Control Tower V3</a>
+            <span>Gates, actions valides, critères d’abandon. Citation : <a href="#cit-012">CIT-012</a>.</span>
+          </div>
+          <div class="doc">
+            <a href="../work/mirae_readonly_extract_20260831_1/Mirae/E%CC%81tude%20de%20marche%CC%81%20%E2%80%94%20Cadeaux%20d'entreprise%20en%20Suisse%202025-2026.md">Cadeaux d’entreprise Suisse 2025-2026</a>
+            <span>Étude secondaire et opportunité coffrets. Citation : <a href="#cit-013">CIT-013</a>.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="etapes">
+      <div class="wrap">
+        <h2>Étapes documentées</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Étape</th>
+              <th>Objectif</th>
+              <th>Documents</th>
+              <th>Critère de sortie</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>01 · Identité</td>
+              <td>Stabiliser Hair by Mirae vs By Mirae</td>
+              <td><a href="#cit-003">CIT-003</a>, <a href="#cit-004">CIT-004</a>, <a href="#cit-005">CIT-005</a></td>
+              <td>Deux fiches distinctes : salon / curation-import</td>
+            </tr>
+            <tr>
+              <td>02 · Local</td>
+              <td>Finaliser Bergues</td>
+              <td><a href="#cit-002">CIT-002</a>, <a href="#cit-006">CIT-006</a></td>
+              <td>Convention datée, champs remplis, version signable</td>
+            </tr>
+            <tr>
+              <td>03 · Finance</td>
+              <td>Clarifier CA, loyer, résultat, salaire</td>
+              <td><a href="#cit-001">CIT-001</a></td>
+              <td>Compte simplifié compréhensible par bailleur/banque</td>
+            </tr>
+            <tr>
+              <td>04 · K-Hair</td>
+              <td>Réduire le corpus à une shortlist actionnable</td>
+              <td><a href="#cit-008">CIT-008</a>, <a href="#cit-010">CIT-010</a></td>
+              <td>3 marques max avec contact export et preuve commerciale</td>
+            </tr>
+            <tr>
+              <td>05 · Conformité</td>
+              <td>Vérifier DIP, sécurité, mandataire CH, étiquetage</td>
+              <td><a href="#cit-008">CIT-008</a>, <a href="#cit-012">CIT-012</a></td>
+              <td>Aucune référence “GO” sans conformité documentée</td>
+            </tr>
+            <tr>
+              <td>06 · Terrain Seoul</td>
+              <td>Transformer le voyage en preuves, contacts, conditions</td>
+              <td><a href="#cit-010">CIT-010</a></td>
+              <td>Chaque visite produit observation, preuve et verdict</td>
+            </tr>
+            <tr>
+              <td>07 · Données</td>
+              <td>Combler la dette de contacts</td>
+              <td><a href="#cit-011">CIT-011</a></td>
+              <td>Responsables, emails, sites et statuts vérifiés</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="citations">
+      <div class="wrap">
+        <h2>Citations internes</h2>
+        <div class="grid">
+          <div class="card" id="cit-001">
+            <strong>CIT-001 · Business plan Hair by Mirae</strong>
+            <p>CA 2024, CA 2025, run-rate 2026, loyer Bergues, seuil de rentabilité et positionnement salon.</p>
+            <p class="citation"><a href="../work/mirae_readonly_extract_20260831_1/Mirae/MIRAE-BP-FINAL-2026-07.pdf">MIRAE-BP-FINAL-2026-07.pdf</a></p>
+          </div>
+          <div class="card" id="cit-002">
+            <strong>CIT-002 · Convention Bergues</strong>
+            <p>Remise portant sur droit au bail et matériel, exclusion de clientèle, condition suspensive accord bailleur.</p>
+            <p class="citation"><a href="../work/mirae_readonly_extract_20260831_1/Mirae/MIRAE%20-%20BERGUES/Convention_remise_commerce_Les_Bergues.docx">Convention_remise_commerce_Les_Bergues.docx</a></p>
+          </div>
+          <div class="card" id="cit-003">
+            <strong>CIT-003 · Site Hair by Mirae</strong>
+            <p>Salon privé à Genève, prestations, rendez-vous, promesse d’expérience calme et spécialisée.</p>
+            <p class="citation"><a href="../work/mirae_readonly_extract_20260831_1/Mirae/Hair%20by%20Mirae/Hair%20by%20Mirae%20%E2%80%94%20Private%20Hair%20Studio%20%C2%B7%20Geneva.html">Hair by Mirae — Private Hair Studio · Geneva.html</a></p>
+          </div>
+          <div class="card" id="cit-004">
+            <strong>CIT-004 · By Mirae Maison de Curation</strong>
+            <p>Concept Seoul-Genève autour de marques, objets, design, beauté, culture et artistes.</p>
+            <p class="citation"><a href="../work/mirae_readonly_extract_20260831_1/Mirae/ByMirae_OK/BY%20MIRAE%20%E2%80%94%20Maison%20de%20Curation.html">BY MIRAE — Maison de Curation.html</a></p>
+          </div>
+          <div class="card" id="cit-005">
+            <strong>CIT-005 · By Mirae Soins coréens</strong>
+            <p>Méthode sourcing, éprouver, confronter, transmettre ; lancement Genève 2026.</p>
+            <p class="citation"><a href="../work/mirae_readonly_extract_20260831_1/Mirae/Hair%20by%20Mirae/BY%20MIRAE%20%E2%80%94%20Soins%20core%CC%81ens%20d'exception%2C%20se%CC%81lectionne%CC%81s%20a%CC%80%20Gene%CC%80ve.html">BY MIRAE — Soins coréens d’exception.html</a></p>
+          </div>
+          <div class="card" id="cit-006">
+            <strong>CIT-006 · État des lieux Bergues</strong>
+            <p>Place de travail sous-louée au salon Les Bergues Coiffure, photos et parties communes.</p>
+            <p class="citation"><a href="../work/mirae_readonly_extract_20260831_1/Mirae/MIRAE%20-%20BERGUES/Etat%20des%20lieux%206.12.2025-Light.pdf">Etat des lieux 6.12.2025-Light.pdf</a></p>
+          </div>
+          <div class="card" id="cit-007">
+            <strong>CIT-007 · Documentation K-Hair Suisse romande</strong>
+            <p>Document opérationnel import/distribution : marques, canaux, partenaires, salons, influenceurs.</p>
+            <p class="citation"><a href="../work/mirae_readonly_extract_20260831_1/Mirae/K-hair%20Suisse%20Romande%20-%20Documentation%20Import%20%26%20Distribution.html">K-hair Suisse Romande - Documentation Import & Distribution.html</a></p>
+          </div>
+          <div class="card" id="cit-008">
+            <strong>CIT-008 · Premier dossier collection</strong>
+            <p>Règle de décision : objet, droit, accès, curation avant intégration en collection.</p>
+            <p class="citation"><a href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_premier_dossier_collection.md">mirae_premier_dossier_collection.md</a></p>
+          </div>
+          <div class="card" id="cit-009">
+            <strong>CIT-009 · Sources 704 URLs</strong>
+            <p>704 URLs uniques réparties sur 213 domaines selon le document source.</p>
+            <p class="citation"><a href="../work/mirae_readonly_extract_20260831_1/Mirae/K-Hair%20Se%CC%81oul%20%E2%80%94%20Toutes%20les%20sources%20%28704%20URLs%29.md">K-Hair Séoul — Toutes les sources (704 URLs).md</a></p>
+          </div>
+          <div class="card" id="cit-010">
+            <strong>CIT-010 · Seoul Action Book V2</strong>
+            <p>Le séjour doit produire preuve terrain, contact nominatif, condition commerciale ou décision.</p>
+            <p class="citation"><a href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_v3/02_ACTION/SEOUL_ACTION_BOOK_V2.md">SEOUL_ACTION_BOOK_V2.md</a></p>
+          </div>
+          <div class="card" id="cit-011">
+            <strong>CIT-011 · Data Quality Register V3</strong>
+            <p>299 entités consolidées ; 279 emails manquants/inconnus ; règle : donnée absente = INCONNU.</p>
+            <p class="citation"><a href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_v3/01_DATA/DATA_QUALITY_REGISTER_V3.md">DATA_QUALITY_REGISTER_V3.md</a></p>
+          </div>
+          <div class="card" id="cit-012">
+            <strong>CIT-012 · Action Control Tower V3</strong>
+            <p>Gates G0 à G8 ; aucune cible ne saute un gate sans preuve enregistrée.</p>
+            <p class="citation"><a href="../work/mirae_readonly_extract_20260831_1/Mirae/mirae_v3/02_ACTION/ACTION_CONTROL_TOWER_V3.md">ACTION_CONTROL_TOWER_V3.md</a></p>
+          </div>
+          <div class="card" id="cit-013">
+            <strong>CIT-013 · Étude cadeaux d’entreprise</strong>
+            <p>Marché estimé par triangulation ; opportunité B2B K-Beauty signalée comme naissante et à risque.</p>
+            <p class="citation"><a href="../work/mirae_readonly_extract_20260831_1/Mirae/E%CC%81tude%20de%20marche%CC%81%20%E2%80%94%20Cadeaux%20d'entreprise%20en%20Suisse%202025-2026.md">Étude de marché — Cadeaux d'entreprise en Suisse 2025-2026.md</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="risques">
+      <div class="wrap">
+        <h2>Risques et priorités</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Priorité</th>
+              <th>Risque</th>
+              <th>Pourquoi</th>
+              <th>Action immédiate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>P1</td>
+              <td><span class="status risk">Positionnement mélangé</span></td>
+              <td>Salon, import K-Hair, skincare, objets et cadeaux B2B coexistent sans hiérarchie stable.</td>
+              <td>Figer Hair by Mirae et By Mirae comme deux objets séparés.</td>
+            </tr>
+            <tr>
+              <td>P1</td>
+              <td><span class="status risk">Conformité non prouvée</span></td>
+              <td>Le dossier signale lui-même DIP, sécurité, mandataire CH et étiquetage comme à valider.</td>
+              <td>Aucune marque en GO sans dossier conformité.</td>
+            </tr>
+            <tr>
+              <td>P1</td>
+              <td><span class="status risk">Versions juridiques</span></td>
+              <td>Convention Bergues présente plusieurs copies et champs ouverts.</td>
+              <td>Identifier la version active signable.</td>
+            </tr>
+            <tr>
+              <td>P2</td>
+              <td><span class="status mid">Dette contacts</span></td>
+              <td>279 emails manquants/inconnus sur 299 entités.</td>
+              <td>Qualifier d’abord les cibles Seoul et marques P1.</td>
+            </tr>
+            <tr>
+              <td>P2</td>
+              <td><span class="status mid">Scoring avant preuve</span></td>
+              <td>Plusieurs tableaux notent des marques avant prix, MOQ, export, samples et tests.</td>
+              <td>Limiter à 3 marques testables.</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="note">
+          Priorité immédiate : une table maître unique avec nom officiel, type, statut, preuve, prochaine action, puis qualification de 3 marques K-Hair maximum.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      Fait vérifié : fichier HTML généré localement depuis les documents extraits. Limite : pas de revérification web des sources externes dans cette passe.
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PrompTOR v2</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f7f4;
+      --panel: #ffffff;
+      --ink: #111111;
+      --muted: #5f625f;
+      --line: rgba(17, 17, 17, .14);
+      --accent: #0f6f5f;
+      --accent-ink: #ffffff;
+      --warn: #8a5a00;
+      --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: minmax(190px, 1fr) minmax(260px, 520px);
+      gap: 14px;
+      align-items: center;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(247, 247, 244, .94);
+      backdrop-filter: blur(14px);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .meta {
+      margin-top: 5px;
+      color: var(--muted);
+      font: 12px/1.35 var(--mono);
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(130px, 1fr) repeat(5, 78px);
+      gap: 8px;
+    }
+
+    input, button, select {
+      min-height: 38px;
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      font: 12px/1 var(--mono);
+    }
+
+    input { padding: 0 10px; }
+
+    button {
+      cursor: pointer;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    button.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--accent-ink);
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 12px;
+      width: min(1380px, calc(100% - 24px));
+      margin: 12px auto 32px;
+    }
+
+    aside, .viewer {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    aside {
+      align-self: start;
+      position: sticky;
+      top: 86px;
+      overflow: hidden;
+    }
+
+    .source-list {
+      display: grid;
+      gap: 1px;
+      background: var(--line);
+    }
+
+    .source {
+      display: grid;
+      gap: 6px;
+      padding: 13px;
+      border: 0;
+      border-radius: 0;
+      background: var(--panel);
+      text-align: left;
+      text-transform: none;
+      font-family: var(--sans);
+    }
+
+    .source strong {
+      font-size: 14px;
+      line-height: 1.1;
+    }
+
+    .source span {
+      color: var(--muted);
+      font: 11px/1.35 var(--mono);
+    }
+
+    .source.active {
+      box-shadow: inset 4px 0 0 var(--accent);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      padding: 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px;
+      min-height: 56px;
+    }
+
+    .stat b {
+      display: block;
+      font: 800 17px/1 var(--mono);
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font: 10px/1 var(--mono);
+      text-transform: uppercase;
+    }
+
+    .viewer {
+      min-height: calc(100vh - 130px);
+      overflow: hidden;
+    }
+
+    .viewer-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 13px 15px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .viewer-title {
+      min-width: 0;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.15;
+    }
+
+    .status {
+      color: var(--muted);
+      font: 11px/1.35 var(--mono);
+      overflow-wrap: anywhere;
+    }
+
+    pre {
+      margin: 0;
+      min-height: calc(100vh - 204px);
+      max-height: calc(100vh - 204px);
+      overflow: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      padding: 18px;
+      font: 13px/1.55 var(--mono);
+      background:
+        linear-gradient(rgba(15, 111, 95, .04), rgba(15, 111, 95, 0) 140px),
+        #fff;
+    }
+
+    mark {
+      background: rgba(138, 90, 0, .22);
+      color: inherit;
+      padding: 0 2px;
+      border-radius: 3px;
+    }
+
+    @media (max-width: 860px) {
+      header {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: static;
+      }
+
+      pre {
+        max-height: none;
+        min-height: 60vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>PrompTOR v2</h1>
+      <div class="meta">Prompt Master V2 · local-first · port 8790</div>
+    </div>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Rechercher">
+      <button id="rs" type="button">##RS</button>
+      <button id="td" type="button">##TD</button>
+      <button id="reload" type="button">Reload</button>
+      <button id="raw" type="button">Brut</button>
+      <button id="copy" class="primary" type="button">Copier</button>
+    </div>
+  </header>
+
+  <main>
+    <aside>
+      <div class="source-list" id="source-list"></div>
+      <div class="stats">
+        <div class="stat"><b id="chars">0</b><span>caracteres</span></div>
+        <div class="stat"><b id="lines">0</b><span>lignes</span></div>
+        <div class="stat"><b id="matches">0</b><span>matches</span></div>
+        <div class="stat"><b id="mode">LOC</b><span>source</span></div>
+      </div>
+    </aside>
+
+    <section class="viewer">
+      <div class="viewer-top">
+        <div class="viewer-title">
+          <h2 id="title">Chargement</h2>
+          <div class="status" id="status">Initialisation</div>
+        </div>
+      </div>
+      <pre id="prompt"></pre>
+    </section>
+  </main>
+
+  <script>
+    const sources = [
+      {
+        id: "system",
+        label: "Systematique V2",
+        mode: "LOC",
+        description: "Prompt complet local importe depuis Prompt Master",
+        path: "prompts/promptor-systematique_v2.0.txt"
+      },
+      {
+        id: "dev",
+        label: "Assistant DEV V2",
+        mode: "LOC",
+        description: "Module dev local avec pipeline et verification",
+        path: "prompts/assistant-dev-prompt_v2.0.md"
+      },
+      {
+        id: "compact",
+        label: "Compact V2",
+        mode: "LOC",
+        description: "Version compacte basee dictionnaire",
+        path: "prompts/promptor-compact-dictionnaire_v2.0.txt"
+      },
+      {
+        id: "latest",
+        label: "Latest GitHub",
+        mode: "NET",
+        description: "assistant-dev-prompt.md depuis bizc0m/prompt-master main",
+        api: "https://api.github.com/repos/bizc0m/prompt-master/contents/assistant-dev-prompt.md?ref=main",
+        raw: "https://raw.githubusercontent.com/bizc0m/prompt-master/main/assistant-dev-prompt.md"
+      }
+    ];
+
+    const state = {
+      active: sources[0],
+      text: "",
+      rendered: ""
+    };
+    const promptMasterLink = "https://github.com/bizc0m/prompt-master/blob/main/CTxKNL_v0.7.md";
+
+    const sourceList = document.getElementById("source-list");
+    const promptEl = document.getElementById("prompt");
+    const titleEl = document.getElementById("title");
+    const statusEl = document.getElementById("status");
+    const searchEl = document.getElementById("search");
+    const charsEl = document.getElementById("chars");
+    const linesEl = document.getElementById("lines");
+    const matchesEl = document.getElementById("matches");
+    const modeEl = document.getElementById("mode");
+
+    function decodeBase64Utf8(value) {
+      const binary = atob(value.replace(/\n/g, ""));
+      const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+      return new TextDecoder("utf-8").decode(bytes);
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function escapeRegExp(value) {
+      return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    async function fetchLatest(source) {
+      try {
+        const response = await fetch(source.api, { cache: "no-store" });
+        if (!response.ok) throw new Error(`API HTTP ${response.status}`);
+        const payload = await response.json();
+        return decodeBase64Utf8(payload.content);
+      } catch (error) {
+        const response = await fetch(`${source.raw}?t=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`RAW HTTP ${response.status}`);
+        return response.text();
+      }
+    }
+
+    async function loadSource(source) {
+      state.active = source;
+      titleEl.textContent = source.label;
+      statusEl.textContent = "Chargement...";
+      promptEl.textContent = "";
+      updateButtons();
+
+      try {
+        state.text = source.api ? await fetchLatest(source) : await fetchLocal(source.path);
+        statusEl.textContent = `${source.description} · ${source.path || source.raw}`;
+        render();
+      } catch (error) {
+        state.text = "";
+        statusEl.textContent = `Erreur: ${error.message}`;
+        promptEl.textContent = "";
+        updateStats(0);
+      }
+    }
+
+    async function fetchLocal(path) {
+      const response = await fetch(`${path}?t=${Date.now()}`, { cache: "no-store" });
+      if (!response.ok) throw new Error(`LOCAL HTTP ${response.status}`);
+      return response.text();
+    }
+
+    function render() {
+      const query = searchEl.value.trim();
+      let matches = 0;
+
+      if (!query) {
+        promptEl.textContent = state.text;
+      } else {
+        const pattern = new RegExp(escapeRegExp(query), "gi");
+        const html = escapeHtml(state.text).replace(pattern, (match) => {
+          matches += 1;
+          return `<mark>${match}</mark>`;
+        });
+        promptEl.innerHTML = html;
+      }
+
+      updateStats(matches);
+    }
+
+    function updateStats(matches) {
+      charsEl.textContent = String(state.text.length);
+      linesEl.textContent = String(state.text ? state.text.split(/\r\n|\r|\n/).length : 0);
+      matchesEl.textContent = String(matches);
+      modeEl.textContent = state.active.mode;
+    }
+
+    function updateButtons() {
+      for (const button of sourceList.querySelectorAll(".source")) {
+        button.classList.toggle("active", button.dataset.sourceId === state.active.id);
+      }
+    }
+
+    function buildSources() {
+      sourceList.innerHTML = "";
+      for (const source of sources) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "source";
+        button.dataset.sourceId = source.id;
+        button.innerHTML = `<strong>${source.label}</strong><span>${source.description}</span>`;
+        button.addEventListener("click", () => loadSource(source));
+        sourceList.appendChild(button);
+      }
+    }
+
+    function resumePrompt() {
+      return [
+        "Charge CTxKNL avant de répondre.",
+        "",
+        `Source Prompt Master courant : ${promptMasterLink}`,
+        "",
+        "Contexte de reprise :",
+        "- App locale : PrompTOR v2",
+        "- URL locale : http://127.0.0.1:8790/",
+        "- Chemin : /Users/JOB/#DEV/02-apps/LLM/PrompTOR",
+        `- Source active : ${state.active.label}`,
+        "",
+        "Objectif : reprendre le travail sans recharger de contexte inutile.",
+        "Procédure : vérifier le service, lire la demande courante, choisir le mode CTxKNL, exécuter, tester, livrer court."
+      ].join("\n");
+    }
+
+    document.getElementById("copy").addEventListener("click", async () => {
+      await navigator.clipboard.writeText(state.text);
+      statusEl.textContent = `Copie OK · ${state.active.label} · ${state.text.length} caracteres`;
+    });
+
+    document.getElementById("rs").addEventListener("click", async () => {
+      const text = resumePrompt();
+      await navigator.clipboard.writeText(text);
+      promptEl.textContent = text;
+      state.text = text;
+      titleEl.textContent = "##RS prompt de reprise";
+      statusEl.textContent = `Prompt de reprise copie · ${promptMasterLink}`;
+      updateStats(0);
+    });
+
+    document.getElementById("td").addEventListener("click", async () => {
+      const title = `PrompTOR - ${state.active.label}`;
+      const response = await fetch("/actions/td", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          source: state.active.id,
+          notes: `Continuer le travail PrompTOR depuis ${state.active.label}`
+        })
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.ok) throw new Error(payload.error || "##TD erreur");
+      statusEl.textContent = `todo.md OK · commit:${payload.commit ? "OK" : "—"} · push:${payload.push ? "OK" : "—"} · ${payload.todo_path}`;
+    });
+
+    document.getElementById("reload").addEventListener("click", () => loadSource(state.active));
+
+    document.getElementById("raw").addEventListener("click", () => {
+      const target = state.active.path || state.active.raw;
+      window.open(target, "_blank", "noopener,noreferrer");
+    });
+
+    searchEl.addEventListener("input", render);
+
+    buildSources();
+    loadSource(sources[0]);
+  </script>
+</body>
+</html>

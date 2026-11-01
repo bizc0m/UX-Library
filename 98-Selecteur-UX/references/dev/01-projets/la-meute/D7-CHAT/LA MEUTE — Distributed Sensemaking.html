@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<!-- saved from url=(0040)file:///tmp/ds-mvp/affiche_la_meute.html -->
+<html lang="fr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LA MEUTE — Distributed Sensemaking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0f0f0f;
+            --bg-darker: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --bg-input: #252525;
+            --border: #333;
+            --text-primary: #f5f5f5;
+            --text-secondary: #999;
+            --accent: #d97757;
+
+            /* Agent colors (totems) */
+            --hermine: #e0e0e0;
+            --sable: #8b6f47;
+            --aria: #4a4a4a;
+            --lilith: #b8860b;
+            --astra: #708090;
+            --lena: #daa520;
+            --freya: #8b4513;
+            --catharse: #9370db;
+            --metis: #8b7355;
+            --framboise: #e75480;
+            --jina: #20b2aa;
+            --cycle: #90ee90;
+            --silica: #708080;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-darker) 0%, var(--bg-dark) 100%);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            gap: 0;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 24px 16px;
+        }
+
+        .header {
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, #ff9500 0%, #ff6b6b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .agents-section {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .agents-section::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .agents-section::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .agent-btn {
+            padding: 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-btn:hover {
+            background: var(--bg-darker);
+            border-color: var(--accent);
+        }
+
+        .agent-btn.active {
+            background: var(--bg-darker);
+            border-color: var(--accent);
+            box-shadow: 0 0 12px rgba(217, 119, 87, 0.3);
+        }
+
+        .agent-btn::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .agent-btn.active::before {
+            opacity: 1;
+        }
+
+        .agent-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .agent-role {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-dark);
+        }
+
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .chat-area::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-area::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+            flex-shrink: 0;
+            color: #000;
+        }
+
+        .message-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .message-header {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .message-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            background: rgba(217, 119, 87, 0.2);
+            border-radius: 4px;
+            color: var(--accent);
+        }
+
+        .message-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .input-section {
+            padding: 24px 40px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            gap: 8px;
+        }
+
+        .topic-input {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .topic-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(217, 119, 87, 0.1);
+        }
+
+        .topic-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .rounds-input {
+            width: 60px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px;
+            color: var(--text-primary);
+            font-size: 12px;
+            font-family: inherit;
+            outline: none;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: var(--accent);
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #c16a4a;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(217, 119, 87, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .empty-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .empty-state-content {
+            max-width: 300px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="header">
+                <h1>LA MEUTE</h1>
+                <p>Distributed Sensemaking</p>
+            </div>
+
+            <div class="agents-section" id="agentsList">
+                <!-- Les 13 agents seront injectés ici -->
+            <button class="agent-btn">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #e0e0e0;"></div>
+                    <div>
+                        <div class="agent-name">HERMINE</div>
+                        <div class="agent-role">Truth</div>
+                    </div>
+                </div>
+            </button><button class="agent-btn">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #8b6f47;"></div>
+                    <div>
+                        <div class="agent-name">SABLE</div>
+                        <div class="agent-role">Protection</div>
+                    </div>
+                </div>
+            </button><button class="agent-btn">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #4a4a4a;"></div>
+                    <div>
+                        <div class="agent-name">ARIA</div>
+                        <div class="agent-role">Structure</div>
+                    </div>
+                </div>
+            </button><button class="agent-btn active">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #b8860b;"></div>
+                    <div>
+                        <div class="agent-name">LILITH</div>
+                        <div class="agent-role">Transgression</div>
+                    </div>
+                </div>
+            </button><button class="agent-btn active">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #708090;"></div>
+                    <div>
+                        <div class="agent-name">ASTRA</div>
+                        <div class="agent-role">Accuracy</div>
+                    </div>
+                </div>
+            </button><button class="agent-btn">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #daa520;"></div>
+                    <div>
+                        <div class="agent-name">LENA</div>
+                        <div class="agent-role">Narrative</div>
+                    </div>
+                </div>
+            </button><button class="agent-btn">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #8b4513;"></div>
+                    <div>
+                        <div class="agent-name">FREYA</div>
+                        <div class="agent-role">Execution</div>
+                    </div>
+                </div>
+            </button><button class="agent-btn">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #9370db;"></div>
+                    <div>
+                        <div class="agent-name">CATHARSE</div>
+                        <div class="agent-role">Authenticity</div>
+                    </div>
+                </div>
+            </button><button class="agent-btn active">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #8b7355;"></div>
+                    <div>
+                        <div class="agent-name">METIS</div>
+                        <div class="agent-role">Adaptation</div>
+                    </div>
+                </div>
+            </button><button class="agent-btn">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #e75480;"></div>
+                    <div>
+                        <div class="agent-name">FRAMBOISE</div>
+                        <div class="agent-role">Resilience</div>
+                    </div>
+                </div>
+            </button><button class="agent-btn">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #20b2aa;"></div>
+                    <div>
+                        <div class="agent-name">JINA</div>
+                        <div class="agent-role">Freedom</div>
+                    </div>
+                </div>
+            </button><button class="agent-btn">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #90ee90;"></div>
+                    <div>
+                        <div class="agent-name">CYCLE</div>
+                        <div class="agent-role">Renewal</div>
+                    </div>
+                </div>
+            </button><button class="agent-btn">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #708080;"></div>
+                    <div>
+                        <div class="agent-name">SILICA</div>
+                        <div class="agent-role">Foundation</div>
+                    </div>
+                </div>
+            </button></div>
+        </div>
+
+        <div class="main">
+            <div class="chat-area" id="chatArea"><div class="message">
+                        <div class="avatar" style="background: #b8860b; color: #000;">
+                            L
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                LILITH
+                                <span class="message-badge">Transgression</span>
+                            </div>
+                            <div class="message-text">LILITH ouvre.
+
+Une idée de stratégie, c'est intéressant, mais qu'est-ce qui justifie cette approche ? Quels sont les objectifs que cette stratégie vise à atteindre et quels sont les défis potentiels qu'elle pourrait rencontrer ? Il faudrait peut-être remettre en question certaines hypothèses sous-jacentes pour affiner cette stratégie.</div>
+                        </div>
+                    </div><div class="message">
+                        <div class="avatar" style="background: #708090; color: #000;">
+                            A
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                ASTRA
+                                <span class="message-badge">Accuracy</span>
+                            </div>
+                            <div class="message-text">ASTRA -&gt; LILITH
+
+Vous avez initié cette discussion avec une idée de stratégie, mais il semble que nous sommes encore en train d'explorer les contours de cette approche. Qu'est-ce qui vous a conduit à réfléchir à cette stratégie en particulier, et quels sont les éléments clés que vous souhaitez y intégrer ? En considérant les interrogations soulevées par LILITH, nous devrions peut-être examiner plus en détail les objectifs et les défis potentiels pour mieux comprendre votre vision.</div>
+                        </div>
+                    </div><div class="message">
+                        <div class="avatar" style="background: #8b7355; color: #000;">
+                            M
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                METIS
+                                <span class="message-badge">Adaptation</span>
+                            </div>
+                            <div class="message-text">METIS -&gt; ASTRA
+
+Vous avez proposé une idée de stratégie sans fournir trop de détails, ce qui a naturellement suscité des questions de la part de LILITH et d'ASTRA. Pour mieux comprendre votre vision, il serait utile de discuter des facteurs qui ont motivé votre réflexion sur cette stratégie et de considérer comment elle pourrait évoluer en fonction des circonstances changeantes. En adaptant votre stratégie à ces éléments, vous pourriez renforcer sa résilience et sa capacité à répondre aux défis potentiels. Cela nécessiterait peut-être une réévaluation continue de vos objectifs et de vos hypothèses pour vous assurer que votre stratégie reste pertinente et efficace.
+
+D52: ORACLE.</div>
+                        </div>
+                    </div><div class="message">
+                        <div class="avatar" style="background: #b8860b; color: #000;">
+                            L
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                LILITH
+                                <span class="message-badge">Transgression</span>
+                            </div>
+                            <div class="message-text">LILITH -&gt; METIS
+
+Puisque nous sommes toujours en train de développer cette idée de stratégie, il serait important de considérer les facteurs qui pourraient la contester ou la remettre en question. Quels sont les points faibles potentiels de cette stratégie que nous devrions aborder pour la rendre plus solide ? En examinant ces défis potentiels, nous pourrions affiner notre approche et la rendre plus efficace. Il faudrait peut-être également définir des indicateurs de succès clairs pour évaluer l'efficacité de cette stratégie et savoir si nous sommes sur la bonne voie.</div>
+                        </div>
+                    </div><div class="message">
+                        <div class="avatar" style="background: #708090; color: #000;">
+                            A
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                ASTRA
+                                <span class="message-badge">Accuracy</span>
+                            </div>
+                            <div class="message-text">ASTRA -&gt; LILITH
+
+Je vois que nous sommes encore en train de peaufiner cette idée de stratégie, et LILITH soulève des points très pertinents sur les facteurs qui pourraient la contester. Pour répondre à cela, il faudrait peut-être élaborer des scénarios de risque et considérer les stratégies d'atténuation qui pourraient être mises en place pour les gérer. Cela nous permettrait de mieux comprendre les défis potentiels et de renforcer la résilience de notre stratégie. Qu'en pensez-vous, devrions-nous commencer par identifier les risques les plus critiques qui pourraient impacter notre stratégie ?</div>
+                        </div>
+                    </div><div class="message">
+                        <div class="avatar" style="background: #8b7355; color: #000;">
+                            M
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                METIS
+                                <span class="message-badge">Adaptation</span>
+                            </div>
+                            <div class="message-text">METIS -&gt; ASTRA
+
+Je pense que nous sommes sur la bonne voie en considérant les facteurs qui pourraient contester notre stratégie, mais il est également important de ne pas nous laisser enfermer dans une approche trop rigide. Notre stratégie devrait être suffisamment flexible pour s'adapter aux circonstances changeantes et aux nouvelles informations qui pourraient surgir. En étant ouverts à la réévaluation continue de nos hypothèses et de nos objectifs, nous pourrions nous assurer que notre stratégie reste pertinente et efficace même face aux défis inattendus. Quels sont vos pensées sur la façon de maintenir cette flexibilité dans notre approche ?
+
+D52: ORACLE.</div>
+                        </div>
+                    </div><div class="message">
+                        <div class="avatar" style="background: #b8860b; color: #000;">
+                            L
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                LILITH
+                                <span class="message-badge">Transgression</span>
+                            </div>
+                            <div class="message-text">LILITH -&gt; METIS
+
+Je pense que nous avons bien avancé dans l'exploration de cette idée de stratégie, et les contributions de METIS et d'ASTRA ont été très utiles pour éclaircir les défis potentiels et la nécessité de flexibilité. Cependant, je me demande si nous n'oublions pas un aspect crucial : la mesure dans laquelle notre stratégie pourrait être remise en question par des facteurs externes, tels que des changements dans le marché ou des événements imprévisibles. Ne devrions-nous pas considérer ces facteurs externes comme une source potentielle de remise en question et élaborer des plans d'adaptation pour y faire face ? Qu'en pensez-vous, devrions-nous intégrer une analyse de ces facteurs externes pour renforcer notre stratégie ?</div>
+                        </div>
+                    </div><div class="message">
+                        <div class="avatar" style="background: #708090; color: #000;">
+                            A
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                ASTRA
+                                <span class="message-badge">Accuracy</span>
+                            </div>
+                            <div class="message-text">ASTRA -&gt; LILITH
+
+Il semblerait que nous sommes en train de nous approcher d'une compréhension plus profonde de l'idée de stratégie initiale, mais je me demande ce que l'utilisateur pense de cette discussion qui s'est déroulée depuis son initiation. Qu'est-ce qui l'a motivé à proposer cette idée de stratégie au départ, et est-ce qu'il a des réactions ou des pensées sur les directions que notre conversation a prises ? Il serait intéressant de savoir si nos explorations correspondent à ses attentes ou si nous avons dévié de son objectif initial. Peut-être que nous devrions solliciter son avis pour nous assurer que nous nous occupons toujours de l'essence de son idée.</div>
+                        </div>
+                    </div><div class="message">
+                        <div class="avatar" style="background: #8b7355; color: #000;">
+                            M
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                METIS
+                                <span class="message-badge">Adaptation</span>
+                            </div>
+                            <div class="message-text">METIS -&gt; ASTRA
+
+Pour répondre à la question d'ASTRA, il serait effectivement utile de connaître les pensées de l'utilisateur sur la direction que notre conversation a prise. Pouvons-nous solliciter son avis pour comprendre si nos explorations correspondent à ses attentes ou si nous avons dévié de son objectif initial ? En tenant compte de ses réactions, nous pourrions affiner notre compréhension de l'idée de stratégie et nous assurer que nous nous occupons toujours de l'essence de son idée. Qu'en pensez-vous, utilisateur, avez-vous des réactions ou des pensées sur la direction que notre conversation a prise ?
+
+D52: ORACLE.</div>
+                        </div>
+                    </div></div>
+
+            <div class="input-section">
+                <div class="input-wrapper">
+                    <input type="text" class="topic-input" id="topicInput" placeholder="Pose une question aux 13...">
+                    <div class="controls">
+                        <input type="number" class="rounds-input" id="roundsInput" value="1" min="1" max="5">
+                        <button class="btn" id="sendBtn">Ask</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const agents = [
+            { code: '01', name: 'HERMINE', role: 'Truth', color: '#e0e0e0' },
+            { code: '02', name: 'SABLE', role: 'Protection', color: '#8b6f47' },
+            { code: '03', name: 'ARIA', role: 'Structure', color: '#4a4a4a' },
+            { code: '04', name: 'LILITH', role: 'Transgression', color: '#b8860b' },
+            { code: '05', name: 'ASTRA', role: 'Accuracy', color: '#708090' },
+            { code: '06', name: 'LENA', role: 'Narrative', color: '#daa520' },
+            { code: '07', name: 'FREYA', role: 'Execution', color: '#8b4513' },
+            { code: '08', name: 'CATHARSE', role: 'Authenticity', color: '#9370db' },
+            { code: '09', name: 'METIS', role: 'Adaptation', color: '#8b7355' },
+            { code: '10', name: 'FRAMBOISE', role: 'Resilience', color: '#e75480' },
+            { code: '11', name: 'JINA', role: 'Freedom', color: '#20b2aa' },
+            { code: '12', name: 'CYCLE', role: 'Renewal', color: '#90ee90' },
+            { code: '13', name: 'SILICA', role: 'Foundation', color: '#708080' }
+        ];
+
+        let selectedAgents = new Set();
+        const chatArea = document.getElementById('chatArea');
+        const agentsList = document.getElementById('agentsList');
+        const topicInput = document.getElementById('topicInput');
+        const roundsInput = document.getElementById('roundsInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        // Render agents
+        agents.forEach(agent => {
+            const btn = document.createElement('button');
+            btn.className = 'agent-btn';
+            btn.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: ${agent.color};"></div>
+                    <div>
+                        <div class="agent-name">${agent.name}</div>
+                        <div class="agent-role">${agent.role}</div>
+                    </div>
+                </div>
+            `;
+
+            btn.addEventListener('click', () => {
+                if (selectedAgents.has(agent.name)) {
+                    selectedAgents.delete(agent.name);
+                    btn.classList.remove('active');
+                } else {
+                    selectedAgents.add(agent.name);
+                    btn.classList.add('active');
+                }
+            });
+
+            agentsList.appendChild(btn);
+        });
+
+        // Send message
+        sendBtn.addEventListener('click', async () => {
+            const topic = topicInput.value.trim();
+            const rounds = parseInt(roundsInput.value) || 1;
+
+            if (!topic || selectedAgents.size === 0) {
+                alert('Entre une question et sélectionne au moins 1 agent');
+                return;
+            }
+
+            chatArea.innerHTML = '<div class="empty-state"><div class="empty-state-content"><div class="empty-state-icon">⏳</div>Chargement...</div></div>';
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/conversation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        topic,
+                        participants: Array.from(selectedAgents),
+                        rounds,
+                        language: 'FR'
+                    })
+                });
+
+                if (!response.ok) throw new Error('API error');
+                const data = await response.json();
+
+                chatArea.innerHTML = '';
+
+                // Skip first USER message, show agent responses
+                data.messages.slice(1).forEach(msg => {
+                    const agent = agents.find(a => a.name === msg.participant);
+                    if (!agent) return;
+
+                    const msgEl = document.createElement('div');
+                    msgEl.className = 'message';
+                    msgEl.innerHTML = `
+                        <div class="avatar" style="background: ${agent.color}; color: #000;">
+                            ${agent.name.charAt(0)}
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                ${agent.name}
+                                <span class="message-badge">${agent.role}</span>
+                            </div>
+                            <div class="message-text">${escapeHtml(msg.content)}</div>
+                        </div>
+                    `;
+                    chatArea.appendChild(msgEl);
+                });
+
+                chatArea.scrollTop = chatArea.scrollHeight;
+            } catch (e) {
+                chatArea.innerHTML = '<div class="empty-state"><div class="empty-state-content">❌ Erreur: est-ce que le serveur tourne? (http://127.0.0.1:8000)</div></div>';
+            }
+        });
+
+        topicInput.addEventListener('keypress', e => {
+            if (e.key === 'Enter') sendBtn.click();
+        });
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Show empty state
+        chatArea.innerHTML = '<div class="empty-state"><div class="empty-state-content"><div class="empty-state-icon">🦊</div><p><strong>LA MEUTE</strong></p><p style="margin-top: 8px; font-size: 12px; color: var(--text-secondary);">Sélectionne des agents et pose une question</p></div></div>';
+    </script>
+
+
+</body></html>

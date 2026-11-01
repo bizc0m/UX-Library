@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<!-- saved from url=(0022)http://localhost:3007/ -->
+<html lang="en" class=" fvpbfkest idc0_350"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Night Radar</title>
+  <style>
+    :root {
+      --bg: #07070b;
+      --panel: rgba(9, 9, 14, 0.82);
+      --line: rgba(245, 240, 228, 0.12);
+      --text: #f5f0e4;
+      --muted: #7a7589;
+      --pink: #ff2d6f;
+      --pink-soft: rgba(255, 45, 111, 0.18);
+      --acid: #c2ff3d;
+      --cyan: #5bcfff;
+      --red: #ff4d4d;
+      --violet: #b47bff;
+      --mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+    }
+
+    body {
+      position: fixed;
+      inset: 0;
+      overscroll-behavior: none;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      background: var(--bg);
+    }
+
+    .ticker-stack {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 5;
+      pointer-events: none;
+      border: 0;
+      outline: 0;
+    }
+
+    .ticker {
+      height: 28px;
+      overflow: hidden;
+      background: rgba(8, 8, 13, 0.86);
+      border: 0;
+      white-space: nowrap;
+      -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
+      mask-image: linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
+    }
+
+    .ticker:nth-child(2) {
+      background: rgba(18, 6, 14, 0.82);
+    }
+
+    .ticker-track {
+      display: inline-flex;
+      min-width: max-content;
+      gap: 24px;
+      align-items: center;
+      height: 28px;
+      animation: tickerMove 42s linear infinite;
+      will-change: transform;
+    }
+
+    .ticker:nth-child(2) .ticker-track {
+      animation-duration: 34s;
+      animation-direction: reverse;
+    }
+
+    .ticker-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      height: 28px;
+      padding: 0 10px;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-shadow: 0 0 14px rgba(245, 240, 228, 0.18);
+    }
+
+    .ticker-item .city,
+    .ticker-item .meta {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+    }
+
+    .ticker-item .score { color: var(--pink); font-size: 22px; letter-spacing: 0; }
+    .ticker-item .delta { color: var(--acid); font-size: 11px; }
+    .ticker-item .live { color: var(--acid); }
+    .ticker-item .guest { color: #ff6fa3; }
+    .flag {
+      display: inline-grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      flex: 0 0 20px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(245, 240, 228, 0.08);
+      font-size: 15px;
+      line-height: 1;
+      box-shadow: inset 0 0 0 1px rgba(245, 240, 228, 0.08);
+    }
+
+    .ticker-item .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--pink);
+      box-shadow: 0 0 16px var(--pink);
+    }
+
+    .side-panel {
+      position: fixed;
+      top: 76px;
+      bottom: 92px;
+      z-index: 4;
+      width: min(300px, 22vw);
+      padding: 18px;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(8, 8, 13, 0.78), rgba(8, 8, 13, 0.35));
+      border: 0;
+      outline: 0;
+      pointer-events: none;
+    }
+
+    .side-panel.left { left: 0; }
+    .side-panel.right { right: 0; }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .panel-head .live {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #ff6fa3;
+      letter-spacing: 0.08em;
+      text-transform: none;
+    }
+
+    .panel-head .live::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--pink);
+      box-shadow: 0 0 18px var(--pink);
+    }
+
+    .feed-list,
+    .rank-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .feed-item,
+    .rank-item {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 36px;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .feed-item .meta,
+    .rank-item .meta {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .rank-section + .rank-section { margin-top: 26px; }
+    .rank-score { color: var(--acid); font-size: 12px; }
+    .rank-index { color: var(--muted); font-size: 10px; }
+
+    .bottom-hud {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 5;
+      display: grid;
+      grid-template-columns: minmax(260px, 1.2fr) minmax(480px, 2fr) minmax(220px, 0.9fr);
+      align-items: center;
+      gap: 22px;
+      min-height: 82px;
+      padding: 12px max(24px, env(safe-area-inset-left)) max(12px, env(safe-area-inset-bottom));
+      background: linear-gradient(180deg, rgba(7, 7, 11, 0.55), rgba(7, 7, 11, 0.96));
+      border: 0;
+      pointer-events: none;
+    }
+
+    .event-types {
+      min-width: 0;
+    }
+
+    .hud-label {
+      display: block;
+      margin-bottom: 9px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .event-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px 12px;
+      color: var(--text);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .event-tags span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .event-tags span::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--pink);
+      box-shadow: 0 0 10px var(--pink);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(72px, 1fr));
+      gap: 14px;
+    }
+
+    .stat {
+      min-width: 0;
+      text-align: center;
+      border: 0;
+    }
+
+    .stat strong {
+      display: block;
+      color: var(--text);
+      font-size: clamp(17px, 2.1vw, 30px);
+      line-height: 1;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: clamp(8px, 1vw, 11px);
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .network {
+      text-align: right;
+      min-width: 0;
+    }
+
+    .network strong {
+      display: block;
+      color: var(--text);
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .network span {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    .zoom {
+      position: fixed;
+      right: max(14px, env(safe-area-inset-right));
+      bottom: max(86px, calc(env(safe-area-inset-bottom) + 86px));
+      z-index: 6;
+      display: grid;
+      width: 32px;
+      background: rgba(10, 10, 16, 0.7);
+      border: 0;
+      outline: 0;
+    }
+
+    .zoom button {
+      width: 32px;
+      height: 30px;
+      border: 0;
+      outline: 0;
+      color: var(--text);
+      background: transparent;
+      font: 700 13px/1 var(--mono);
+      cursor: pointer;
+    }
+
+    .zoom output {
+      display: grid;
+      place-items: center;
+      height: 28px;
+      color: var(--muted);
+      font: 700 10px/1 var(--mono);
+    }
+
+    @keyframes tickerMove {
+      from { transform: translate3d(0, 0, 0); }
+      to { transform: translate3d(-50%, 0, 0); }
+    }
+
+    @media (max-width: 680px) {
+      .bottom-hud {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        min-height: 142px;
+        padding: 8px 10px max(8px, env(safe-area-inset-bottom));
+      }
+      .hud-label { margin-bottom: 5px; font-size: 8px; }
+      .event-tags { gap: 5px 8px; font-size: 8px; letter-spacing: 0.05em; }
+      .event-tags span::before { width: 4px; height: 4px; }
+      .stats { grid-template-columns: repeat(5, 1fr); gap: 5px; }
+      .stat strong { font-size: 14px; }
+      .stat span { margin-top: 4px; font-size: 6.5px; letter-spacing: 0.08em; }
+      .network { display: block; text-align: center; }
+      .network strong { font-size: 9px; }
+      .network span { margin-top: 4px; font-size: 8px; white-space: normal; }
+      .ticker-item { font-size: 11px; padding: 0 8px; gap: 7px; }
+      .ticker-item .score { font-size: 20px; }
+      .side-panel {
+        display: block;
+        top: 62px;
+        bottom: 146px;
+        width: 118px;
+        padding: 10px 8px;
+        opacity: 0.82;
+      }
+      .panel-head {
+        margin-bottom: 10px;
+        font-size: 8px;
+        letter-spacing: 0.1em;
+      }
+      .feed-list,
+      .rank-list { gap: 8px; }
+      .feed-item,
+      .rank-item {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 2px;
+        min-height: 28px;
+        font-size: 8px;
+        letter-spacing: 0.03em;
+      }
+      .feed-item .flag,
+      .rank-item .rank-index,
+      .rank-item .rank-score { display: none; }
+      .feed-item .meta,
+      .rank-item .meta {
+        margin-top: 2px;
+        font-size: 6.5px;
+        letter-spacing: 0.07em;
+      }
+      .feed-item:nth-child(n+6),
+      .rank-item:nth-child(n+5),
+      .rank-section:nth-child(n+3) { display: none; }
+      .rank-section + .rank-section { margin-top: 16px; }
+      .zoom { bottom: 154px; }
+    }
+
+    @media (min-width: 681px) and (max-width: 1100px) {
+      .side-panel { width: 236px; opacity: 0.72; }
+      .bottom-hud { grid-template-columns: 1fr 1.5fr; }
+      .network { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="radar" aria-label="Live nightlife radar world map" width="3820" height="1726" style="width: 1910px; height: 863px;"></canvas>
+
+  <div class="ticker-stack" aria-hidden="true">
+    <div class="ticker"><div class="ticker-track" id="tickerA"><span class="ticker-item"><span class="dot"></span><span class="flag">🇪🇸</span><span>AMNESIA</span><span class="city">IBIZA</span><span class="score">96</span><span class="delta">+4.2%</span><span class="meta">18 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇪🇸</span><span>PACHA</span><span class="city">IBIZA</span><span class="score">96</span><span class="delta">+3.8%</span><span class="meta">16 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇩🇪</span><span>BERGHAIN</span><span class="city">BERLIN</span><span class="score">95</span><span class="delta">+2.4%</span><span class="meta">14 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇲🇽</span><span>ZAMNA</span><span class="city">TULUM</span><span class="score">94</span><span class="delta">+5.1%</span><span class="meta">19 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇦🇪</span><span>DRAI'S</span><span class="city">DUBAI</span><span class="score">93</span><span class="delta">+1.9%</span><span class="meta">15 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇪🇸</span><span>DC-10</span><span class="city">IBIZA</span><span class="score">92</span><span class="delta">+6.4%</span><span class="meta">12 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇪🇸</span><span>HÏ</span><span class="city">IBIZA</span><span class="score">91</span><span class="delta">+2.8%</span><span class="meta">17 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇬🇧</span><span>PRINTWORKS</span><span class="city">LONDON</span><span class="score">90</span><span class="delta">-1.2%</span><span class="meta">13 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇬🇧</span><span>FABRIC</span><span class="city">LONDON</span><span class="score">89</span><span class="delta">+0.4%</span><span class="meta">11 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇩🇪</span><span>TRESOR</span><span class="city">BERLIN</span><span class="score">88</span><span class="delta">+1.6%</span><span class="meta">9 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇪🇸</span><span>AMNESIA</span><span class="city">IBIZA</span><span class="score">96</span><span class="delta">+4.2%</span><span class="meta">18 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇪🇸</span><span>PACHA</span><span class="city">IBIZA</span><span class="score">96</span><span class="delta">+3.8%</span><span class="meta">16 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇩🇪</span><span>BERGHAIN</span><span class="city">BERLIN</span><span class="score">95</span><span class="delta">+2.4%</span><span class="meta">14 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇲🇽</span><span>ZAMNA</span><span class="city">TULUM</span><span class="score">94</span><span class="delta">+5.1%</span><span class="meta">19 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇦🇪</span><span>DRAI'S</span><span class="city">DUBAI</span><span class="score">93</span><span class="delta">+1.9%</span><span class="meta">15 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇪🇸</span><span>DC-10</span><span class="city">IBIZA</span><span class="score">92</span><span class="delta">+6.4%</span><span class="meta">12 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇪🇸</span><span>HÏ</span><span class="city">IBIZA</span><span class="score">91</span><span class="delta">+2.8%</span><span class="meta">17 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇬🇧</span><span>PRINTWORKS</span><span class="city">LONDON</span><span class="score">90</span><span class="delta">-1.2%</span><span class="meta">13 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇬🇧</span><span>FABRIC</span><span class="city">LONDON</span><span class="score">89</span><span class="delta">+0.4%</span><span class="meta">11 agents</span></span><span class="ticker-item"><span class="dot"></span><span class="flag">🇩🇪</span><span>TRESOR</span><span class="city">BERLIN</span><span class="score">88</span><span class="delta">+1.6%</span><span class="meta">9 agents</span></span></div></div>
+    <div class="ticker"><div class="ticker-track" id="tickerB"><span class="ticker-item"><span class="flag">🇪🇸</span><span style="color:var(--pink)">AMNESIA</span><span class="guest">GUEST</span><span class="city">IBIZA</span><span>Boris Brejcha</span><span class="live">+02:14</span><span class="meta">18 agents</span></span><span class="ticker-item"><span class="flag">🇪🇸</span><span style="color:var(--pink)">PACHA</span><span class="guest">LIVE</span><span class="city">IBIZA</span><span>Solomun</span><span class="live">+01:48</span><span class="meta">16 agents</span></span><span class="ticker-item"><span class="flag">🇩🇪</span><span style="color:var(--pink)">BERGHAIN</span><span class="guest">GUEST</span><span class="city">BERLIN</span><span>Sama Abdulhadi</span><span class="live">+04:02</span><span class="meta">14 agents</span></span><span class="ticker-item"><span class="flag">🇪🇸</span><span style="color:var(--pink)">DC-10</span><span class="guest">GUEST</span><span class="city">IBIZA</span><span>Loco Dice</span><span class="live">+02:30</span><span class="meta">12 agents</span></span><span class="ticker-item"><span class="flag">🇬🇧</span><span style="color:var(--pink)">FABRIC</span><span class="guest">LIVE</span><span class="city">LONDON</span><span>FJAAK</span><span class="live">+00:46</span><span class="meta">11 agents</span></span><span class="ticker-item"><span class="flag">🇩🇪</span><span style="color:var(--pink)">TRESOR</span><span class="guest">GUEST</span><span class="city">BERLIN</span><span>Nina Kraviz</span><span class="live">+03:12</span><span class="meta">9 agents</span></span><span class="ticker-item"><span class="flag">🇫🇷</span><span style="color:var(--pink)">REX CLUB</span><span class="guest">LIVE</span><span class="city">PARIS</span><span>Folamour</span><span class="live">+01:24</span><span class="meta">8 agents</span></span><span class="ticker-item"><span class="flag">🇪🇸</span><span style="color:var(--pink)">AMNESIA</span><span class="guest">GUEST</span><span class="city">IBIZA</span><span>Boris Brejcha</span><span class="live">+02:14</span><span class="meta">18 agents</span></span><span class="ticker-item"><span class="flag">🇪🇸</span><span style="color:var(--pink)">PACHA</span><span class="guest">LIVE</span><span class="city">IBIZA</span><span>Solomun</span><span class="live">+01:48</span><span class="meta">16 agents</span></span><span class="ticker-item"><span class="flag">🇩🇪</span><span style="color:var(--pink)">BERGHAIN</span><span class="guest">GUEST</span><span class="city">BERLIN</span><span>Sama Abdulhadi</span><span class="live">+04:02</span><span class="meta">14 agents</span></span><span class="ticker-item"><span class="flag">🇪🇸</span><span style="color:var(--pink)">DC-10</span><span class="guest">GUEST</span><span class="city">IBIZA</span><span>Loco Dice</span><span class="live">+02:30</span><span class="meta">12 agents</span></span><span class="ticker-item"><span class="flag">🇬🇧</span><span style="color:var(--pink)">FABRIC</span><span class="guest">LIVE</span><span class="city">LONDON</span><span>FJAAK</span><span class="live">+00:46</span><span class="meta">11 agents</span></span><span class="ticker-item"><span class="flag">🇩🇪</span><span style="color:var(--pink)">TRESOR</span><span class="guest">GUEST</span><span class="city">BERLIN</span><span>Nina Kraviz</span><span class="live">+03:12</span><span class="meta">9 agents</span></span><span class="ticker-item"><span class="flag">🇫🇷</span><span style="color:var(--pink)">REX CLUB</span><span class="guest">LIVE</span><span class="city">PARIS</span><span>Folamour</span><span class="live">+01:24</span><span class="meta">8 agents</span></span></div></div>
+  </div>
+
+  <div class="zoom" aria-label="Zoom controls">
+    <button id="zoomIn" type="button" aria-label="Zoom in">+</button>
+    <button id="zoomOut" type="button" aria-label="Zoom out">-</button>
+    <output id="zoomValue">0.7x</output>
+  </div>
+
+  <aside class="side-panel left" aria-label="Live feed">
+    <div class="panel-head"><span>Live feed</span><span class="live">Live</span></div>
+    <div class="feed-list" id="feedList">
+          <div class="feed-item">
+            <span class="flag">🇺🇸</span>
+            <span>Basement<span class="meta">BLOND:ISH inbound</span></span>
+            <span class="meta">NYC · DJ in transit</span>
+          </div>
+        
+          <div class="feed-item">
+            <span class="flag">🇫🇷</span>
+            <span>Rex Club<span class="meta">Folamour live</span></span>
+            <span class="meta">Paris · Live set</span>
+          </div>
+        
+          <div class="feed-item">
+            <span class="flag">🇨🇭</span>
+            <span>Audio<span class="meta">Helene soundcheck</span></span>
+            <span class="meta">Geneva · Soundcheck</span>
+          </div>
+        
+          <div class="feed-item">
+            <span class="flag">🇲🇽</span>
+            <span>Afterlife<span class="meta">6,218 tickets</span></span>
+            <span class="meta">Mexico · Sold out</span>
+          </div>
+        
+          <div class="feed-item">
+            <span class="flag">🇩🇪</span>
+            <span>Tresor<span class="meta">Nina Kraviz inbound</span></span>
+            <span class="meta">Berlin · DJ in transit</span>
+          </div>
+        
+          <div class="feed-item">
+            <span class="flag">🇪🇸</span>
+            <span>Pacha<span class="meta">Solomun live</span></span>
+            <span class="meta">Ibiza · Live set</span>
+          </div>
+        
+          <div class="feed-item">
+            <span class="flag">🇬🇧</span>
+            <span>Fabric<span class="meta">Queue building</span></span>
+            <span class="meta">London · Queue building</span>
+          </div>
+        
+          <div class="feed-item">
+            <span class="flag">🇵🇹</span>
+            <span>Lux<span class="meta">After building</span></span>
+            <span class="meta">Lisbon · After hours</span>
+          </div>
+        
+          <div class="feed-item">
+            <span class="flag">🇦🇪</span>
+            <span>Drai's<span class="meta">Floor at 91%</span></span>
+            <span class="meta">Dubai · Live set</span>
+          </div>
+        </div>
+  </aside>
+
+  <aside class="side-panel right" aria-label="Network rankings">
+    <div class="rank-section">
+      <div class="panel-head"><span>Top cities</span><span>24h</span></div>
+      <div class="rank-list" id="cityRanks">
+          <div class="rank-item">
+            <span class="rank-index">01</span>
+            <span>Ibiza<span class="meta">14 sets</span></span>
+            <span class="rank-score">+22%</span>
+          </div>
+        
+          <div class="rank-item">
+            <span class="rank-index">02</span>
+            <span>Berlin<span class="meta">11 sets</span></span>
+            <span class="rank-score">+18%</span>
+          </div>
+        
+          <div class="rank-item">
+            <span class="rank-index">03</span>
+            <span>Paris<span class="meta">9 sets</span></span>
+            <span class="rank-score">+8%</span>
+          </div>
+        
+          <div class="rank-item">
+            <span class="rank-index">04</span>
+            <span>London<span class="meta">8 sets</span></span>
+            <span class="rank-score">+6%</span>
+          </div>
+        
+          <div class="rank-item">
+            <span class="rank-index">05</span>
+            <span>Tulum<span class="meta">7 sets</span></span>
+            <span class="rank-score">+21%</span>
+          </div>
+        </div>
+    </div>
+    <div class="rank-section">
+      <div class="panel-head"><span>DJs on tour</span><span>Live</span></div>
+      <div class="rank-list" id="djRanks">
+          <div class="rank-item">
+            <span class="rank-index">01</span>
+            <span>Boris Brejcha<span class="meta">4 dates</span></span>
+            <span class="rank-score">LIVE</span>
+          </div>
+        
+          <div class="rank-item">
+            <span class="rank-index">02</span>
+            <span>Tale Of Us<span class="meta">3 dates</span></span>
+            <span class="rank-score">LIVE</span>
+          </div>
+        
+          <div class="rank-item">
+            <span class="rank-index">03</span>
+            <span>Keinemusik<span class="meta">3 dates</span></span>
+            <span class="rank-score">LIVE</span>
+          </div>
+        
+          <div class="rank-item">
+            <span class="rank-index">04</span>
+            <span>Solomun<span class="meta">2 dates</span></span>
+            <span class="rank-score">LIVE</span>
+          </div>
+        
+          <div class="rank-item">
+            <span class="rank-index">05</span>
+            <span>Nina Kraviz<span class="meta">2 dates</span></span>
+            <span class="rank-score">GUEST</span>
+          </div>
+        </div>
+    </div>
+    <div class="rank-section">
+      <div class="panel-head"><span>Venues capacity</span><span>Now</span></div>
+      <div class="rank-list" id="venueRanks">
+          <div class="rank-item">
+            <span class="rank-index">01</span>
+            <span>Amnesia Ibiza<span class="meta">full</span></span>
+            <span class="rank-score">100%</span>
+          </div>
+        
+          <div class="rank-item">
+            <span class="rank-index">02</span>
+            <span>Zamna Tulum<span class="meta">hot</span></span>
+            <span class="rank-score">96%</span>
+          </div>
+        
+          <div class="rank-item">
+            <span class="rank-index">03</span>
+            <span>Berghain Berlin<span class="meta">peak</span></span>
+            <span class="rank-score">98%</span>
+          </div>
+        
+          <div class="rank-item">
+            <span class="rank-index">04</span>
+            <span>Pacha Ibiza<span class="meta">full</span></span>
+            <span class="rank-score">100%</span>
+          </div>
+        
+          <div class="rank-item">
+            <span class="rank-index">05</span>
+            <span>Fabric London<span class="meta">rising</span></span>
+            <span class="rank-score">89%</span>
+          </div>
+        </div>
+    </div>
+  </aside>
+
+  <section class="bottom-hud" aria-label="Live statistics">
+    <div class="event-types">
+      <span class="hud-label">Event types</span>
+      <div class="event-tags">
+        <span>Live set</span>
+        <span>DJ in transit</span>
+        <span>Soundcheck</span>
+        <span>Sold out</span>
+        <span>Queue building</span>
+        <span>After hours</span>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><strong id="countries">21</strong><span>active countries</span></div>
+      <div class="stat"><strong id="cities">34</strong><span>cities live</span></div>
+      <div class="stat"><strong id="venues">62</strong><span>venues online</span></div>
+      <div class="stat"><strong id="audience">186,931</strong><span>total audience</span></div>
+      <div class="stat"><strong id="entries">1,285,659</strong><span>entries · 24h</span></div>
+    </div>
+    <div class="network">
+      <strong>Network</strong>
+      <span>5 continents · 21 countries · 34 cities</span>
+    </div>
+  </section>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const canvas = document.getElementById("radar");
+      const ctx = canvas.getContext("2d", { alpha: false });
+      const tickerA = document.getElementById("tickerA");
+      const tickerB = document.getElementById("tickerB");
+      const zoomValue = document.getElementById("zoomValue");
+      const feedList = document.getElementById("feedList");
+      const cityRanks = document.getElementById("cityRanks");
+      const djRanks = document.getElementById("djRanks");
+      const venueRanks = document.getElementById("venueRanks");
+
+      const hubs = [
+        { name: "Annecy", lat: 45.899, lon: 6.129, color: "#ff2d6f", size: 1.15 },
+        { name: "Geneva", lat: 46.204, lon: 6.143, color: "#f5f0e4", size: 0.9 },
+        { name: "Paris", lat: 48.856, lon: 2.352, color: "#f5f0e4", size: 0.95 },
+        { name: "London", lat: 51.507, lon: -0.128, color: "#f5f0e4", size: 0.9 },
+        { name: "Berlin", lat: 52.52, lon: 13.405, color: "#f5f0e4", size: 0.9 },
+        { name: "Ibiza", lat: 38.906, lon: 1.42, color: "#f5f0e4", size: 1.08 },
+        { name: "New York", lat: 40.713, lon: -74.006, color: "#f5f0e4", size: 1 },
+        { name: "Tulum", lat: 20.211, lon: -87.466, color: "#f5f0e4", size: 1 },
+        { name: "Tokyo", lat: 35.676, lon: 139.65, color: "#f5f0e4", size: 0.86 },
+        { name: "Seoul", lat: 37.566, lon: 126.978, color: "#b47bff", size: 0.74 },
+        { name: "Dubai", lat: 25.204, lon: 55.27, color: "#ff2d6f", size: 0.76 },
+        { name: "Mexico", lat: 19.432, lon: -99.133, color: "#ff2d6f", size: 0.82 },
+        { name: "Sao Paulo", lat: -23.55, lon: -46.633, color: "#ff2d6f", size: 0.72 }
+      ];
+
+      const venues = [
+        { name: "AMNESIA", city: "Ibiza", lat: 38.936, lon: 1.408, color: "#ff2d6f", score: 96, dx: -58, dy: -16 },
+        { name: "PACHA", city: "Ibiza", lat: 38.917, lon: 1.447, color: "#ff2d6f", score: 96, dx: 10, dy: -10 },
+        { name: "DC-10", city: "Ibiza", lat: 38.875, lon: 1.363, color: "#c2ff3d", score: 92, dx: -50, dy: 17 },
+        { name: "HÏ", city: "Ibiza", lat: 38.884, lon: 1.404, color: "#5bcfff", score: 91, dx: 12, dy: 18 },
+        { name: "BERGHAIN", city: "Berlin", lat: 52.511, lon: 13.443, color: "#ff2d6f", score: 95, dx: 10, dy: -10 },
+        { name: "TRESOR", city: "Berlin", lat: 52.510, lon: 13.419, color: "#5bcfff", score: 88, dx: -46, dy: 14 },
+        { name: "ZAMNA", city: "Tulum", lat: 20.234, lon: -87.461, color: "#ff2d6f", score: 94, dx: 10, dy: -1 },
+        { name: "FABRIC", city: "London", lat: 51.520, lon: -0.102, color: "#f5f0e4", score: 89, dx: 10, dy: -1 },
+        { name: "REX", city: "Paris", lat: 48.871, lon: 2.347, color: "#f5f0e4", score: 87, dx: 10, dy: -1 },
+        { name: "DRAI'S", city: "Dubai", lat: 25.204, lon: 55.270, color: "#ff2d6f", score: 93, dx: 10, dy: -1 }
+      ];
+
+      const MIN_ZOOM = 0.72;
+      const MAX_ZOOM = 8;
+
+      const routes = [
+        ["Ibiza", "New York", "#5bcfff"],
+        ["Tulum", "Ibiza", "#ff2d6f"],
+        ["Annecy", "Tokyo", "#ff2d6f"],
+        ["Berlin", "Seoul", "#b47bff"],
+        ["London", "Dubai", "#c2ff3d"],
+        ["Paris", "Mexico", "#ff2d6f"],
+        ["Geneva", "Ibiza", "#f5f0e4"],
+        ["New York", "Tulum", "#5bcfff"]
+      ];
+
+      const venueTicker = [
+        ["🇪🇸", "AMNESIA", "IBIZA", "96", "+4.2%", "18 agents"],
+        ["🇪🇸", "PACHA", "IBIZA", "96", "+3.8%", "16 agents"],
+        ["🇩🇪", "BERGHAIN", "BERLIN", "95", "+2.4%", "14 agents"],
+        ["🇲🇽", "ZAMNA", "TULUM", "94", "+5.1%", "19 agents"],
+        ["🇦🇪", "DRAI'S", "DUBAI", "93", "+1.9%", "15 agents"],
+        ["🇪🇸", "DC-10", "IBIZA", "92", "+6.4%", "12 agents"],
+        ["🇪🇸", "HÏ", "IBIZA", "91", "+2.8%", "17 agents"],
+        ["🇬🇧", "PRINTWORKS", "LONDON", "90", "-1.2%", "13 agents"],
+        ["🇬🇧", "FABRIC", "LONDON", "89", "+0.4%", "11 agents"],
+        ["🇩🇪", "TRESOR", "BERLIN", "88", "+1.6%", "9 agents"]
+      ];
+
+      const movementTicker = [
+        ["🇪🇸", "AMNESIA", "GUEST", "IBIZA", "Boris Brejcha", "+02:14", "18 agents"],
+        ["🇪🇸", "PACHA", "LIVE", "IBIZA", "Solomun", "+01:48", "16 agents"],
+        ["🇩🇪", "BERGHAIN", "GUEST", "BERLIN", "Sama Abdulhadi", "+04:02", "14 agents"],
+        ["🇪🇸", "DC-10", "GUEST", "IBIZA", "Loco Dice", "+02:30", "12 agents"],
+        ["🇬🇧", "FABRIC", "LIVE", "LONDON", "FJAAK", "+00:46", "11 agents"],
+        ["🇩🇪", "TRESOR", "GUEST", "BERLIN", "Nina Kraviz", "+03:12", "9 agents"],
+        ["🇫🇷", "REX CLUB", "LIVE", "PARIS", "Folamour", "+01:24", "8 agents"]
+      ];
+
+      const liveFeed = [
+        ["🇺🇸", "Basement", "BLOND:ISH inbound", "NYC · DJ in transit"],
+        ["🇫🇷", "Rex Club", "Folamour live", "Paris · Live set"],
+        ["🇨🇭", "Audio", "Helene soundcheck", "Geneva · Soundcheck"],
+        ["🇲🇽", "Afterlife CDMX", "6,218 tickets", "Mexico City · Sold out"],
+        ["🇩🇪", "Tresor", "Nina Kraviz inbound", "Berlin · DJ in transit"],
+        ["🇪🇸", "Pacha", "Solomun live", "Ibiza · Live set"],
+        ["🇬🇧", "Fabric", "Queue building", "London · Queue building"],
+        ["🇵🇹", "Lux", "After building", "Lisbon · After hours"],
+        ["🇦🇪", "Drai's", "Floor at 91%", "Dubai · Live set"]
+      ];
+
+      const topCities = [
+        ["Ibiza", "14 sets", "+22%"],
+        ["Berlin", "11 sets", "+18%"],
+        ["Paris", "9 sets", "+8%"],
+        ["London", "8 sets", "+6%"],
+        ["Tulum", "7 sets", "+21%"]
+      ];
+
+      const djsOnTour = [
+        ["Boris Brejcha", "4 dates", "LIVE"],
+        ["Tale Of Us", "3 dates", "LIVE"],
+        ["Keinemusik", "3 dates", "LIVE"],
+        ["Solomun", "2 dates", "LIVE"],
+        ["Nina Kraviz", "2 dates", "GUEST"]
+      ];
+
+      const capacityRanks = [
+        ["Amnesia Ibiza", "100%", "full"],
+        ["Zamna Tulum", "96%", "hot"],
+        ["Berghain Berlin", "98%", "peak"],
+        ["Pacha Ibiza", "100%", "full"],
+        ["Fabric London", "89%", "rising"]
+      ];
+
+      let width = 0;
+      let height = 0;
+      let dpr = 1;
+      let geo = null;
+      let landDots = [];
+      let fallbackDots = [];
+      let zoom = 1;
+      let panX = 0;
+      let panY = 0;
+      let isDragging = false;
+      let dragStartX = 0;
+      let dragStartY = 0;
+      let dragPanX = 0;
+      let dragPanY = 0;
+      let pinchStartDistance = 0;
+      let pinchStartZoom = 1;
+      let started = performance.now();
+      let reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      function tickerVenueItem(item) {
+        return `<span class="ticker-item"><span class="dot"></span><span class="flag">${item[0]}</span><span>${item[1]}</span><span class="city">${item[2]}</span><span class="score">${item[3]}</span><span class="delta">${item[4]}</span><span class="meta">${item[5]}</span></span>`;
+      }
+
+      function tickerMoveItem(item) {
+        return `<span class="ticker-item"><span class="flag">${item[0]}</span><span style="color:var(--pink)">${item[1]}</span><span class="guest">${item[2]}</span><span class="city">${item[3]}</span><span>${item[4]}</span><span class="live">${item[5]}</span><span class="meta">${item[6]}</span></span>`;
+      }
+
+      function mountTickers() {
+        const rowA = venueTicker.map(tickerVenueItem).join("");
+        const rowB = movementTicker.map(tickerMoveItem).join("");
+        tickerA.innerHTML = rowA + rowA;
+        tickerB.innerHTML = rowB + rowB;
+      }
+
+      function mountPanels() {
+        feedList.innerHTML = liveFeed.map((item) => `
+          <div class="feed-item">
+            <span class="flag">${item[0]}</span>
+            <span>${item[1]}<span class="meta">${item[2]}</span></span>
+            <span class="meta">${item[3]}</span>
+          </div>
+        `).join("");
+        cityRanks.innerHTML = topCities.map((item, index) => `
+          <div class="rank-item">
+            <span class="rank-index">${String(index + 1).padStart(2, "0")}</span>
+            <span>${item[0]}<span class="meta">${item[1]}</span></span>
+            <span class="rank-score">${item[2]}</span>
+          </div>
+        `).join("");
+        djRanks.innerHTML = djsOnTour.map((item, index) => `
+          <div class="rank-item">
+            <span class="rank-index">${String(index + 1).padStart(2, "0")}</span>
+            <span>${item[0]}<span class="meta">${item[1]}</span></span>
+            <span class="rank-score">${item[2]}</span>
+          </div>
+        `).join("");
+        venueRanks.innerHTML = capacityRanks.map((item, index) => `
+          <div class="rank-item">
+            <span class="rank-index">${String(index + 1).padStart(2, "0")}</span>
+            <span>${item[0]}<span class="meta">${item[2]}</span></span>
+            <span class="rank-score">${item[1]}</span>
+          </div>
+        `).join("");
+      }
+
+      function projection(lon, lat) {
+        const mapW = Math.max(width * 1.48 * zoom, width + 120);
+        const mapH = mapW * 0.54;
+        const cx = width * 0.5 + panX;
+        const cy = height * 0.5 + height * 0.02 + panY;
+        return {
+          x: cx + (lon / 180) * (mapW / 2),
+          y: cy - (lat / 90) * (mapH / 2)
+        };
+      }
+
+      function resize() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        canvas.style.width = width + "px";
+        canvas.style.height = height + "px";
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        clampPan();
+        buildDots();
+      }
+
+      function clampPan() {
+        const mapW = Math.max(width * 1.48 * zoom, width + 120);
+        const mapH = mapW * 0.54;
+        const maxX = Math.max(32, (mapW - width) * 0.5 + 80);
+        const maxY = Math.max(32, (mapH - height) * 0.5 + 110);
+        panX = Math.max(-maxX, Math.min(maxX, panX));
+        panY = Math.max(-maxY, Math.min(maxY, panY));
+      }
+
+      function eachRing(feature, callback) {
+        const geometry = feature && feature.geometry;
+        if (!geometry) return;
+        if (geometry.type === "Polygon") geometry.coordinates.forEach(callback);
+        if (geometry.type === "MultiPolygon") geometry.coordinates.forEach(poly => poly.forEach(callback));
+      }
+
+      function buildDots() {
+        landDots = [];
+        fallbackDots = [];
+        if (!width || !height) return;
+
+        const mask = document.createElement("canvas");
+        mask.width = width;
+        mask.height = height;
+        const m = mask.getContext("2d");
+        m.fillStyle = "#fff";
+
+        if (geo && geo.features) {
+          for (const feature of geo.features) {
+            eachRing(feature, (ring) => {
+              m.beginPath();
+              ring.forEach((point, index) => {
+                const p = projection(point[0], point[1]);
+                if (index === 0) m.moveTo(p.x, p.y);
+                else m.lineTo(p.x, p.y);
+              });
+              m.closePath();
+              m.fill();
+            });
+          }
+          const step = width < 680 ? 5 : 4;
+          const data = m.getImageData(0, 0, width, height).data;
+          for (let y = 72; y < height - 86; y += step) {
+            for (let x = 0; x < width; x += step) {
+              const i = ((Math.floor(y) * width + Math.floor(x)) * 4) + 3;
+              if (data[i] > 0 && Math.random() > 0.18) landDots.push({ x, y, a: 0.2 + Math.random() * 0.42 });
+            }
+          }
+        } else {
+          const clusters = [
+            [-98, 39, 180, 90], [-60, -15, 130, 165], [12, 50, 170, 86],
+            [24, 3, 142, 170], [89, 31, 220, 120], [135, -25, 70, 64]
+          ];
+          const step = width < 680 ? 5 : 4;
+          clusters.forEach(([lon, lat, w, h]) => {
+            const c = projection(lon, lat);
+            for (let yy = -h / 2; yy < h / 2; yy += step) {
+              for (let xx = -w / 2; xx < w / 2; xx += step) {
+                const n = (xx / (w / 2)) ** 2 + (yy / (h / 2)) ** 2;
+                if (n < 1 && Math.random() > 0.32) fallbackDots.push({ x: c.x + xx, y: c.y + yy, a: 0.18 + Math.random() * 0.38 });
+              }
+            }
+          });
+        }
+      }
+
+      function drawBackground(t) {
+        ctx.fillStyle = "#07070b";
+        ctx.fillRect(0, 0, width, height);
+
+        const gradient = ctx.createRadialGradient(width * 0.56, height * 0.34, 0, width * 0.56, height * 0.34, Math.max(width, height) * 0.78);
+        gradient.addColorStop(0, "rgba(255,45,111,0.10)");
+        gradient.addColorStop(0.45, "rgba(30,12,24,0.18)");
+        gradient.addColorStop(1, "rgba(7,7,11,0)");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.save();
+        ctx.strokeStyle = "rgba(245,240,228,0.035)";
+        ctx.lineWidth = 1;
+        const grid = Math.max(48, Math.round(width / 14));
+        for (let x = ((t * 0.004) % grid) - grid; x < width + grid; x += grid) {
+          ctx.beginPath();
+          ctx.moveTo(x, 56);
+          ctx.lineTo(x, height - 72);
+          ctx.stroke();
+        }
+        for (let y = 56; y < height - 72; y += grid) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function drawLand() {
+        const dots = landDots.length ? landDots : fallbackDots;
+        ctx.save();
+        for (const dot of dots) {
+          ctx.fillStyle = `rgba(245,240,228,${dot.a})`;
+          ctx.fillRect(dot.x, dot.y, 1.25, 1.25);
+        }
+        ctx.restore();
+      }
+
+      function hubByName(name) {
+        return hubs.find(h => h.name === name);
+      }
+
+      function drawArc(from, to, color, t, offset) {
+        const a = projection(from.lon, from.lat);
+        const b = projection(to.lon, to.lat);
+        const mx = (a.x + b.x) / 2;
+        const my = (a.y + b.y) / 2 - Math.min(170, Math.abs(a.x - b.x) * 0.24) - 30;
+
+        ctx.save();
+        ctx.lineWidth = 1.1;
+        ctx.strokeStyle = color.replace(")", ",0.45)").replace("rgb", "rgba");
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.quadraticCurveTo(mx, my, b.x, b.y);
+        ctx.stroke();
+
+        const pulse = reducedMotion ? 0.5 : ((t * 0.00018 + offset) % 1);
+        const qx = (1 - pulse) * (1 - pulse) * a.x + 2 * (1 - pulse) * pulse * mx + pulse * pulse * b.x;
+        const qy = (1 - pulse) * (1 - pulse) * a.y + 2 * (1 - pulse) * pulse * my + pulse * pulse * b.y;
+        ctx.fillStyle = color;
+        ctx.shadowBlur = 14;
+        ctx.beginPath();
+        ctx.arc(qx, qy, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function drawHubs(t) {
+        ctx.save();
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.font = "700 10px " + getComputedStyle(document.body).fontFamily;
+        hubs.forEach((hub, index) => {
+          const p = projection(hub.lon, hub.lat);
+          const pulse = reducedMotion ? 0.5 : (Math.sin(t * 0.002 + index) + 1) / 2;
+          const ring = 28 + pulse * 32 * hub.size;
+
+          ctx.strokeStyle = hub.color === "#f5f0e4" ? "rgba(245,240,228,0.22)" : "rgba(255,45,111,0.34)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, ring, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, ring * 0.58, 0, Math.PI * 2);
+          ctx.stroke();
+
+          const halo = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 42 * hub.size);
+          halo.addColorStop(0, hub.color === "#f5f0e4" ? "rgba(245,240,228,0.58)" : "rgba(255,45,111,0.62)");
+          halo.addColorStop(1, "rgba(255,45,111,0)");
+          ctx.fillStyle = halo;
+          ctx.fillRect(p.x - 44, p.y - 44, 88, 88);
+
+          ctx.fillStyle = hub.color;
+          ctx.shadowColor = hub.color;
+          ctx.shadowBlur = 14;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 3.6 * hub.size, 0, Math.PI * 2);
+          ctx.fill();
+
+          if (["Annecy", "Geneva", "Paris", "London", "Berlin", "Ibiza", "New York", "Tulum", "Tokyo"].includes(hub.name)) {
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = "rgba(245,240,228,0.92)";
+            ctx.fillText(hub.name.toUpperCase(), p.x + 8, p.y - 1);
+          }
+        });
+        ctx.restore();
+      }
+
+      function drawVenues(t) {
+        if (zoom < 2.15) return;
+        ctx.save();
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.font = "800 9px " + getComputedStyle(document.body).fontFamily;
+        venues.forEach((venue, index) => {
+          const p = projection(venue.lon, venue.lat);
+          const pulse = reducedMotion ? 0.5 : (Math.sin(t * 0.004 + index * 1.8) + 1) / 2;
+          const radius = Math.min(18, 7 + zoom * 1.2 + pulse * 3);
+
+          ctx.strokeStyle = venue.color === "#f5f0e4" ? "rgba(245,240,228,0.30)" : venue.color + "88";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.fillStyle = venue.color;
+          ctx.shadowColor = venue.color;
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 2.4, 0, Math.PI * 2);
+          ctx.fill();
+
+          if (zoom >= 3.4) {
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = "rgba(245,240,228,0.18)";
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p.x + (venue.dx || 7) - 3, p.y + (venue.dy || -1));
+            ctx.stroke();
+            ctx.fillStyle = "rgba(245,240,228,0.94)";
+            ctx.fillText(`${venue.name} ${venue.score}`, p.x + (venue.dx || 7), p.y + (venue.dy || -1));
+          }
+        });
+        ctx.restore();
+      }
+
+      function drawRadarRings(t) {
+        const centers = [
+          projection(6.129, 45.899), projection(1.42, 38.906), projection(-74.006, 40.713),
+          projection(-87.466, 20.211), projection(139.65, 35.676), projection(-46.633, -23.55)
+        ];
+        ctx.save();
+        centers.forEach((c, i) => {
+          const sweep = reducedMotion ? 0 : (t * 0.00045 + i) % (Math.PI * 2);
+          ctx.strokeStyle = "rgba(255,45,111,0.16)";
+          ctx.lineWidth = 1;
+          for (let r = 42; r <= 130; r += 28) {
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, r, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+          ctx.strokeStyle = "rgba(91,207,255,0.18)";
+          ctx.beginPath();
+          ctx.moveTo(c.x, c.y);
+          ctx.lineTo(c.x + Math.cos(sweep) * 120, c.y + Math.sin(sweep) * 120);
+          ctx.stroke();
+        });
+        ctx.restore();
+      }
+
+      function draw(t) {
+        drawBackground(t);
+        drawLand();
+        drawRadarRings(t);
+        routes.forEach((route, i) => {
+          const a = hubByName(route[0]);
+          const b = hubByName(route[1]);
+          if (a && b) drawArc(a, b, route[2], t, i / routes.length);
+        });
+        drawHubs(t);
+        drawVenues(t);
+        requestAnimationFrame(draw);
+      }
+
+      function updateCounters() {
+        const elapsed = Math.floor((performance.now() - started) / 1000);
+        document.getElementById("audience").textContent = (184320 + elapsed * 7).toLocaleString("en-US");
+        document.getElementById("entries").textContent = (1284540 + elapsed * 3).toLocaleString("en-US");
+      }
+
+      async function loadGeo() {
+        try {
+          const response = await fetch("/data/countries.geo.json", { cache: "force-cache" });
+          if (!response.ok) throw new Error("geojson");
+          geo = await response.json();
+        } catch (error) {
+          geo = null;
+        }
+        buildDots();
+      }
+
+      function setZoom(next, originX = width * 0.5, originY = height * 0.5) {
+        const previous = zoom;
+        const target = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, next));
+        if (Math.abs(target - previous) < 0.001) return;
+        const baseX = width * 0.5;
+        const baseY = height * 0.5 + height * 0.02;
+        panX = originX - baseX - ((originX - baseX - panX) * (target / previous));
+        panY = originY - baseY - ((originY - baseY - panY) * (target / previous));
+        zoom = target;
+        clampPan();
+        zoomValue.textContent = zoom.toFixed(1) + "x";
+        buildDots();
+      }
+
+      function pointerPoint(event) {
+        const rect = canvas.getBoundingClientRect();
+        return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+      }
+
+      function touchDistance(touches) {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.hypot(dx, dy);
+      }
+
+      canvas.addEventListener("wheel", (event) => {
+        event.preventDefault();
+        const point = pointerPoint(event);
+        const factor = Math.exp(-event.deltaY * 0.0022);
+        setZoom(zoom * factor, point.x, point.y);
+      }, { passive: false });
+
+      canvas.addEventListener("pointerdown", (event) => {
+        isDragging = true;
+        dragStartX = event.clientX;
+        dragStartY = event.clientY;
+        dragPanX = panX;
+        dragPanY = panY;
+        canvas.setPointerCapture(event.pointerId);
+      });
+
+      canvas.addEventListener("pointermove", (event) => {
+        if (!isDragging) return;
+        panX = dragPanX + event.clientX - dragStartX;
+        panY = dragPanY + event.clientY - dragStartY;
+        clampPan();
+        buildDots();
+      });
+
+      canvas.addEventListener("pointerup", (event) => {
+        isDragging = false;
+        if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+      });
+
+      canvas.addEventListener("pointercancel", () => {
+        isDragging = false;
+      });
+
+      canvas.addEventListener("touchstart", (event) => {
+        if (event.touches.length === 2) {
+          pinchStartDistance = touchDistance(event.touches);
+          pinchStartZoom = zoom;
+        }
+      }, { passive: true });
+
+      canvas.addEventListener("touchmove", (event) => {
+        if (event.touches.length !== 2 || !pinchStartDistance) return;
+        event.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const x = ((event.touches[0].clientX + event.touches[1].clientX) * 0.5) - rect.left;
+        const y = ((event.touches[0].clientY + event.touches[1].clientY) * 0.5) - rect.top;
+        setZoom(pinchStartZoom * (touchDistance(event.touches) / pinchStartDistance), x, y);
+      }, { passive: false });
+
+      document.getElementById("zoomIn").addEventListener("click", () => {
+        const anchor = projection(1.42, 38.906);
+        setZoom(zoom * 1.45, anchor.x, anchor.y);
+      });
+      document.getElementById("zoomOut").addEventListener("click", () => setZoom(zoom / 1.45));
+      window.addEventListener("resize", resize, { passive: true });
+
+      mountTickers();
+      mountPanels();
+      resize();
+      loadGeo();
+      setInterval(updateCounters, 1000);
+      requestAnimationFrame(draw);
+    })();
+  </script>
+
+
+</body></html>

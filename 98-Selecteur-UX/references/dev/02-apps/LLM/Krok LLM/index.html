@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LLM-ROX</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="window-drag">
+          <div class="traffic">
+            <button class="dot red" id="windowClose" aria-label="Fermer"></button>
+            <button class="dot yellow" id="windowMinimize" aria-label="Minimiser"></button>
+            <button class="dot green" id="windowMaximize" aria-label="Agrandir"></button>
+          </div>
+        </div>
+
+        <header class="brand-row">
+          <div>
+            <h1>LLM-ROX</h1>
+            <p>Local-first cockpit</p>
+          </div>
+          <div class="brand-actions">
+            <button class="icon-btn" id="addService" title="Ajouter un LLM">+</button>
+            <button class="icon-btn" id="openCommand" title="Commande">⌕</button>
+          </div>
+        </header>
+
+        <nav class="outliner" aria-label="LLM outliner">
+          <div class="outliner-tools">
+            <input id="outlinerSearch" placeholder="Filtrer..." autocomplete="off" />
+            <button class="icon-btn" id="expandAllNodes" title="Tout ouvrir">⌄</button>
+            <button class="icon-btn" id="collapseAllNodes" title="Tout fermer">›</button>
+          </div>
+          <div id="serviceTree" class="tree-render" aria-label="Arbre local"></div>
+        </nav>
+
+        <footer class="sidebar-footer">
+          <button class="outline-btn" id="addNode">+ Note / Dossier</button>
+          <button class="icon-btn" id="openSettings" title="Preferences">⚙</button>
+        </footer>
+      </aside>
+
+      <main class="workspace">
+        <header class="tabs-bar">
+          <div class="tabs" id="llmTabs"></div>
+          <button class="icon-btn add-tab" id="addTab" title="Nouvel onglet">+</button>
+          <div class="toolbar">
+            <button class="tool-btn" id="toggleSplit">Split largeur</button>
+            <button class="tool-btn" id="toggleTerminal">Terminal</button>
+            <button class="tool-btn" id="toggleInspector">Inspector</button>
+          </div>
+        </header>
+
+        <section class="service-header">
+          <div class="service-title">
+            <span class="service-icon green" id="activeIcon">AI</span>
+            <div>
+              <h2 id="activeServiceName">Claude</h2>
+              <p id="activeServiceUrl">https://claude.ai</p>
+            </div>
+          </div>
+          <div class="service-actions">
+            <button class="tool-btn" id="configureActive">Configurer URL</button>
+            <button class="tool-btn" id="saveChat">Save chat</button>
+            <button class="tool-btn" id="sendToLlm">Send to LLM</button>
+          </div>
+        </section>
+
+        <section class="canvas" id="canvas">
+          <section class="web-pane">
+            <div class="pane-title">
+              <span id="webPaneTitle">Claude webview</span>
+              <div>
+                <button class="icon-btn" id="reloadView" title="Reload">↻</button>
+                <button class="icon-btn" id="openExternal" title="Ouvrir externe">↗</button>
+              </div>
+            </div>
+            <webview id="serviceWebview" src="https://claude.ai" allowpopups partition="persist:llm-rox-claude"></webview>
+            <div class="web-fallback">
+              <h3>Webview Electron</h3>
+              <p>Dans un navigateur classique, la webview ne s'affiche pas. Lance avec <code>npm start</code>.</p>
+            </div>
+          </section>
+
+          <section class="split-pane" id="splitPane">
+            <div class="pane-title">
+              <span>Split workspace</span>
+              <button class="icon-btn" id="closeSplit">×</button>
+            </div>
+            <div class="split-content">
+              <h3>Scratch local</h3>
+              <textarea id="scratchNote"># Handoff #LLM #Projet
+
+Objectif:
+- assembler contexte
+- envoyer vers un autre LLM
+- garder le log et le Markdown local
+</textarea>
+              <div class="quick-actions">
+                <button class="tool-btn" id="copyScratch">Copy MD</button>
+                <button class="tool-btn" id="memorySummary">Resume memory</button>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="terminal-dock" id="terminalDock">
+          <header class="terminal-head">
+            <div>
+              <strong>Terminal CLI</strong>
+              <span>jusqu'a 4 panes, onglets colorables, log local</span>
+            </div>
+            <div class="terminal-actions">
+              <button class="tool-btn" id="newTerminal">+ Pane</button>
+              <button class="tool-btn" id="splitTerminals">Grid</button>
+              <button class="icon-btn" id="closeTerminalDock">×</button>
+            </div>
+          </header>
+
+          <div class="terminal-tabs" id="terminalTabs"></div>
+          <div class="terminal-grid" id="terminalGrid"></div>
+        </section>
+      </main>
+
+      <aside class="inspector" id="inspector">
+        <header class="inspector-tabs">
+          <button class="active" data-panel="prompts">Prompts</button>
+          <button data-panel="chats">Chats</button>
+          <button data-panel="capture">Capture</button>
+          <button data-panel="prefs">Prefs</button>
+          <button data-panel="logs">Logs</button>
+        </header>
+
+        <section class="panel active" data-panel-body="prompts">
+          <article class="card">
+            <h3>Prompts locaux</h3>
+            <div class="search-bar">
+              <input id="promptSearch" placeholder="Chercher prompts..." />
+              <button class="tool-btn" id="newPrompt">+ Nouveau</button>
+            </div>
+            <div id="promptsList" class="items-list"></div>
+          </article>
+        </section>
+
+        <section class="panel" data-panel-body="chats">
+          <article class="card">
+            <h3>Chats sauvegardés</h3>
+            <div class="search-bar">
+              <input id="chatSearch" placeholder="Chercher chats..." />
+            </div>
+            <div id="chatsList" class="items-list"></div>
+          </article>
+        </section>
+
+        <section class="panel" data-panel-body="capture">
+          <article class="card">
+            <h3>Capture</h3>
+            <p>Save chat, selection, URL et metadata vers Markdown.</p>
+            <button class="primary-btn" id="captureSelection">Capture selection</button>
+          </article>
+          <article class="card">
+            <h3>Cartouche</h3>
+            <dl>
+              <dt>Service</dt><dd id="metaService">Claude</dd>
+              <dt>URL</dt><dd id="metaUrl">https://claude.ai</dd>
+              <dt>Projet</dt><dd>LLM-ROX</dd>
+              <dt>Memory</dt><dd>A resumer</dd>
+            </dl>
+            <div class="tags"><span>#llm</span><span>#terminal</span><span>#local</span></div>
+          </article>
+          <article class="card">
+            <h3>Outliner</h3>
+            <dl>
+              <dt>Nœud</dt><dd id="nodeTitle">Claude</dd>
+              <dt>Type</dt><dd id="nodeType">service</dd>
+              <dt>Chemin</dt><dd id="nodePath">Claude</dd>
+              <dt>Tags</dt><dd id="nodeTags">#llm</dd>
+            </dl>
+            <div class="row-actions">
+              <button class="tool-btn" id="renameNode">Renommer</button>
+              <button class="tool-btn" id="addChildNode">+ Enfant</button>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel" data-panel-body="prefs">
+          <article class="card">
+            <h3>Preference LLM</h3>
+            <label>Nom <input id="prefName" /></label>
+            <label>URL <input id="prefUrl" /></label>
+            <label>Compte / partition <input id="prefPartition" /></label>
+            <div class="row-actions">
+              <button class="primary-btn" id="saveServicePrefs">Sauver</button>
+              <button class="tool-btn" id="resetServicePrefs">Reset</button>
+            </div>
+          </article>
+          <article class="card">
+            <h3>Setup herite</h3>
+            <label class="check"><input type="checkbox" checked /> Global</label>
+            <label class="check"><input type="checkbox" checked /> Projet</label>
+            <label class="check"><input type="checkbox" /> Chat override</label>
+          </article>
+        </section>
+
+        <section class="panel" data-panel-body="logs">
+          <article class="card log-card">
+            <h3>Event log</h3>
+            <ol id="eventLog"></ol>
+          </article>
+        </section>
+      </aside>
+
+      <div class="context-menu" id="serviceContext">
+        <button data-action="configure">Configurer URL</button>
+        <button data-action="duplicate">Dupliquer compte</button>
+        <button data-action="color">Couleur racine</button>
+        <button data-action="add-child">Ajouter enfant</button>
+        <button data-action="rename-node">Renommer nœud</button>
+        <hr />
+        <button data-action="open">Ouvrir</button>
+      </div>
+
+      <div class="modal" id="sendToLlmModal" style="display: none;">
+        <div class="modal-content">
+          <header class="modal-header">
+            <h2>Envoyer vers un autre LLM</h2>
+            <button class="icon-btn" id="closeSendModal">×</button>
+          </header>
+          <div class="modal-body">
+            <label>Sélectionner LLM destination:</label>
+            <select id="sendTargetService" style="width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 6px;">
+              <option>- Choisir -</option>
+            </select>
+            <label style="margin-top: 16px; display: block;">Contenu:</label>
+            <textarea id="sendContent" style="width: 100%; height: 150px; padding: 8px; border: 1px solid var(--line); border-radius: 6px; font-family: monospace; font-size: 12px;"></textarea>
+          </div>
+          <footer class="modal-footer">
+            <button class="tool-btn" id="cancelSend">Annuler</button>
+            <button class="primary-btn" id="confirmSend">Envoyer</button>
+          </footer>
+        </div>
+      </div>
+
+      <div class="toast" id="toast"></div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

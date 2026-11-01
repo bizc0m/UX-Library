@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Night Intel — Scan</title>
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/app.css?v=scan-pages-20260712">
+  <style>
+    body { margin: 0; background: #07070b; color: #fff; font-family: var(--font-body, system-ui); }
+    .scan-page { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 32px 0 80px; }
+    .scan-nav { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 30px; }
+    .scan-nav a { color: var(--electric, #5bcfff); text-decoration: none; font-weight: 800; }
+    .scan-nav span { color: var(--bone-2, #aaa); font-family: var(--font-mono, monospace); font-size: 11px; text-transform: uppercase; }
+    .scan-pages-nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .scan-pages-nav a { padding: 9px 13px; border: 1px solid var(--ink-4, #292936); border-radius: 999px; color: var(--bone-2, #aaa); text-decoration: none; font: 800 11px/1 var(--font-mono, monospace); text-transform: uppercase; }
+    .scan-pages-nav a[aria-current="page"] { border-color: var(--electric, #5bcfff); color: var(--electric, #5bcfff); background: rgba(91,207,255,.10); }
+    .scan-hero { padding: 26px; border: 1px solid var(--ink-4, #292936); border-radius: 18px; background: radial-gradient(circle at 90% 0, rgba(91,207,255,.18), transparent 38%), #0e0e15; }
+    .scan-hero small { color: var(--electric, #5bcfff); font-family: var(--font-mono, monospace); font-weight: 900; text-transform: uppercase; }
+    .scan-hero h1 { margin: 8px 0; font-size: clamp(28px, 5vw, 58px); text-transform: uppercase; }
+    .scan-hero p { max-width: 700px; color: var(--bone-2, #aaa); }
+    .scan-form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 22px; }
+    .scan-form label { display: flex; flex-direction: column; gap: 6px; color: var(--bone-2, #aaa); font: 700 10px/1 var(--font-mono, monospace); text-transform: uppercase; }
+    .scan-form input { min-width: 0; padding: 12px; border: 1px solid var(--ink-4, #292936); border-radius: 10px; color: #fff; background: #09090e; }
+    .scan-form button { align-self: end; min-height: 42px; border: 0; border-radius: 10px; background: var(--electric, #5bcfff); color: #07070b; font-weight: 950; cursor: pointer; }
+    .scan-form button:disabled { opacity: .5; cursor: wait; }
+    .scan-position { margin-top: 10px; border: 1px solid rgba(194,255,61,.35); border-radius: 999px; padding: 9px 14px; color: var(--acid, #c2ff3d); background: transparent; cursor: pointer; }
+    .scan-status { margin: 20px 0 12px; color: var(--bone-2, #aaa); font-family: var(--font-mono, monospace); }
+    .scan-results { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .scan-card { padding: 16px; border: 1px solid var(--ink-4, #292936); border-radius: 14px; background: #0e0e15; }
+    .scan-card span { color: var(--electric, #5bcfff); font: 800 10px/1 var(--font-mono, monospace); }
+    .scan-card h2 { margin: 9px 0 5px; font-size: 16px; }
+    .scan-card p { margin: 0 0 12px; color: var(--bone-2, #aaa); font-size: 12px; }
+    .scan-card a { color: var(--acid, #c2ff3d); font-weight: 800; }
+    @media (max-width: 760px) { .scan-form, .scan-results { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main class="scan-page">
+    <nav class="scan-nav"><a href="/">← Night Intel</a><span id="scan-engine">Scrapling</span></nav>
+    <nav class="scan-pages-nav" aria-label="Pages de scan">
+      <a href="/scan/autour-de-moi" data-scan-page="around">Autour de moi</a>
+      <a href="/scan/ville" data-scan-page="city">Par ville</a>
+      <a href="/scan/zone" data-scan-page="zone">Par zone</a>
+    </nav>
+    <section class="scan-hero">
+      <small id="scan-eyebrow">Scan</small>
+      <h1 id="scan-title">Night Intel Scan</h1>
+      <p id="scan-description"></p>
+      <button id="scan-position" class="scan-position" type="button" hidden>Utiliser ma position</button>
+      <form id="scan-form" class="scan-form">
+        <label id="city-field">Ville<input id="scan-city" value="annecy" autocomplete="address-level2"></label>
+        <label id="lat-field">Latitude<input id="scan-lat" type="number" step="any" value="45.90155"></label>
+        <label id="lng-field">Longitude<input id="scan-lng" type="number" step="any" value="6.12195"></label>
+        <label id="radius-field">Rayon en mètres<input id="scan-radius" type="number" min="250" max="10000" value="3000"></label>
+        <button id="scan-submit" type="submit">Lancer le scan</button>
+      </form>
+    </section>
+    <p id="scan-status" class="scan-status">Prêt.</p>
+    <section id="scan-results" class="scan-results" aria-live="polite"></section>
+  </main>
+  <script src="/src/scrapling-scan.js?v=pages-nav-20260712"></script>
+</body>
+</html>

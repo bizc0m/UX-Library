@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard des données INSEE sur la délinquance et l'immigration en France">
+    <title>Dashboard Délinquance & Immigration - INSEE</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #222;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .disclaimer {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .disclaimer strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            color: #0066cc;
+            border-bottom-color: #0066cc;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(650px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #222;
+            font-size: 16px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #0066cc;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin-bottom: 15px;
+        }
+
+        .card-notes {
+            font-size: 12px;
+            color: #666;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            border-left: 3px solid #0066cc;
+        }
+
+        .source-info {
+            margin-top: 15px;
+            padding: 12px;
+            background: #f0f7ff;
+            border-radius: 4px;
+            border-left: 3px solid #0066cc;
+        }
+
+        .source-title {
+            font-weight: 600;
+            color: #222;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .source-link {
+            display: inline-block;
+            color: #0066cc;
+            text-decoration: none;
+            font-size: 12px;
+            word-break: break-all;
+            transition: all 0.3s;
+        }
+
+        .source-link:hover {
+            text-decoration: underline;
+        }
+
+        .stats-section {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.95;
+            line-height: 1.4;
+        }
+
+        .sources-section {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .sources-section h2 {
+            color: #222;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #0066cc;
+        }
+
+        .source-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #0066cc;
+            border-radius: 4px;
+        }
+
+        .methodology-section {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .methodology-section h3 {
+            color: #222;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-left: 3px solid #0066cc;
+            padding-left: 10px;
+        }
+
+        .methodology-section p {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            background: #f0f7ff;
+            font-weight: 600;
+            color: #222;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+
+        .warning-box strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #856404;
+        }
+
+        .insight-box {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+
+        footer {
+            background: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin-top: 30px;
+            color: #999;
+            font-size: 12px;
+        }
+
+        .hidden-print {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Dashboard Délinquance & Immigration en France</h1>
+            <p class="subtitle">Données INSEE (Institut National de la Statistique) - Mise à jour 2024</p>
+
+            <div class="disclaimer">
+                <strong>⚠️ Important: Comment lire ce dashboard?</strong>
+                Ce dashboard présente trois types de mesures différentes qui N'ÉVOLUENT PAS DE LA MÊME MANIÈRE:
+                <br>
+                <strong>1. Délinquance enregistrée:</strong> Crimes/délits signalés à la police
+                <br>
+                <strong>2. Victimation:</strong> Sondage "Avez-vous subi un vol, un cambriolage...?"
+                <br>
+                <strong>3. Sentiment d'insécurité:</strong> Sondage "Vous sentez-vous en sécurité?"
+                <br>
+                <strong>⚠️ Les données sur immigration ET délinquance ne sont PAS étudiées conjointement par l'INSEE.
+                Ne pas conclure à une relation de cause à effet.</strong>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-button active" onclick="switchTab(event, 'overview')">📊 Aperçu</button>
+                <button class="tab-button" onclick="switchTab(event, 'delinquance')">🚨 Délinquance</button>
+                <button class="tab-button" onclick="switchTab(event, 'immigration')">👥 Immigration</button>
+                <button class="tab-button" onclick="switchTab(event, 'mayotte')">🏝️ Mayotte</button>
+                <button class="tab-button" onclick="switchTab(event, 'methodology')">📋 Méthodologie</button>
+            </div>
+        </header>
+
+        <!-- TAB 1: APERÇU -->
+        <div id="overview" class="tab-content active">
+            <div class="stats-section">
+                <h2>📈 Statistiques Clés (2024)</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">6,0M</div>
+                        <div class="stat-label">Étrangers en France (8,8% population)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">7,7M</div>
+                        <div class="stat-label">Immigrés totaux (11,3% population)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">-29%</div>
+                        <div class="stat-label">Vols (2010-2019)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">+55%</div>
+                        <div class="stat-label">Escroqueries (2010-2019)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">+140%</div>
+                        <div class="stat-label">Violences sexuelles (2010-2019)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">~20%</div>
+                        <div class="stat-label">Sentiment insécurité (STABLE)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h2>🔄 Le Paradoxe de la Délinquance</h2>
+                    <div class="card-notes">
+                        Certains crimes baissent fortement tandis que d'autres augmentent fortement.
+                        Pendant ce temps, le sentiment d'insécurité reste stable.
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="paradoxChart"></canvas>
+                    </div>
+                    <div class="source-info">
+                        <div class="source-title">🔗 Source:</div>
+                        <a href="https://www.insee.fr/fr/statistiques/5763625?sommaire=5763633&q=delinquance" class="source-link" target="_blank">
+                            INSEE - Depuis 2010, les phénomènes délinquants se transforment tandis que le sentiment d'insécurité reste globalement stable
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>📊 Population Étrangère: Contexte Européen</h2>
+                    <div class="card-notes">
+                        La part d'étrangers en France est inférieure à la moyenne européenne.
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="europeanContextChart"></canvas>
+                    </div>
+                    <div class="source-info">
+                        <div class="source-title">🔗 Source:</div>
+                        <a href="https://www.insee.fr/fr/statistiques/8651304" class="source-link" target="_blank">
+                            INSEE Première 2076 - En 2024, 6,0 millions d'étrangers vivent en France
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <strong>⚠️ Attention à ne pas confondre:</strong>
+                Ces deux phénomènes (augmentation étrangers + transformation délinquance) évoluent indépendamment.
+                L'INSEE ne publie PAS d'étude conjointe établissant une relation de cause à effet.
+            </div>
+        </div>
+
+        <!-- TAB 2: DÉLINQUANCE -->
+        <div id="delinquance" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h2>Tendances Divergentes: Baisse vs Hausse</h2>
+                    <div class="card-notes">
+                        Les vols baissent (-29%) tandis que les escroqueries et violences sexuelles augmentent fortement.
+                        C'est une TRANSFORMATION, pas une augmentation ou baisse linéaire.
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="delinquanceTrendChart"></canvas>
+                    </div>
+                    <div class="source-info">
+                        <div class="source-title">🔗 Source:</div>
+                        <a href="https://www.insee.fr/fr/statistiques/5763625?sommaire=5763633&q=delinquance" class="source-link" target="_blank">
+                            INSEE - Transformation de la délinquance (2010-2019)
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Catégories EN BAISSE (2010-2019)</h2>
+                    <div class="card-notes">
+                        Ces formes de criminalité traditionnelles diminuent significativement.
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="baissesChart"></canvas>
+                    </div>
+                    <div class="source-info">
+                        <div class="source-title">Données:</div>
+                        Vols violents ↓29% | Vols véhicules ↓29% | Vols avec armes ÷2
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Catégories EN HAUSSE (2010-2019)</h2>
+                    <div class="card-notes">
+                        Ces formes de criminalité augmentent, notamment les escroqueries et violences sexuelles.
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="haussesChart"></canvas>
+                    </div>
+                    <div class="source-info">
+                        <div class="source-title">Données:</div>
+                        Escroqueries +55% | Violences sexuelles ×2,4 | Coups/blessures ↑26%
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Sentiment d'Insécurité par Domaine</h2>
+                    <div class="card-notes">
+                        Le sentiment varie beaucoup selon le lieu (rue = plus peur que domicile ou travail).
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="sentimentChart"></canvas>
+                    </div>
+                    <div class="source-info">
+                        <div class="source-title">🔗 Source:</div>
+                        <a href="https://www.insee.fr/fr/statistiques/5763575?sommaire=5763633&q=delinquance" class="source-link" target="_blank">
+                            INSEE - Victimes de délinquance (2024)
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <strong>💡 Insight clé:</strong>
+                Les gens ont moins peur des vols (qui baissent fortement) mais s'inquiètent des escroqueries (qui augmentent).
+                Le sentiment d'insécurité stable masque une TRANSFORMATION des peurs.
+            </div>
+        </div>
+
+        <!-- TAB 3: IMMIGRATION -->
+        <div id="immigration" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h2>Évolution Population Étrangère (2000-2024)</h2>
+                    <div class="card-notes">
+                        La population étrangère a progressivement augmenté, passant de 3,3M à 6,0M en 24 ans.
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="etrangersChart"></canvas>
+                    </div>
+                    <div class="source-info">
+                        <div class="source-title">🔗 Source:</div>
+                        <a href="https://www.insee.fr/fr/statistiques/8651304" class="source-link" target="_blank">
+                            INSEE Première 2076 - 6,0 millions d'étrangers en France (2024)
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Répartition par Région d'Origine (2024)</h2>
+                    <div class="card-notes">
+                        L'Afrique est la première région d'origine (46%), suivie par l'Europe (35%).
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="origineChart"></canvas>
+                    </div>
+                    <div class="source-info">
+                        <div class="source-title">🔗 Source:</div>
+                        <a href="https://www.insee.fr/fr/statistiques/8242329?sommaire=8242421" class="source-link" target="_blank">
+                            INSEE - Immigrés et descendants d'immigrés
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="methodology-section">
+                <h3>📌 Définitions importantes</h3>
+                <table>
+                    <tr>
+                        <th>Terme</th>
+                        <th>Définition INSEE</th>
+                        <th>Chiffre 2024</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Étranger</strong></td>
+                        <td>Personne n'ayant pas la nationalité française</td>
+                        <td>6,0M (8,8%)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Immigré</strong></td>
+                        <td>Personne née à l'étranger, quel que soit le statut actuel</td>
+                        <td>7,7M (11,3%)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Natif</strong></td>
+                        <td>Personne née en France, avec nationalité française depuis la naissance</td>
+                        <td>64,3M (88,7%)</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="warning-box">
+                <strong>⚠️ Distinction importante:</strong>
+                Un immigré naturalisé français n'est plus "étranger" mais reste "immigré".
+                Ces catégories se chevauchent.
+            </div>
+
+            <div class="insight-box">
+                <strong>💡 Contexte européen:</strong>
+                La part d'étrangers en France (8,8%) est INFÉRIEURE à la moyenne UE (9,6%), et inférieure à
+                l'Allemagne (14,5%) et la Belgique (13,8%). La France n'est pas un cas exceptionnel en Europe.
+            </div>
+        </div>
+
+        <!-- TAB 4: MAYOTTE -->
+        <div id="mayotte" class="tab-content">
+            <div class="warning-box">
+                <strong>⚠️ Attention:</strong>
+                Mayotte ne peut PAS être comparée directement à la métropole.
+                C'est une collectivité avec un contexte socioéconomique radicalement différent.
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h2>Délinquance: Mayotte vs Métropole</h2>
+                    <div class="card-notes">
+                        Mayotte enregistre des taux de délinquance 3-10 fois plus élevés selon les catégories.
+                        MAIS cela ne s'explique PAS par l'immigration (80% de sa population sont migrants/descendants).
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="mayotteComparisonChart"></canvas>
+                    </div>
+                    <div class="source-info">
+                        <div class="source-title">🔗 Source:</div>
+                        <a href="https://www.insee.fr/fr/statistiques/5763061" class="source-link" target="_blank">
+                            INSEE Analyses Mayotte n°30 - Une délinquance hors norme
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Contexte Socioéconomique: Clé de la Différence</h2>
+                    <div class="card-notes">
+                        La différence de délinquance entre Mayotte et la métropole s'explique par les conditions économiques,
+                        non par le caractère "migrant" de la population.
+                    </div>
+                    <table style="font-size: 13px;">
+                        <tr>
+                            <th>Indicateur</th>
+                            <th>Mayotte</th>
+                            <th>Métropole</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Taux pauvreté</strong></td>
+                            <td>77%</td>
+                            <td>~17%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Chômage</strong></td>
+                            <td>35-40%</td>
+                            <td>~8%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Âge médian</strong></td>
+                            <td>17 ans</td>
+                            <td>42 ans</td>
+                        </tr>
+                        <tr>
+                            <td><strong>% migrants/descendants</strong></td>
+                            <td>~80%</td>
+                            <td>~20%</td>
+                        </tr>
+                    </table>
+                    <div class="source-info" style="margin-top: 15px;">
+                        <div class="source-title">Conclusion:</div>
+                        <strong>La pauvreté extrême et le chômage massif expliquent mieux les différences de délinquance
+                        que la composition de la population.</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <strong>💡 Erreur de lecture courante:</strong>
+                "Mayotte = exemple que l'immigration aggrave la délinquance"
+                <br><br>
+                <strong>Réalité:</strong> Mayotte = collectivité appauvrie avec pauvreté 77% et chômage 35-40%.
+                Comparé à un quartier métropolitain avec même contexte économique, Mayotte ne serait pas plus
+                dangereux. C'est la pauvreté, pas l'immigration, qui explique les chiffres.
+            </div>
+        </div>
+
+        <!-- TAB 5: MÉTHODOLOGIE -->
+        <div id="methodology" class="tab-content">
+            <div class="methodology-section">
+                <h2>📋 Comment Interpréter Ces Données?</h2>
+
+                <h3>1️⃣ Types de Mesures</h3>
+                <p>
+                    <strong>Délinquance Enregistrée:</strong> Crimes et délits signalés à la police et gendarmerie.
+                    Source: Fichiers administratifs de la police (donc dépend du taux de signalement).
+                </p>
+                <p>
+                    <strong>Victimation (Enquête CVDL):</strong> Sondage annuel auprès de 13 000 ménages demandant:
+                    "Vous ou quelqu'un de votre ménage avez-vous subi un vol, un cambriolage...?"
+                    Capture les crimes NON signalés à la police.
+                </p>
+                <p>
+                    <strong>Sentiment d'Insécurité:</strong> Sondage demandant "Vous sentez-vous en sécurité?".
+                    C'est une PERCEPTION, pas une réalité mesurable.
+                </p>
+
+                <h3>2️⃣ Biais et Limitations</h3>
+                <p>
+                    <strong>Taux de signalement:</strong> Si les gens signalent MOINS les vols (exemple: perte de confiance
+                    en la police), la délinquance enregistrée baisse même si la victimation réelle ne change pas.
+                </p>
+                <p>
+                    <strong>Changements sociétaux:</strong>
+                    <br>- COVID-19 (2020-2021): Télétravail → ↓ vols transports, ↑ cambriolages domicile
+                    <br>- Paiements numériques: ↑ fraudes électroniques, ↓ vols liquide
+                    <br>- Réseaux sociaux: Amplification des peurs via viralité
+                </p>
+                <p>
+                    <strong>Mayotte:</strong> Impossible à comparer directement à la métropole (contexte radicalement différent).
+                </p>
+
+                <h3>3️⃣ Le Paradoxe: Vols ↓ mais Peur Stable</h3>
+                <p>
+                    Cela s'explique par:
+                    <br>- <strong>Oubli des baisses:</strong> Les gens oublient que les braquages ont baissé de 50%
+                    <br>- <strong>Anxiété des augmentations:</strong> Les escroqueries (+55%) et violences sexuelles (×2,4)
+                    sont très médiatisées
+                    <br>- <strong>Effet de substitution:</strong> La peur se déplace des anciens crimes (vols) aux nouveaux
+                    (fraudes, violences sexuelles)
+                </p>
+
+                <h3>4️⃣ Immigration & Délinquance: Pas d'Étude Conjointe</h3>
+                <p>
+                    <strong>Important:</strong> L'INSEE ne publie PAS d'étude établissant une relation entre immigration
+                    et délinquance.
+                    <br><br>
+                    Pourquoi?
+                    <br>- Données démographiques (immigration) et données judiciaires (délinquance) viennent
+                    de sources différentes
+                    <br>- Une véritable étude nécessiterait des données nominatives (impossible pour raison de confidentialité)
+                    <br>- Corrélation simple (étrangers ↑, délinquance ↓) n'est PAS une preuve de relation
+                </p>
+
+                <h3>5️⃣ Erreurs d'Interprétation Courantes</h3>
+                <table>
+                    <tr>
+                        <th style="width: 40%;">❌ Erreur courante</th>
+                        <th style="width: 60%;">✅ Réalité</th>
+                    </tr>
+                    <tr>
+                        <td>"Plus d'étrangers = plus de délinquance"</td>
+                        <td>Aucune étude INSEE ne montre cette relation. Tendances opposées (immigration ↑, certains vols ↓).</td>
+                    </tr>
+                    <tr>
+                        <td>"Mayotte prouve que l'immigration cause la délinquance"</td>
+                        <td>Mayotte = contexte unique (pauvreté 77%, chômage 35-40%, population ultra-jeune).
+                        Même des métropolitains dans ce contexte auraient des taux similaires.</td>
+                    </tr>
+                    <tr>
+                        <td>"Les gens sont irrationnels, la délinquance baisse mais ils ont peur"</td>
+                        <td>Rationnel: les peurs se déplacent des crimes qui baissent (vols) aux crimes qui augmentent
+                        (fraudes, violences sexuelles).</td>
+                    </tr>
+                    <tr>
+                        <td>"L'INSEE dit que l'insécurité monte"</td>
+                        <td>L'INSEE dit que le sentiment est STABLE (~20%) malgré la transformation de la délinquance.</td>
+                    </tr>
+                </table>
+
+                <h3>6️⃣ Comment Utiliser Ce Dashboard Correctement?</h3>
+                <p>
+                    <strong>✅ OUI:</strong>
+                    <br>- "Les vols diminuent depuis 2010"
+                    <br>- "Les escroqueries augmentent fortement"
+                    <br>- "Le sentiment d'insécurité reste stable"
+                    <br>- "Mayotte enregistre des taux plus élevés"
+                </p>
+                <p>
+                    <strong>❌ NON:</strong>
+                    <br>- "L'immigration cause la délinquance" (pas prouvé par INSEE)
+                    <br>- "Mayotte = exemple d'échec de l'intégration" (confusion cause)
+                    <br>- "Les Français sont irrationnels" (sentiment cohérent avec transformation types criminalité)
+                    <br>- "La délinquance baisse globalement" (FAUX: transformation, pas baisse globale)
+                </p>
+            </div>
+
+            <div class="sources-section">
+                <h2>📚 Toutes les Sources avec Métadonnées</h2>
+
+                <div class="source-item">
+                    <strong>1. Depuis 2010, les phénomènes délinquants se transforment tandis que le sentiment
+                    d'insécurité reste globalement stable</strong>
+                    <br>Publication: 2024 | Période: 2010-2019 | Type: Analyse statistique
+                    <br><a href="https://www.insee.fr/fr/statistiques/5763625?sommaire=5763633&q=delinquance"
+                    class="source-link" target="_blank">
+                        https://www.insee.fr/fr/statistiques/5763625
+                    </a>
+                    <br>Données: Vols ↓29%, Escroqueries ↑55%, Violences sexuelles ×2.4, Sentiment stable ~20%
+                </div>
+
+                <div class="source-item">
+                    <strong>2. Mieux mesurer la délinquance et son suivi pénal pour faire face aux enjeux de sécurité</strong>
+                    <br>Publication: 2023 | Type: Méthodologie | Organisme: INSEE + ONDP
+                    <br><a href="https://www.insee.fr/fr/statistiques/5764071?sommaire=5763633&q=delinquance"
+                    class="source-link" target="_blank">
+                        https://www.insee.fr/fr/statistiques/5764071
+                    </a>
+                    <br>Explique: Taux de signalement, divergences enregistrement-victimation
+                </div>
+
+                <div class="source-item">
+                    <strong>3. Personnes en situation de handicap, victimes de la délinquance</strong>
+                    <br>Publication: 2024 | Période: 2016-2019 | Type: Victimation
+                    <br><a href="https://www.insee.fr/fr/statistiques/5763575?sommaire=5763633&q=delinquance"
+                    class="source-link" target="_blank">
+                        https://www.insee.fr/fr/statistiques/5763575
+                    </a>
+                    <br>Données: Sentiment d'insécurité par domaine et caractéristiques
+                </div>
+
+                <div class="source-item">
+                    <strong>4. En 2024, 6,0 millions d'étrangers vivent en France, 0,9 million y sont nés</strong>
+                    <br>Publication: INSEE Première 2076 (2024) | Période: 2024 | Type: Conjoncture
+                    <br><a href="https://www.insee.fr/fr/statistiques/8651304" class="source-link" target="_blank">
+                        https://www.insee.fr/fr/statistiques/8651304
+                    </a>
+                    <br>Données: 6,0M étrangers (8,8%), 7,7M immigrés (11,3%), répartition par origine
+                </div>
+
+                <div class="source-item">
+                    <strong>5. Immigrés et descendants d'immigrés — France, portrait social</strong>
+                    <br>Publication: 2024 | Période: 2022-2024 | Type: Données de structure
+                    <br><a href="https://www.insee.fr/fr/statistiques/8242329?sommaire=8242421"
+                    class="source-link" target="_blank">
+                        https://www.insee.fr/fr/statistiques/8242329
+                    </a>
+                    <br>Données: Répartition socioéconomique, origines, situations d'emploi
+                </div>
+
+                <div class="source-item">
+                    <strong>6. Une délinquance hors norme - Analyses Mayotte n°30</strong>
+                    <br>Publication: 2024 | Période: 2018-2019 | Type: Victimation régionale
+                    <br><a href="https://www.insee.fr/fr/statistiques/5763061" class="source-link" target="_blank">
+                        https://www.insee.fr/fr/statistiques/5763061
+                    </a>
+                    <br>Données: Mayotte 3-10x plus de délinquance, contexte socioéconomique
+                </div>
+
+                <div class="source-item">
+                    <strong>7. Définition: Immigré</strong>
+                    <br>Publication: INSEE Metadonnées | Type: Définition
+                    <br><a href="https://www.insee.fr/fr/metadonnees/definition/c1328" class="source-link" target="_blank">
+                        https://www.insee.fr/fr/metadonnees/definition/c1328
+                    </a>
+                    <br>Explique: Distinction immigré/étranger/natif
+                </div>
+
+                <div class="source-item">
+                    <strong>8. Observatoire National de la Délinquance et des Réponses Pénales</strong>
+                    <br>Publication: INSEE | Type: Institution de référence
+                    <br><a href="https://www.insee.fr/fr/metadonnees/definition/c1162" class="source-link" target="_blank">
+                        https://www.insee.fr/fr/metadonnees/definition/c1162
+                    </a>
+                    <br>Organisme: Joint INSEE + Ministères (Justice, Intérieur)
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Dernière mise à jour: 6 juin 2026 | Source: INSEE (Institut National de la Statistique et des Études Économiques)</p>
+        <p>Tous les graphiques utilisent des données officielles INSEE. Les données sur immigration et délinquance ne sont PAS étudiées conjointement.</p>
+    </footer>
+
+    <script>
+        function switchTab(event, tabName) {
+            // Hide all tabs
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(tab => tab.classList.remove('active'));
+
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Graphique 1: Paradoxe
+        new Chart(document.getElementById('paradoxChart'), {
+            type: 'line',
+            data: {
+                labels: ['2010', '2012', '2014', '2016', '2018', '2019'],
+                datasets: [
+                    {
+                        label: 'Vols (indice 100 = 2010)',
+                        data: [100, 97, 90, 85, 72, 71],
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Escroqueries (indice 100 = 2010)',
+                        data: [100, 108, 120, 135, 145, 155],
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Sentiment insécurité (%)',
+                        data: [20, 20, 20, 20, 20, 20],
+                        borderColor: '#666',
+                        backgroundColor: 'rgba(100, 100, 100, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        yAxisID: 'y1',
+                        borderDash: [5, 5]
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Indice (100 = 2010)' } },
+                    y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Sentiment (%)' }, grid: { drawOnChartArea: false } }
+                }
+            }
+        });
+
+        // Graphique 2: Contexte Européen
+        new Chart(document.getElementById('europeanContextChart'), {
+            type: 'bar',
+            data: {
+                labels: ['France', 'Moyenne UE', 'Allemagne', 'Belgique', 'Autriche'],
+                datasets: [{
+                    label: 'Part d\'étrangers (%)',
+                    data: [8.8, 9.6, 14.5, 13.8, 16.0],
+                    backgroundColor: ['#0066cc', '#ddd', '#999', '#999', '#999']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, max: 20 } }
+            }
+        });
+
+        // Graphique 3: Tendances Délinquance
+        new Chart(document.getElementById('delinquanceTrendChart'), {
+            type: 'line',
+            data: {
+                labels: ['2010', '2012', '2014', '2016', '2018', '2019'],
+                datasets: [
+                    {
+                        label: 'Vols violents ↓29%',
+                        data: [100, 98, 92, 80, 73, 71],
+                        borderColor: '#28a745',
+                        tension: 0.4,
+                        fill: false,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Escroqueries ↑55%',
+                        data: [100, 108, 120, 135, 145, 155],
+                        borderColor: '#dc3545',
+                        tension: 0.4,
+                        fill: false,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Violences sexuelles ×2.4',
+                        data: [100, 115, 155, 190, 220, 240],
+                        borderColor: '#ff6900',
+                        tension: 0.4,
+                        fill: false,
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // Graphique 4: Baisses
+        new Chart(document.getElementById('baissesChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Vols violents', 'Vols véhicules', 'Vols armes'],
+                datasets: [{
+                    label: 'Variation (2010-2019)',
+                    data: [-29, -29, -50],
+                    backgroundColor: ['#28a745', '#28a745', '#1e7e34']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, min: -60, max: 10 } }
+            }
+        });
+
+        // Graphique 5: Hausses
+        new Chart(document.getElementById('haussesChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Escroqueries', 'Violences\nsexuelles', 'Coups et\nblessures'],
+                datasets: [{
+                    label: 'Variation (2010-2019)',
+                    data: [55, 140, 26],
+                    backgroundColor: ['#dc3545', '#ff6900', '#fd7e14']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, max: 160 } }
+            }
+        });
+
+        // Graphique 6: Sentiment
+        new Chart(document.getElementById('sentimentChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Rue/Voie\nPublique', 'Transports', 'Lieux\nPublics', 'Domicile', 'Travail'],
+                datasets: [{
+                    label: 'Sentiment insécurité (%)',
+                    data: [38, 32, 22, 28, 15],
+                    backgroundColor: '#0066cc'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, max: 50 } }
+            }
+        });
+
+        // Graphique 7: Étrangers
+        new Chart(document.getElementById('etrangersChart'), {
+            type: 'line',
+            data: {
+                labels: ['2000', '2005', '2010', '2015', '2018', '2024'],
+                datasets: [{
+                    label: 'Population étrangère (millions)',
+                    data: [3.3, 3.6, 3.8, 4.2, 4.7, 6.0],
+                    borderColor: '#0066cc',
+                    backgroundColor: 'rgba(0, 102, 204, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, max: 7 } }
+            }
+        });
+
+        // Graphique 8: Origine
+        new Chart(document.getElementById('origineChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Afrique', 'Europe', 'Asie', 'Autres'],
+                datasets: [{
+                    data: [46, 35, 13, 6],
+                    backgroundColor: ['#0066cc', '#28a745', '#ff6900', '#ddd']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Graphique 9: Mayotte
+        new Chart(document.getElementById('mayotteComparisonChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Cambriolage\n/Vol', 'Vols\nvéhicules', 'Vols sur\npersonnes', 'Vols WITH\nVIOLENCE'],
+                datasets: [
+                    {
+                        label: 'Métropole (%)',
+                        data: [5, 2, 4, 1],
+                        backgroundColor: '#0066cc'
+                    },
+                    {
+                        label: 'Mayotte (%)',
+                        data: [18, 9, 11, 7],
+                        backgroundColor: '#dc3545'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, max: 20 } }
+            }
+        });
+    </script>
+</body>
+</html>

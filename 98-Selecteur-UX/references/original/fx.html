@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nyx — FX Composer</title>
+  <style>
+    :root {
+      --ink-0: #E8E8ED;
+      --ink-1: #FFFFFF;
+      --ink-2: #F6F6F7;
+      --ink-3: #EDEDEF;
+      --ink-4: #DBDBDF;
+      --bone-0: #1D1D1F;
+      --bone-1: #4A4A4E;
+      --bone-2: #8A8A8E;
+      --bone-3: #C2C2C6;
+      --sel-blue: #0A5FFF;
+      --ic-blue: #0A5FFF;
+      --ic-red: #E53935;
+      --ic-teal: #00897B;
+      --ic-orange: #FB8C00;
+      --ic-green: #43A047;
+      --ic-purple: #8E24AA;
+      --shadow: 0 18px 60px rgba(20, 20, 25, .10);
+      --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+      --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+      --font-mono: ui-monospace, "SF Mono", monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font-body); background: var(--ink-0); color: var(--bone-0); min-height: 100vh; line-height: 1.5; overflow:hidden; }
+    button,input,textarea,select { font: inherit; }
+    button { cursor: pointer; }
+    .app { height:100vh; display:grid; grid-template-columns: 300px minmax(520px,1fr) 430px; grid-template-rows: 54px 1fr; }
+    header { grid-column:1/4; display:flex; align-items:center; gap:10px; padding:0 16px; background:rgba(255,255,255,.84); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid var(--ink-4); }
+    .brand { font-family:var(--font-display); font-size:16px; font-weight:750; letter-spacing:-.01em; }
+    .subtitle { color:var(--bone-2); font-size:12px; }
+    .pill { display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border:1px solid var(--ink-4); border-radius:999px; background:var(--ink-2); color:var(--bone-1); font-size:12px; }
+    .top-nav { display:flex; align-items:center; gap:6px; padding-left:6px; border-left:1px solid var(--ink-4); }
+    .nav-btn { min-height:30px; border:1px solid var(--ink-4); border-radius:999px; background:var(--ink-1); color:var(--bone-1); padding:5px 10px; font-size:12px; font-weight:650; text-decoration:none; }
+    .nav-btn:hover,.nav-btn.active { border-color:var(--sel-blue); color:var(--sel-blue); box-shadow:0 0 0 3px rgba(10,95,255,.10); }
+    .nav-btn.external { background:var(--bone-0); border-color:var(--bone-0); color:#fff; }
+    .nav-target { scroll-margin:14px; }
+    .nav-focus { outline:2px solid var(--sel-blue); outline-offset:3px; box-shadow:0 0 0 6px rgba(10,95,255,.10), var(--shadow); }
+    .dot { width:7px; height:7px; border-radius:999px; background:var(--ic-green); animation:nyx-pulse 2s ease-in-out infinite; }
+    @keyframes nyx-pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
+    aside,main { min-height:0; overflow:auto; }
+    aside { border-right:1px solid var(--ink-4); padding:14px; background:rgba(255,255,255,.42); }
+    main { padding:14px; }
+    .right { min-height:0; overflow:hidden; border-left:1px solid var(--ink-4); padding:14px; background:rgba(255,255,255,.55); display:grid; grid-template-rows:auto auto minmax(250px,1fr); gap:12px; }
+    .inspector-block { background:rgba(255,255,255,.72); border:1px solid var(--ink-4); border-radius:14px; padding:10px; }
+    .inspector-title { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; font-size:12px; font-weight:750; color:var(--bone-0); }
+    .inspector-title span { color:var(--bone-2); font-family:var(--font-mono); font-size:10px; font-weight:500; }
+    .export-block { min-height:0; display:grid; grid-template-rows:auto auto minmax(140px,1fr) auto; gap:8px; }
+    .export-block textarea { min-height:0; height:100%; resize:none; }
+    .search { width:100%; border:1px solid var(--ink-4); border-radius:10px; padding:9px 10px; background:var(--ink-1); color:var(--bone-0); outline:none; }
+    .filters { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 14px; }
+    .filter { border:1px solid var(--ink-4); background:var(--ink-1); color:var(--bone-1); border-radius:999px; padding:5px 9px; font-size:12px; }
+    .filter.active { background:var(--bone-0); border-color:var(--bone-0); color:white; }
+    .effect-list { display:flex; flex-direction:column; gap:7px; }
+    .effect { border:1px solid var(--ink-4); border-radius:12px; padding:10px; background:var(--ink-1); text-align:left; transition:transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease; }
+    .effect:hover { transform:translateY(-1px); box-shadow:0 8px 20px rgba(0,0,0,.08); border-color:var(--sel-blue); }
+    .effect.active { border-color:var(--sel-blue); box-shadow:0 0 0 3px rgba(10,95,255,.12); }
+    .effect b { display:block; font-size:13px; }
+    .effect span { color:var(--bone-2); font-size:11px; font-family:var(--font-mono); }
+    .workspace { height:100%; display:grid; grid-template-rows: minmax(330px, .54fr) minmax(330px, .46fr); gap:14px; }
+    .card { background:var(--ink-1); border:1px solid var(--ink-4); border-radius:16px; box-shadow:var(--shadow); overflow:hidden; min-height:0; }
+    .card-head { height:40px; display:flex; align-items:center; gap:8px; padding:0 12px; border-bottom:1px solid var(--ink-4); background:rgba(246,246,247,.82); }
+    .card-title { font-size:13px; font-weight:700; }
+    .card-sub { color:var(--bone-2); font-size:11px; font-family:var(--font-mono); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .card-body { padding:14px; height:calc(100% - 40px); overflow:auto; }
+    .canvas { min-height:190px; border-radius:14px; border:1px solid var(--ink-4); background:radial-gradient(circle at 24% 30%, rgba(10,95,255,.22), transparent 26%), radial-gradient(circle at 70% 62%, rgba(142,36,170,.22), transparent 24%), linear-gradient(135deg,#fff,#eef1f7); position:relative; overflow:hidden; }
+    .fx-orb { position:absolute; inset:50% auto auto 50%; width:118px; height:118px; margin:-59px; border-radius:40% 60% 55% 45%; background:conic-gradient(from 90deg, var(--ic-blue), var(--ic-purple), var(--ic-orange), var(--ic-green), var(--ic-blue)); filter:blur(.2px); animation:spin 4s linear infinite, blob 5s ease-in-out infinite; box-shadow:0 20px 60px rgba(10,95,255,.25); }
+    .scanlines::after { content:""; position:absolute; inset:0; background:repeating-linear-gradient(to bottom, rgba(0,0,0,.08) 0 1px, transparent 1px 5px); pointer-events:none; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes blob { 50% { border-radius:62% 38% 45% 55%; transform:scale(1.08); } }
+    .timeline { margin-top:12px; border:1px solid var(--ink-4); border-radius:12px; overflow:hidden; background:var(--ink-2); }
+    .track { display:grid; grid-template-columns:120px 1fr; min-height:34px; border-bottom:1px solid var(--ink-4); }
+    .track:last-child { border-bottom:0; }
+    .track-label { padding:8px 10px; font-size:11px; color:var(--bone-1); border-right:1px solid var(--ink-4); font-family:var(--font-mono); overflow:hidden; text-overflow:ellipsis; }
+    .track-lane { position:relative; min-height:34px; background:linear-gradient(90deg, rgba(0,0,0,.05) 1px, transparent 1px); background-size:10% 100%; }
+    .key { position:absolute; top:10px; width:12px; height:12px; border-radius:3px; background:var(--sel-blue); transform:translateX(-50%) rotate(45deg); box-shadow:0 0 0 2px white; }
+    .actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; border-radius:9px; padding:8px 10px; border:1px solid var(--ink-4); background:var(--ink-1); color:var(--bone-0); font-size:12px; font-weight:650; }
+    .btn.primary { background:var(--sel-blue); border-color:var(--sel-blue); color:white; }
+    .btn.green { background:var(--ic-green); border-color:var(--ic-green); color:#07110a; }
+    .btn:hover { filter:brightness(.98); }
+    label { display:grid; gap:5px; margin-bottom:10px; color:var(--bone-2); font-size:12px; }
+    input[type=text], textarea { width:100%; border:1px solid var(--ink-4); border-radius:10px; background:#fff; color:var(--bone-0); padding:9px; outline:none; }
+    textarea { min-height:210px; resize:vertical; font-family:var(--font-mono); font-size:11px; }
+    .tabs { display:flex; align-items:center; gap:6px; margin-bottom:0; }
+    .tab { border:1px solid var(--ink-4); background:var(--ink-2); border-radius:999px; padding:6px 10px; min-height:30px; font-size:12px; }
+    .tab.active { background:var(--bone-0); color:white; border-color:var(--bone-0); }
+    .stack { display:flex; flex-direction:column; gap:8px; }
+    .stack-item { display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; border:1px solid var(--ink-4); background:#fff; border-radius:12px; padding:9px; }
+    .stack-item b { font-size:12px; }
+    .stack-item span { display:block; font-family:var(--font-mono); font-size:10px; color:var(--bone-2); }
+    .mini { border:1px solid var(--ink-4); border-radius:8px; padding:5px 7px; background:var(--ink-2); color:var(--bone-1); font-size:11px; }
+    .component-preview { border:1px solid var(--ink-4); border-radius:14px; background:#fff; overflow:hidden; box-shadow:0 12px 34px rgba(20,20,25,.08); }
+    .preview-toolbar { min-height:38px; display:flex; align-items:center; gap:8px; padding:9px 10px; border-bottom:1px solid var(--ink-4); background:linear-gradient(180deg,#fff,#f7f7f8); }
+    .preview-toolbar strong { font-size:13px; }
+    .preview-badge { margin-left:auto; border:1px solid var(--ink-4); border-radius:999px; padding:3px 7px; color:var(--bone-2); font-family:var(--font-mono); font-size:10px; background:var(--ink-2); }
+    .nyx-fx-component { padding:10px; display:grid; gap:10px; }
+    .component-shell { border:1px solid var(--ink-4); border-radius:13px; overflow:hidden; background:var(--ink-2); }
+    .component-shell-head { height:34px; display:flex; align-items:center; gap:7px; padding:0 10px; border-bottom:1px solid var(--ink-4); background:rgba(255,255,255,.82); }
+    .component-shell-head b { font-size:12px; }
+    .component-shell-head span { color:var(--bone-2); font-family:var(--font-mono); font-size:10px; }
+    .component-demo { min-height:112px; position:relative; overflow:hidden; }
+    .component-demo::before { content:""; position:absolute; inset:22% auto auto 50%; width:76px; height:76px; margin-left:-38px; border-radius:43% 57% 55% 45%; background:conic-gradient(from 20deg,var(--ic-blue),var(--ic-purple),var(--ic-orange),var(--ic-green),var(--ic-blue)); filter:saturate(1.12); animation:spin 5s linear infinite, blob 6s ease-in-out infinite; box-shadow:0 18px 50px rgba(10,95,255,.24); }
+    .component-demo::after { content:""; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent); transform:translateX(-100%); animation:sweep 3.8s ease-in-out infinite; }
+    .preview-render[data-category*="post"] .component-demo { filter:contrast(1.08) saturate(1.12); }
+    .preview-render[data-category*="overlay"] .component-demo::before { width:46px; height:46px; top:18%; left:30%; }
+    .preview-render[data-category*="scroller"] .component-demo::before { width:140px; height:22px; top:52%; border-radius:999px; }
+    .component-meta { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+    .component-meta span { border:1px solid var(--ink-4); border-radius:9px; background:#fff; padding:7px; color:var(--bone-1); font-size:11px; }
+    .component-meta b { display:block; color:var(--bone-0); font-size:10px; font-family:var(--font-mono); }
+    .component-timeline { display:grid; gap:5px; }
+    .mini-track { display:grid; grid-template-columns:70px 1fr; min-height:24px; border:1px solid var(--ink-4); border-radius:8px; overflow:hidden; background:#fff; }
+    .mini-track span:first-child { padding:5px 6px; border-right:1px solid var(--ink-4); color:var(--bone-2); font-family:var(--font-mono); font-size:9px; overflow:hidden; text-overflow:ellipsis; }
+    .mini-lane { position:relative; background:linear-gradient(90deg, rgba(0,0,0,.05) 1px, transparent 1px); background-size:25% 100%; }
+    .mini-key { position:absolute; top:7px; width:8px; height:8px; border-radius:2px; background:var(--sel-blue); transform:translateX(-50%) rotate(45deg); }
+    .rendered-stack { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid var(--ink-4); }
+    .render-card { border:1px solid var(--ink-4); border-radius:12px; overflow:hidden; background:#fff; }
+    .render-card-visual { height:74px; position:relative; overflow:hidden; }
+    .render-card-visual::after { content:""; position:absolute; inset:0; background:repeating-linear-gradient(to bottom, rgba(0,0,0,.08) 0 1px, transparent 1px 5px); }
+    .render-card-body { padding:8px; }
+    .render-card-body b { display:block; font-size:11px; }
+    .render-card-body span { color:var(--bone-2); font-family:var(--font-mono); font-size:9px; }
+    @keyframes sweep { 50%,100% { transform:translateX(100%); } }
+    .empty { color:var(--bone-2); font-size:12px; padding:10px; border:1px dashed var(--ink-4); border-radius:12px; background:var(--ink-2); }
+    @media(max-width:1100px) { .app { grid-template-columns: 260px 1fr; grid-template-rows:54px minmax(560px,1fr) 520px; } .right { grid-column:1/3; border-left:0; border-top:1px solid var(--ink-4); overflow:auto; } header { grid-column:1/3; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <span class="brand">Nyx</span>
+      <span class="subtitle">/ FX Composer · prototype</span>
+      <span class="pill"><span class="dot"></span><span id="countLabel">64 effets</span></span>
+      <nav class="top-nav" aria-label="Navigation FX Composer">
+        <button class="nav-btn active" data-nav="effects">Effets</button>
+        <button class="nav-btn" data-nav="composer">Composer</button>
+        <button class="nav-btn" data-nav="pan">Pan</button>
+        <button class="nav-btn" data-nav="export">Export</button>
+        <a class="nav-btn external" href="Nyx-Original-Integre.html">Dashboard</a>
+      </nav>
+      <span style="flex:1"></span>
+      <button class="btn" id="resetBtn">Reset</button>
+      <button class="btn primary" id="copyBtn">Copier composant</button>
+    </header>
+
+    <aside id="effectsPanel" class="nav-target">
+      <input id="search" class="search" type="text" placeholder="Rechercher effet, catégorie…">
+      <div class="filters" id="filters"></div>
+      <div class="effect-list" id="effectList"></div>
+    </aside>
+
+    <main>
+      <div class="workspace">
+        <section class="card nav-target" id="composerPanel">
+          <div class="card-head">
+            <div class="card-title" id="previewTitle">Choisir un effet</div>
+            <div class="card-sub" id="previewSub">component composer</div>
+          </div>
+          <div class="card-body">
+            <div class="canvas scanlines" id="canvas"><div class="fx-orb"></div></div>
+            <p class="empty">Aperçu CSS générique : les moteurs des effets listés ne sont pas intégrés. Timeline illustrative.</p><div class="timeline" id="timeline"></div>
+            <div class="actions">
+              <button class="btn green" id="addBtn">Ajouter au Pan</button>
+              <button class="btn" id="htmlBtn">HTML</button>
+              <button class="btn" id="jsonBtn">JSON</button>
+              <button class="btn" id="mdBtn">Frontmatter</button>
+            </div>
+          </div>
+        </section>
+        <section class="card nav-target" id="panPanel">
+          <div class="card-head">
+            <div class="card-title">Preview Pan composé</div>
+            <div class="card-sub">Cartes de configuration ; pas de rendu composé</div>
+          </div>
+          <div class="card-body">
+            <div id="stack" class="stack"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <aside class="right">
+      <section class="inspector-block">
+        <div class="inspector-title">01 · Paramètres <span>composer</span></div>
+        <label>Nom du composant
+          <input id="componentName" type="text" value="Nyx FX Component">
+        </label>
+      </section>
+      <section class="component-preview" aria-label="Aperçu composant rendu">
+        <div class="preview-toolbar">
+          <strong>02 · Aperçu composant actif</strong>
+          <span class="preview-badge" id="previewBadge">ready</span>
+        </div>
+        <div id="componentPreview"></div>
+      </section>
+      <section class="inspector-block export-block nav-target" id="exportPanel">
+        <div class="inspector-title">03 · Export composant <span>JSON / HTML / Frontmatter</span></div>
+        <div class="tabs">
+          <button class="tab active" data-mode="json">JSON</button>
+          <button class="tab" data-mode="html">HTML</button>
+          <button class="tab" data-mode="md">Frontmatter</button>
+        </div>
+        <textarea id="output" spellcheck="false" aria-label="Sortie générée"></textarea>
+        <p class="empty">Export de structure uniquement : le moteur de l’effet et ses styles restent à intégrer.</p>
+      </section>
+    </aside>
+  </div>
+
+  <script>
+    const effects = [{"id": "color-ramp", "name": "Color Ramp", "category": "post", "sourceFile": "sdk-src/effects/color-ramp.ts", "nyxBladeFamily": "fx-effect"}, {"id": "copper-bars", "name": "Copper Bars", "category": "overlay-2d", "sourceFile": "sdk-src/effects/copper-bars.ts", "nyxBladeFamily": "fx-effect"}, {"id": "dot-tunnel", "name": "Dot Tunnel", "category": "background-2d", "sourceFile": "sdk-src/effects/dot-tunnel.ts", "nyxBladeFamily": "fx-effect"}, {"id": "explosion-flash", "name": "Explosion Flash", "category": "post", "sourceFile": "sdk-src/effects/explosion-flash.ts", "nyxBladeFamily": "fx-effect"}, {"id": "falling-leaves", "name": "Falling Leaves", "category": "background-2d", "sourceFile": "sdk-src/effects/falling-leaves.ts", "nyxBladeFamily": "fx-effect"}, {"id": "gradient-border", "name": "Gradient Border", "category": "post", "sourceFile": "sdk-src/effects/gradient-border.ts", "nyxBladeFamily": "fx-effect"}, {"id": "gradient-text-scroller", "name": "Gradient Text Scroller", "category": "scroller", "sourceFile": "sdk-src/effects/gradient-text-scroller.ts", "nyxBladeFamily": "fx-effect"}, {"id": "grid-space", "name": "Grid Space", "category": "background-2d", "sourceFile": "sdk-src/effects/grid-space.ts", "nyxBladeFamily": "fx-effect"}, {"id": "image-display", "name": "Image Display", "category": "background-2d", "sourceFile": "sdk-src/effects/image-display.ts", "nyxBladeFamily": "fx-effect"}, {"id": "image-voxels", "name": "Image Voxels", "category": "background-2d", "sourceFile": "sdk-src/effects/image-voxels.ts", "nyxBladeFamily": "fx-effect"}, {"id": "image-warp", "name": "Image Warp", "category": "overlay-2d", "sourceFile": "sdk-src/effects/image-warp.ts", "nyxBladeFamily": "fx-effect"}, {"id": "kaleidoscope", "name": "Kaleidoscope", "category": "overlay-2d", "sourceFile": "sdk-src/effects/kaleidoscope.ts", "nyxBladeFamily": "fx-effect"}, {"id": "lens-distortion", "name": "Lens Distortion", "category": "post", "sourceFile": "sdk-src/effects/lens-distortion.ts", "nyxBladeFamily": "fx-effect"}, {"id": "live-clouds", "name": "Live Clouds", "category": "background-2d", "sourceFile": "sdk-src/effects/live-clouds.ts", "nyxBladeFamily": "fx-effect"}, {"id": "logo-sprite", "name": "Logo Sprite", "category": "logo", "sourceFile": "sdk-src/effects/logo-sprite.ts", "nyxBladeFamily": "fx-effect"}, {"id": "moire", "name": "Moire", "category": "background-2d", "sourceFile": "sdk-src/effects/moire.ts", "nyxBladeFamily": "fx-effect"}, {"id": "palette-cycle", "name": "Palette Cycle", "category": "post", "sourceFile": "sdk-src/effects/palette-cycle.ts", "nyxBladeFamily": "fx-effect"}, {"id": "parallax-scroller", "name": "Parallax Scroller", "category": "background-2d", "sourceFile": "sdk-src/effects/parallax-scroller.ts", "nyxBladeFamily": "fx-effect"}, {"id": "particle-fountain", "name": "Particle Fountain", "category": "background-2d", "sourceFile": "sdk-src/effects/particle-fountain.ts", "nyxBladeFamily": "fx-effect"}, {"id": "plasma-advanced", "name": "Plasma (Advanced)", "category": "background-2d", "sourceFile": "sdk-src/effects/plasma-advanced.ts", "nyxBladeFamily": "fx-effect"}, {"id": "plasma-smoke", "name": "Plasma Smoke", "category": "background-2d", "sourceFile": "sdk-src/effects/plasma-smoke.ts", "nyxBladeFamily": "fx-effect"}, {"id": "plasma", "name": "Classic Plasma", "category": "background-2d", "sourceFile": "sdk-src/effects/plasma.ts", "nyxBladeFamily": "fx-effect"}, {"id": "reflective-water", "name": "Reflective Water", "category": "post", "sourceFile": "sdk-src/effects/reflective-water.ts", "nyxBladeFamily": "fx-effect"}, {"id": "float", "name": "float", "category": "unknown", "sourceFile": "sdk-src/effects/registry.ts", "nyxBladeFamily": "fx-effect"}, {"id": "rotozoomer", "name": "Rotozoomer", "category": "background-2d", "sourceFile": "sdk-src/effects/rotozoomer.ts", "nyxBladeFamily": "fx-effect"}, {"id": "scanlines", "name": "Scanlines", "category": "post", "sourceFile": "sdk-src/effects/scanlines.ts", "nyxBladeFamily": "fx-effect"}, {"id": "scene3d", "name": "Scene 3D", "category": "mesh", "sourceFile": "sdk-src/effects/scene3d.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sine-scroller", "name": "Sine Scroller", "category": "scroller", "sourceFile": "sdk-src/effects/sine-scroller.ts", "nyxBladeFamily": "fx-effect"}, {"id": "spiral-3d", "name": "Spiral 3D", "category": "background-2d", "sourceFile": "sdk-src/effects/spiral-3d.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sprite-mover", "name": "Sprite Mover", "category": "logo", "sourceFile": "sdk-src/effects/sprite-mover.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-alku-landscape", "name": "SR ALKU Landscape", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-alku-landscape.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-beglogo", "name": "SR BEGLOGO", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-beglogo.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-coman", "name": "SR Voxel Land", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-coman.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-credits", "name": "SR Credits", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-credits.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-dot-tunnel", "name": "SR Dot Tunnel", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-dot-tunnel.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-dots", "name": "SR Dots", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-dots.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-endlogo", "name": "SR End Logo", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-endlogo.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-endscrl", "name": "SR End Scroller", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-endscrl.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-forest", "name": "SR Forest", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-forest.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-glenz-transition", "name": "SR GLENZ_TRANSITION", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-glenz-transition.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-glenz", "name": "SR Glenz Vectors", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-glenz.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-jplogo", "name": "SR Jelly Picture", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-jplogo.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-lens-roto", "name": "SR Rotozoomer", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-lens-roto.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-lens-transition", "name": "SR Lens Transition", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-lens-transition.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-lens", "name": "SR Bouncing Lens", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-lens.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-pam", "name": "SR PAM Explosion", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-pam.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-plz-cube", "name": "SR Plasma Cube", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-plz-cube.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-plz-plasma", "name": "SR PLZ Plasma", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-plz-plasma.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-techno-bars", "name": "SR Techno Bars", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-techno-bars.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-techno-circles", "name": "SR Techno Circles", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-techno-circles.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-techno-transition", "name": "SR TECHNO_BARS_TRANSITION", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-techno-transition.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-troll", "name": "SR Troll", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-troll.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-u2a", "name": "SR U2A Ships", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-u2a.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-u2e", "name": "SR U2E 3D City", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-u2e.ts", "nyxBladeFamily": "fx-effect"}, {"id": "sr-water", "name": "SR Water Sword Scroller", "category": "background-2d", "sourceFile": "sdk-src/effects/sr-water.ts", "nyxBladeFamily": "fx-effect"}, {"id": "starfield-2d-classic", "name": "Starfield 2D Classic", "category": "background-2d", "sourceFile": "sdk-src/effects/starfield-2d-classic.ts", "nyxBladeFamily": "fx-effect"}, {"id": "starfield-2d", "name": "Starfield 2D", "category": "background-2d", "sourceFile": "sdk-src/effects/starfield-2d.ts", "nyxBladeFamily": "fx-effect"}, {"id": "starfield-3d", "name": "Starfield 3D", "category": "background-2d", "sourceFile": "sdk-src/effects/starfield-3d.ts", "nyxBladeFamily": "fx-effect"}, {"id": "text-block", "name": "Text Block", "category": "text-reveal", "sourceFile": "sdk-src/effects/text-block.ts", "nyxBladeFamily": "fx-effect"}, {"id": "tubes-path", "name": "Tubes Along Path", "category": "background-2d", "sourceFile": "sdk-src/effects/tubes-path.ts", "nyxBladeFamily": "fx-effect"}, {"id": "tunnel", "name": "Tunnel", "category": "background-2d", "sourceFile": "sdk-src/effects/tunnel.ts", "nyxBladeFamily": "fx-effect"}, {"id": "vertical-scroller", "name": "Vertical Scroller", "category": "scroller", "sourceFile": "sdk-src/effects/vertical-scroller.ts", "nyxBladeFamily": "fx-effect"}, {"id": "voxel-landscape", "name": "Voxel Landscape", "category": "background-2d", "sourceFile": "sdk-src/effects/voxel-landscape.ts", "nyxBladeFamily": "fx-effect"}, {"id": "wave-image", "name": "Wave Image", "category": "post", "sourceFile": "sdk-src/effects/wave-image.ts", "nyxBladeFamily": "fx-effect"}];
+    const state = { selected: effects.find(e => e.id === 'plasma') || effects[0], category: 'all', query: '', mode: 'json', stack: [] };
+    const defaultParams = { speed: 1, scale: 1, opacity: 1, blend: 'normal' };
+    const categoryLabel = c => c || 'unknown';
+    const cssSafe = s => String(s || '').replace(/[^a-z0-9_-]/gi, '-').toLowerCase();
+    function categories() { return ['all', ...Array.from(new Set(effects.map(e => categoryLabel(e.category)))).sort()]; }
+    function filtered() {
+      const q = state.query.trim().toLowerCase();
+      return effects.filter(e => (state.category === 'all' || categoryLabel(e.category) === state.category) && (!q || [e.id,e.name,e.category,e.sourceFile].join(' ').toLowerCase().includes(q)));
+    }
+    function componentBase(effect = state.selected) {
+      const slug = cssSafe(effect.id);
+      return {
+        schema: 'nyx.fx-component.v1',
+        component: document.getElementById('componentName').value || 'Nyx FX Component',
+        blade: { id: `fx.${slug}`, name: effect.name, kind: 'fx-effect', category: categoryLabel(effect.category), source: 'ExplorFX reference' },
+        pan: { id: 'dashboard-composable', rack: 'MotionRack', locked: false, collapsed: false },
+        layer: { id: `layer-${slug}`, effect: effect.id, params: {...defaultParams}, timing: { start: 0, end: 8 } },
+        timeline: [
+          { id: `track-${slug}-opacity`, target: `dashboard-composable.motion.fx.${slug}.opacity`, interpolation: 'easeInOut', keys: [{t:0,v:0,easing:'easeIn'}, {t:1.2,v:1,easing:'easeOut'}, {t:7,v:1}, {t:8,v:0,easing:'easeIn'}] },
+          { id: `track-${slug}-speed`, target: `dashboard-composable.motion.fx.${slug}.speed`, interpolation: 'linear', keys: [{t:0,v:0.8}, {t:4,v:1.4}, {t:8,v:1}] }
+        ],
+        ui: { inspector: true, preview: true, timeline: true, visibleOnlyIfInstalled: true }
+      };
+    }
+    function htmlSnippet(effect = state.selected) {
+      const slug = cssSafe(effect.id);
+      return `<section class="nyx-fx-component" data-blade="fx.${slug}" data-effect="${effect.id}">
+  <header>
+    <strong>${effect.name}</strong>
+    <span>${categoryLabel(effect.category)}</span>
+  </header>
+  <div class="nyx-fx-preview nyx-fx-${slug}"></div>
+  <div class="nyx-fx-inspector" data-target="dashboard-composable.motion.fx.${slug}"></div>
+</section>`;
+    }
+    function mdSnippet(effect = state.selected) {
+      const slug = cssSafe(effect.id);
+      return `---
+tags: [nyx, fx, ${categoryLabel(effect.category)}]
+rack: MotionRack
+blades:
+  - fx.${slug}
+chapters:
+  - id: fx-${slug}
+    title: ${effect.name}
+    duration: 8
+tracks:
+  - target: dashboard-composable.motion.fx.${slug}.opacity
+    keys:
+      - { t: 0, v: 0, easing: easeIn }
+      - { t: 1.2, v: 1, easing: easeOut }
+      - { t: 8, v: 0, easing: easeIn }
+---`;
+    }
+    function outputText() {
+      if (state.mode === 'html') return htmlSnippet();
+      if (state.mode === 'md') return mdSnippet();
+      return JSON.stringify(componentBase(), null, 2);
+    }
+    function renderFilters() {
+      const el = document.getElementById('filters');
+      el.replaceChildren(...categories().map(c => {
+        const b = document.createElement('button'); b.className = 'filter' + (state.category === c ? ' active' : ''); b.textContent = c;
+        b.onclick = () => { state.category = c; render(); };
+        return b;
+      }));
+    }
+    function renderEffects() {
+      const list = document.getElementById('effectList');
+      const items = filtered();
+      document.getElementById('countLabel').textContent = `${items.length} / ${effects.length} effets`;
+      list.replaceChildren(...items.map(e => {
+        const b = document.createElement('button'); b.className = 'effect' + (state.selected?.id === e.id ? ' active' : '');
+        b.innerHTML = `<b>${e.name || e.id}</b><span>${e.id} · ${categoryLabel(e.category)}</span>`;
+        b.onclick = () => { state.selected = e; if (!state.stack.length) addToPan(false); render(); };
+        return b;
+      }));
+    }
+    function renderPreview() {
+      const e = state.selected;
+      document.getElementById('previewTitle').textContent = e.name || e.id;
+      document.getElementById('previewSub').textContent = `${e.id} · ${categoryLabel(e.category)} · ${e.sourceFile || 'registry'}`;
+      const canvas = document.getElementById('canvas');
+      canvas.className = 'canvas scanlines';
+      canvas.style.filter = categoryLabel(e.category).includes('post') ? 'contrast(1.08) saturate(1.12)' : 'none';
+      canvas.style.background = previewBackground(e);
+      renderTimeline();
+      renderComponentPreview();
+      document.getElementById('output').value = outputText();
+    }
+    function renderComponentPreview() {
+      const c = componentBase();
+      const e = state.selected;
+      const wrap = document.getElementById('componentPreview');
+      document.getElementById('previewBadge').textContent = `${state.stack.length} layer${state.stack.length > 1 ? 's' : ''}`;
+      const section = document.createElement('section');
+      section.className = 'nyx-fx-component preview-render';
+      section.dataset.blade = c.blade.id;
+      section.dataset.effect = c.layer.effect;
+      section.dataset.category = categoryLabel(e.category);
+      section.innerHTML = `
+        <div class="component-shell">
+          <div class="component-shell-head">
+            <b>${escapeHtml(c.component)}</b>
+            <span>${escapeHtml(c.blade.id)} · ${escapeHtml(c.layer.effect)}</span>
+          </div>
+          <div class="component-demo scanlines" style="background:${previewBackground(e)}"></div>
+        </div>
+        <div class="component-meta">
+          <span><b>Blade</b>${escapeHtml(c.blade.name)}</span>
+          <span><b>Rack</b>${escapeHtml(c.pan.rack)}</span>
+          <span><b>Durée</b>${c.layer.timing.start}-${c.layer.timing.end}s</span>
+        </div>
+        <div class="component-timeline">${c.timeline.map(t => `
+          <div class="mini-track">
+            <span>${escapeHtml(t.target.split('.').slice(-1)[0])}</span>
+            <span class="mini-lane">${t.keys.map(k => `<i class="mini-key" style="left:${Math.min(100, Math.max(0, k.t / 8 * 100))}%"></i>`).join('')}</span>
+          </div>`).join('')}
+        </div>`;
+      wrap.replaceChildren(section);
+    }
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+    }
+    function previewBackground(e) {
+      const c = categoryLabel(e.category);
+      if (c.includes('scroller')) return 'linear-gradient(90deg,#fff,#edf3ff), repeating-linear-gradient(0deg, transparent 0 28px, rgba(10,95,255,.08) 28px 30px)';
+      if (c.includes('post')) return 'radial-gradient(circle at 45% 35%, rgba(229,57,53,.18), transparent 28%), linear-gradient(135deg,#fff,#f0f0f4)';
+      if (c.includes('logo')) return 'radial-gradient(circle at center, rgba(67,160,71,.20), transparent 30%), linear-gradient(135deg,#fff,#eef7f1)';
+      if (c.includes('overlay')) return 'radial-gradient(circle at 30% 20%, rgba(251,140,0,.25), transparent 24%), radial-gradient(circle at 72% 70%, rgba(142,36,170,.20), transparent 28%), #fff';
+      return 'radial-gradient(circle at 24% 30%, rgba(10,95,255,.22), transparent 26%), radial-gradient(circle at 70% 62%, rgba(142,36,170,.22), transparent 24%), linear-gradient(135deg,#fff,#eef1f7)';
+    }
+    function renderTimeline() {
+      const base = componentBase();
+      const el = document.getElementById('timeline');
+      el.replaceChildren(...base.timeline.map(t => {
+        const row = document.createElement('div'); row.className = 'track';
+        const label = document.createElement('div'); label.className = 'track-label'; label.textContent = t.target.split('.').slice(-1)[0];
+        const lane = document.createElement('div'); lane.className = 'track-lane';
+        t.keys.forEach(k => { const dot = document.createElement('span'); dot.className = 'key'; dot.style.left = `${Math.min(100, Math.max(0, k.t / 8 * 100))}%`; lane.append(dot); });
+        row.append(label,lane); return row;
+      }));
+    }
+    function addToPan(rerender = true) {
+      if (!state.selected) return;
+      const c = componentBase();
+      state.stack.push(c);
+      if (rerender) renderStack();
+    }
+    function renderStack() {
+      const el = document.getElementById('stack');
+      if (!state.stack.length) {
+        el.innerHTML = '<div class="empty">Aucun layer. Clique un effet ou “Ajouter au Pan”.</div>';
+        renderComponentPreview();
+        return;
+      }
+      const list = document.createElement('div');
+      list.className = 'stack';
+      state.stack.forEach((c,i) => {
+        const item = document.createElement('div'); item.className = 'stack-item';
+        item.innerHTML = `<div><b>${i+1}. ${escapeHtml(c.blade.name)}</b><span>${escapeHtml(c.layer.effect)} · ${c.timeline.length} tracks · ${c.layer.timing.start}-${c.layer.timing.end}s</span></div>`;
+        const del = document.createElement('button'); del.className = 'mini'; del.textContent = '×'; del.onclick = () => { state.stack.splice(i,1); renderStack(); };
+        item.append(del); list.append(item);
+      });
+      const rendered = document.createElement('div');
+      rendered.className = 'rendered-stack';
+      state.stack.forEach((c,i) => {
+        const fx = effects.find(e => e.id === c.layer.effect) || state.selected;
+        const card = document.createElement('article');
+        card.className = 'render-card';
+        card.innerHTML = `<div class="render-card-visual" style="background:${previewBackground(fx)}"></div><div class="render-card-body"><b>${i+1}. ${escapeHtml(c.component)}</b><span>${escapeHtml(c.layer.effect)} · ${escapeHtml(c.pan.rack)}</span></div>`;
+        rendered.append(card);
+      });
+      el.replaceChildren(list, rendered);
+      renderComponentPreview();
+    }
+    function renderTabs() {
+      document.querySelectorAll('.tab').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === state.mode);
+        b.onclick = () => { state.mode = b.dataset.mode; renderTabs(); renderPreview(); navigateTo('export'); };
+      });
+    }
+    const navTargets = { effects: 'effectsPanel', composer: 'composerPanel', pan: 'panPanel', export: 'exportPanel' };
+    function navigateTo(key) {
+      const id = navTargets[key];
+      const target = id && document.getElementById(id);
+      if (!target) return;
+      document.querySelectorAll('.nav-btn[data-nav]').forEach(b => b.classList.toggle('active', b.dataset.nav === key));
+      target.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+      document.querySelectorAll('.nav-focus').forEach(el => el.classList.remove('nav-focus'));
+      target.classList.remove('nav-focus');
+      void target.offsetWidth;
+      target.classList.add('nav-focus');
+      window.clearTimeout(target._navFocusTimer);
+      target._navFocusTimer = window.setTimeout(() => target.classList.remove('nav-focus'), 900);
+    }
+    function bindNav() {
+      document.querySelectorAll('.nav-btn[data-nav]').forEach(b => {
+        b.onclick = () => navigateTo(b.dataset.nav);
+      });
+    }
+    function render() { renderFilters(); renderEffects(); renderTabs(); bindNav(); renderPreview(); renderStack(); }
+    document.getElementById('search').addEventListener('input', e => { state.query = e.target.value; renderEffects(); });
+    document.getElementById('componentName').addEventListener('input', renderPreview);
+    document.getElementById('addBtn').onclick = () => addToPan(true);
+    document.getElementById('jsonBtn').onclick = () => { state.mode = 'json'; renderTabs(); renderPreview(); };
+    document.getElementById('htmlBtn').onclick = () => { state.mode = 'html'; renderTabs(); renderPreview(); };
+    document.getElementById('mdBtn').onclick = () => { state.mode = 'md'; renderTabs(); renderPreview(); };
+    document.getElementById('resetBtn').onclick = () => { state.stack = []; renderStack(); };
+    document.getElementById('copyBtn').onclick = async () => {
+      const out = document.getElementById('output');
+      out.select();
+      try { await navigator.clipboard.writeText(out.value); document.getElementById('copyBtn').textContent = 'Copié'; setTimeout(()=>document.getElementById('copyBtn').textContent='Copier composant', 900); }
+      catch { document.execCommand('copy'); }
+    };
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!--
+v1.0 2026-09-13 STABLE-DÉPENDANT
+DEMANDE: V2 audio reactive — plasma synchronisé au micro avec Web Audio API, bass/mid/treble et BPM.
+SORTIE: HTML autonome, getUserMedia, AnalyserNode FFT 2048, détection beat, uniforms shader sync.
+PREUVE: Serveur local lancé, HTTP 200, JS syntaxe validée avec node --check. Test micro nécessite interaction utilisateur.
+Fichier précédent: madameglitch_v1_base.html
+-->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MadameGlitch V2 — Audio Reactive</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+    canvas { display: block; }
+
+    /* Bouton d'activation du micro (Web Audio nécessite une interaction) */
+    #startBtn {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 16px 28px;
+      font-family: monospace;
+      font-size: 16px;
+      color: #fff;
+      background: rgba(255, 0, 128, 0.25);
+      border: 1px solid rgba(255, 0, 128, 0.8);
+      border-radius: 4px;
+      cursor: pointer;
+      z-index: 20;
+      backdrop-filter: blur(4px);
+      transition: background 0.2s;
+    }
+    #startBtn:hover { background: rgba(255, 0, 128, 0.45); }
+    #startBtn.hidden { display: none; }
+
+    /* Panneau debug audio */
+    #debug {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      color: rgba(255,255,255,0.85);
+      font-family: monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      pointer-events: none;
+      z-index: 10;
+      text-shadow: 0 0 4px #000;
+    }
+    .bar {
+      display: inline-block;
+      width: 100px;
+      height: 8px;
+      background: rgba(255,255,255,0.15);
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .bar > span {
+      display: block;
+      height: 100%;
+      background: #ff0080;
+      width: 0%;
+    }
+    #errorMsg {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #ff4444;
+      font-family: monospace;
+      font-size: 13px;
+      z-index: 30;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <button id="startBtn">Activer le micro 🎙</button>
+  <div id="debug">
+    MadameGlitch V2 — Audio Reactive<br>
+    Bass <div class="bar"><span id="bassBar"></span></div><br>
+    Mid  <div class="bar"><span id="midBar"></span></div><br>
+    Treb <div class="bar"><span id="trebBar"></span></div><br>
+    BPM  <span id="bpmVal">--</span> | Beat <span id="beatVal">0</span>
+  </div>
+  <div id="errorMsg"></div>
+
+  <script>
+    (async function() {
+      const THREE = await import('./assets/three.module.js');
+      window.THREE = THREE;
+
+      // ============================================================
+      // MADAMEGLITCH V2 — AUDIO REACTIVE
+      // Objectif : rendre le plasma V1 réactif au micro (basses, mids,
+      // aigus) et détecter le BPM par les pics de basses.
+      // ============================================================
+
+      let camera, scene, renderer, material, clock;
+    let audioCtx, analyser, source, dataArray;
+    let audioActive = false;
+
+    // --- Paramètres de détection ---
+    const FFT_SIZE = 2048;          // Taille FFT demandée
+    const BEAT_THRESHOLD = 0.8;     // Seuil de détection beat (0-1)
+    const BEAT_MIN_MS = 300;        // Temps minimum entre deux beats
+    let lastBeatTime = 0;
+    let bpmEstimate = 0;
+    let beatDecay = 0.0;            // Impulsion visuelle qui décroit
+
+    // Valeurs audio lissées
+    let bassSmooth = 0, midSmooth = 0, trebSmooth = 0;
+
+    initThree();
+    animate();
+
+    document.getElementById('startBtn').addEventListener('click', startAudio);
+
+    // ============================================================
+    // THREE.JS — SCÈNE PLASMA
+    // ============================================================
+    function initThree() {
+      scene = new THREE.Scene();
+      camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      clock = new THREE.Clock();
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      material = new THREE.ShaderMaterial({
+        uniforms: {
+          u_time: { value: 0.0 },
+          u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+          u_audio_bass: { value: 0.0 },
+          u_audio_mid: { value: 0.0 },
+          u_audio_treble: { value: 0.0 },
+          u_audio_beat: { value: 0.0 },
+          u_audio_intensity: { value: 0.0 }
+        },
+        vertexShader: `
+          void main() {
+            gl_Position = vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          precision mediump float;
+
+          uniform float u_time;
+          uniform vec2 u_resolution;
+          uniform float u_audio_bass;
+          uniform float u_audio_mid;
+          uniform float u_audio_treble;
+          uniform float u_audio_beat;
+          uniform float u_audio_intensity;
+
+          float rand(vec2 st) {
+            return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+          }
+
+          void main() {
+            vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / min(u_resolution.x, u_resolution.y);
+
+            // La vitesse du plasma est modulée par les basses
+            float speed = 0.6 + u_audio_bass * 2.5;
+            float t = u_time * speed;
+
+            // L'intensité globale déforme les fréquences spatiales
+            float intensity = 1.0 + u_audio_intensity * 3.0;
+
+            float v1 = sin(uv.x * 4.0 * intensity + t + u_audio_mid);
+            float v2 = sin(uv.y * 3.0 * intensity + t * 1.3 + u_audio_treble);
+            float v3 = sin((uv.x + uv.y) * 2.5 * intensity + t * 0.7);
+
+            float plasma = v1 + v2 + v3;
+            plasma = sin(plasma * 1.5 + t + u_audio_beat * 3.14) * 0.5 + 0.5;
+
+            // Palette cyber ajustée par les bandes audio
+            vec3 col = vec3(
+              0.5 + 0.5 * sin(plasma * 6.28 + 0.0 + u_audio_bass * 2.0),
+              0.5 + 0.5 * sin(plasma * 6.28 + 2.09 + u_audio_mid * 2.0),
+              0.5 + 0.5 * sin(plasma * 6.28 + 4.18 + u_audio_treble * 2.0)
+            );
+
+            // Flash blanc sur chaque beat
+            col += vec3(u_audio_beat * 0.35);
+
+            // Grain analogique
+            float grain = rand(uv + u_time) * 0.06;
+            col += grain;
+
+            gl_FragColor = vec4(col, 1.0);
+          }
+        `
+      });
+
+      const geometry = new THREE.PlaneGeometry(2, 2);
+      const mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    function onWindowResize() {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      material.uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
+    }
+
+    // ============================================================
+    // WEB AUDIO API — MICRO + ANALYSE
+    // ============================================================
+    async function startAudio() {
+      try {
+        // Un contexte audio ne peut être créé qu'après une interaction utilisateur
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Demande l'accès au micro
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+
+        source = audioCtx.createMediaStreamSource(stream);
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = FFT_SIZE;
+        analyser.smoothingTimeConstant = 0.8;
+
+        source.connect(analyser);
+        // On ne connecte pas au destination pour éviter le larsen
+
+        const bufferLength = analyser.frequencyBinCount; // FFT_SIZE / 2
+        dataArray = new Uint8Array(bufferLength);
+
+        audioActive = true;
+        document.getElementById('startBtn').classList.add('hidden');
+      } catch (err) {
+        showError('Micro inaccessible : ' + err.message);
+        console.error(err);
+      }
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    // ============================================================
+    // ANALYSE AUDIO : BASS / MID / TREBLE + BPM
+    // ============================================================
+    function analyzeAudio() {
+      if (!audioActive || !analyser) return;
+
+      analyser.getByteFrequencyData(dataArray);
+
+      const sampleRate = audioCtx.sampleRate;
+      const binSize = sampleRate / FFT_SIZE; // Hz par bin
+      const len = dataArray.length;
+
+      // Plages de fréquences en Hz
+      const bassHz = { min: 20, max: 140 };
+      const midHz = { min: 140, max: 2000 };
+      const trebHz = { min: 2000, max: 12000 };
+
+      function bandEnergy(minHz, maxHz) {
+        const iMin = Math.max(1, Math.floor(minHz / binSize));
+        const iMax = Math.min(len - 1, Math.floor(maxHz / binSize));
+        let sum = 0;
+        let count = 0;
+        for (let i = iMin; i <= iMax; i++) {
+          sum += dataArray[i];
+          count++;
+        }
+        return count > 0 ? sum / count / 255.0 : 0;
+      }
+
+      const bass = bandEnergy(bassHz.min, bassHz.max);
+      const mid = bandEnergy(midHz.min, midHz.max);
+      const treb = bandEnergy(trebHz.min, trebHz.max);
+
+      // Lissage exponentiel pour des animations fluides
+      bassSmooth = lerp(bassSmooth, bass, 0.15);
+      midSmooth = lerp(midSmooth, mid, 0.12);
+      trebSmooth = lerp(trebSmooth, treb, 0.10);
+
+      // Détection de beat sur les basses
+      const now = performance.now();
+
+      // Détection : pic local + seuil + cooldown
+      // On garde un historique court
+      if (!window._prevBass) window._prevBass = 0;
+      if (bassSmooth > window._prevBass && bassSmooth > BEAT_THRESHOLD && (now - lastBeatTime) > BEAT_MIN_MS) {
+        beatDecay = 1.0;
+        lastBeatTime = now;
+        // Estimation BPM basée sur l'intervalle entre deux beats
+        if (window._lastBeatForBpm) {
+          const interval = now - window._lastBeatForBpm;
+          if (interval > 0) {
+            bpmEstimate = Math.round(60000 / interval);
+          }
+        }
+        window._lastBeatForBpm = now;
+      }
+      window._prevBass = bassSmooth;
+
+      // L'intensité globale combine les trois bandes
+      const intensity = (bassSmooth + midSmooth + trebSmooth) / 3.0;
+
+      // Mise à jour des uniforms shader
+      material.uniforms.u_audio_bass.value = bassSmooth;
+      material.uniforms.u_audio_mid.value = midSmooth;
+      material.uniforms.u_audio_treble.value = trebSmooth;
+      material.uniforms.u_audio_intensity.value = intensity;
+
+      // Décroissance du flash de beat
+      beatDecay = Math.max(0, beatDecay - 0.08);
+      material.uniforms.u_audio_beat.value = beatDecay;
+
+      // Debug UI
+      document.getElementById('bassBar').style.width = Math.round(bassSmooth * 100) + '%';
+      document.getElementById('midBar').style.width = Math.round(midSmooth * 100) + '%';
+      document.getElementById('trebBar').style.width = Math.round(trebSmooth * 100) + '%';
+      document.getElementById('bpmVal').textContent = bpmEstimate || '--';
+      document.getElementById('beatVal').textContent = beatDecay.toFixed(2);
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      analyzeAudio();
+      material.uniforms.u_time.value = clock.getElapsedTime();
+      renderer.render(scene, camera);
+    }
+    })();
+  </script>
+</body>
+</html>

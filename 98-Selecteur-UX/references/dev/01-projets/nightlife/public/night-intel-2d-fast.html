@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Night Intel 2D Fast</title>
+  <script>
+    if (location.protocol === "file:") {
+      window.__nightIntelFileRedirect = true;
+      window.addEventListener("DOMContentLoaded", () => {
+        document.body.innerHTML = '<main style="min-height:100vh;display:grid;place-items:center;background:#060708;color:#f5f0e4;font:700 14px ui-monospace,SFMono-Regular,Consolas,monospace;text-transform:uppercase;letter-spacing:.08em;text-align:center;padding:24px"><div><p>Ouverture via serveur local...</p><p style="color:#8c887f;font-size:11px">http://localhost:3007/night-intel-2d</p></div></main>';
+      });
+      setTimeout(() => {
+        location.replace("http://localhost:3007/night-intel-2d");
+      }, 60);
+    }
+  </script>
+  <script src="/vendor/pixi.min.js"></script>
+  <style>
+    :root {
+      --bg: #060708;
+      --panel: rgba(12, 13, 17, 0.82);
+      --panel-strong: rgba(18, 19, 25, 0.94);
+      --line: rgba(201, 194, 182, 0.18);
+      --line-strong: rgba(201, 194, 182, 0.34);
+      --text: #f5f0e4;
+      --muted: #8c887f;
+      --pink: #ff2d6f;
+      --cyan: #5bcfff;
+      --acid: #c2ff3d;
+      --amber: #ffb13d;
+      --violet: #b47bff;
+      --mono: "JetBrains Mono", "SFMono-Regular", Consolas, ui-monospace, monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 58% 46%, rgba(255, 45, 111, 0.10), transparent 34%),
+        radial-gradient(circle at 46% 54%, rgba(91, 207, 255, 0.08), transparent 38%),
+        linear-gradient(180deg, #08080b, #050506 62%, #020202);
+    }
+
+    #stage {
+      position: fixed;
+      inset: 0;
+      background: transparent;
+    }
+
+    .app {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      grid-template-rows: 56px 1fr 58px;
+      grid-template-columns: 314px 1fr 290px;
+      pointer-events: none;
+    }
+
+    .topbar,
+    .left,
+    .right,
+    .bottom {
+      pointer-events: auto;
+      border-color: var(--line);
+    }
+
+    .topbar {
+      grid-column: 1 / 4;
+      display: grid;
+      grid-template-columns: 314px 1fr 290px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      background: rgba(6, 7, 8, 0.90);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      padding: 0 22px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .brand strong {
+      font: 800 18px/1 var(--sans);
+      letter-spacing: 0.01em;
+    }
+
+    .brand span,
+    .eyebrow {
+      color: var(--muted);
+      font: 700 10px/1 var(--mono);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .ticker {
+      overflow: hidden;
+      font: 700 12px/1 var(--mono);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .ticker-track {
+      display: inline-flex;
+      gap: 28px;
+      min-width: 200%;
+      animation: ticker 28s linear infinite;
+    }
+
+    .ticker b { color: var(--text); font-weight: 700; }
+    .ticker i { color: var(--pink); font-style: normal; }
+
+    .live {
+      justify-self: end;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-right: 22px;
+      color: var(--acid);
+      font: 800 11px/1 var(--mono);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .live::before {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--acid);
+      box-shadow: 0 0 18px var(--acid);
+      content: "";
+    }
+
+    .left {
+      grid-row: 2;
+      grid-column: 1;
+      align-self: stretch;
+      margin: 18px 0 18px 18px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(14px);
+      min-height: 0;
+    }
+
+    .right {
+      grid-row: 2;
+      grid-column: 3;
+      align-self: start;
+      margin: 18px 18px 0 0;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(14px);
+    }
+
+    .panel-head {
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-head h1,
+    .panel-head h2 {
+      margin: 8px 0 0;
+      font: 800 24px/1 var(--sans);
+      letter-spacing: -0.02em;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .kpi {
+      padding: 14px 12px;
+      border-right: 1px solid var(--line);
+    }
+
+    .kpi:last-child { border-right: 0; }
+    .kpi b { display: block; font: 800 19px/1 var(--mono); color: var(--text); }
+    .kpi span { display: block; margin-top: 6px; font: 700 9px/1 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+    .rank-list {
+      min-height: 0;
+      overflow: auto;
+      padding: 8px;
+    }
+
+    .rank-row {
+      display: grid;
+      grid-template-columns: 24px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 42px;
+      padding: 8px;
+      border-bottom: 1px solid rgba(201, 194, 182, 0.10);
+      cursor: pointer;
+    }
+
+    .rank-row:hover,
+    .rank-row.is-active {
+      background: rgba(255, 255, 255, 0.045);
+    }
+
+    .rank-row code {
+      color: var(--muted);
+      font: 800 11px/1 var(--mono);
+    }
+
+    .rank-row strong {
+      display: block;
+      font: 800 12px/1.2 var(--sans);
+      text-transform: uppercase;
+    }
+
+    .rank-row span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font: 700 10px/1 var(--mono);
+    }
+
+    .score {
+      color: var(--acid);
+      font: 800 13px/1 var(--mono);
+    }
+
+    .details {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .city-title {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .city-title strong {
+      font: 800 24px/1 var(--sans);
+      letter-spacing: -0.02em;
+    }
+
+    .city-title span {
+      color: var(--muted);
+      font: 800 11px/1 var(--mono);
+    }
+
+    .metric {
+      display: grid;
+      gap: 7px;
+    }
+
+    .metric-line {
+      display: grid;
+      grid-template-columns: 70px 1fr auto;
+      align-items: center;
+      gap: 9px;
+      font: 800 10px/1 var(--mono);
+      color: var(--muted);
+    }
+
+    .bar {
+      height: 4px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .bar i {
+      display: block;
+      width: var(--w);
+      height: 100%;
+      background: var(--c);
+      box-shadow: 0 0 12px var(--c);
+    }
+
+    .feed {
+      display: grid;
+      gap: 10px;
+      padding-top: 6px;
+    }
+
+    .feed-item {
+      display: grid;
+      grid-template-columns: 8px 1fr;
+      gap: 9px;
+      color: var(--muted);
+      font: 700 11px/1.35 var(--mono);
+    }
+
+    .feed-item i {
+      width: 8px;
+      height: 8px;
+      margin-top: 3px;
+      border-radius: 999px;
+      background: var(--c);
+      box-shadow: 0 0 12px var(--c);
+    }
+
+    .feed-item b {
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    .bottom {
+      grid-column: 1 / 4;
+      grid-row: 3;
+      display: grid;
+      grid-template-columns: 314px 1fr 290px;
+      align-items: stretch;
+      border-top: 1px solid var(--line);
+      background: rgba(6, 7, 8, 0.92);
+      backdrop-filter: blur(12px);
+    }
+
+    .filters {
+      display: flex;
+      min-width: 0;
+      overflow-x: auto;
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+    }
+
+    .filters button,
+    .tools button {
+      min-width: 104px;
+      border: 0;
+      border-right: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      font: 800 11px/1 var(--mono);
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+
+    .filters button.is-active {
+      color: var(--c);
+      background: rgba(255,255,255,0.045);
+    }
+
+    .tools {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .tools button {
+      min-width: 58px;
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      color: var(--muted);
+      font: 800 11px/1 var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .perf {
+      position: fixed;
+      right: 18px;
+      bottom: 76px;
+      z-index: 3;
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      background: rgba(6, 7, 8, 0.74);
+      color: var(--acid);
+      font: 800 10px/1 var(--mono);
+      pointer-events: none;
+    }
+
+    @keyframes ticker {
+      to { transform: translateX(-50%); }
+    }
+
+    @media (max-width: 920px) {
+      .app {
+        grid-template-columns: 1fr;
+        grid-template-rows: 56px 1fr 52px;
+      }
+
+      .topbar,
+      .bottom {
+        grid-template-columns: 1fr;
+      }
+
+      .ticker,
+      .live,
+      .right {
+        display: none;
+      }
+
+      .left {
+        position: fixed;
+        left: 12px;
+        right: 12px;
+        bottom: 64px;
+        margin: 0;
+        max-height: 30vh;
+      }
+
+      .panel-head,
+      .kpis {
+        display: none;
+      }
+
+      .rank-list {
+        display: flex;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 8px;
+      }
+
+      .rank-row {
+        min-width: 168px;
+        border: 1px solid rgba(201, 194, 182, 0.12);
+        border-bottom: 1px solid rgba(201, 194, 182, 0.12);
+      }
+
+      .bottom {
+        grid-template-columns: 1fr;
+      }
+
+      .status,
+      .tools {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- nightintel-nav-controls disabled: fast Pixi map owns its chrome. -->
+  <div id="stage" aria-label="Carte Night Intel 2D optimisee"></div>
+
+  <main class="app">
+    <header class="topbar">
+      <div class="brand"><strong>Night Intel</strong><span>2D fast map</span></div>
+      <div class="ticker"><div class="ticker-track" id="ticker"></div></div>
+      <div class="live">Pixi WebGL</div>
+    </header>
+
+    <aside class="left">
+      <div>
+        <div class="panel-head">
+          <div class="eyebrow">Ops console</div>
+          <h1>Global nightlife</h1>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><b id="kpi-cities">28</b><span>cities</span></div>
+          <div class="kpi"><b id="kpi-flows">42</b><span>flows</span></div>
+          <div class="kpi"><b id="kpi-live">97</b><span>peak</span></div>
+        </div>
+      </div>
+      <div class="rank-list" id="rank-list"></div>
+    </aside>
+
+    <aside class="right">
+      <div class="panel-head">
+        <div class="eyebrow">Selected hub</div>
+        <h2 id="panel-title">Annecy</h2>
+      </div>
+      <div class="details">
+        <div class="city-title"><strong id="city-name">Annecy</strong><span id="city-code">FR</span></div>
+        <div class="metric" id="metrics"></div>
+        <div class="feed" id="feed"></div>
+      </div>
+    </aside>
+
+    <footer class="bottom">
+      <div class="status" id="status">loading local geojson</div>
+      <div class="filters" id="filters"></div>
+      <div class="tools">
+        <button type="button" data-zoom="out" title="Zoom out">-</button>
+        <button type="button" data-zoom="in" title="Zoom in">+</button>
+        <button type="button" data-speed title="Speed">x1</button>
+      </div>
+    </footer>
+  </main>
+  <div class="perf" id="perf">-- fps</div>
+
+  <script>
+    const TYPE = {
+      SET: { label: "SET", color: 0xff2d6f, css: "#ff2d6f" },
+      TRANSIT: { label: "TRANSIT", color: 0x5bcfff, css: "#5bcfff" },
+      SOLDOUT: { label: "SOLDOUT", color: 0xc2ff3d, css: "#c2ff3d" },
+      QUEUE: { label: "QUEUE", color: 0xffb13d, css: "#ffb13d" },
+      CLOSE: { label: "CLOSE", color: 0xb47bff, css: "#b47bff" }
+    };
+
+    const CITIES = [
+      { id: "annecy", name: "Annecy", cc: "FR", lat: 45.8992, lon: 6.1294, score: 97, type: "SET", agents: 24 },
+      { id: "ibiza", name: "Ibiza", cc: "ES", lat: 38.9067, lon: 1.4206, score: 96, type: "SET", agents: 18 },
+      { id: "berlin", name: "Berlin", cc: "DE", lat: 52.52, lon: 13.405, score: 95, type: "QUEUE", agents: 14 },
+      { id: "tulum", name: "Tulum", cc: "MX", lat: 20.2114, lon: -87.4654, score: 94, type: "TRANSIT", agents: 19 },
+      { id: "dubai", name: "Dubai", cc: "AE", lat: 25.2048, lon: 55.2708, score: 93, type: "SOLDOUT", agents: 15 },
+      { id: "london", name: "London", cc: "GB", lat: 51.5072, lon: -0.1276, score: 90, type: "QUEUE", agents: 13 },
+      { id: "paris", name: "Paris", cc: "FR", lat: 48.8566, lon: 2.3522, score: 86, type: "SET", agents: 8 },
+      { id: "amsterdam", name: "Amsterdam", cc: "NL", lat: 52.3676, lon: 4.9041, score: 84, type: "CLOSE", agents: 7 },
+      { id: "milan", name: "Milan", cc: "IT", lat: 45.4642, lon: 9.19, score: 82, type: "SET", agents: 8 },
+      { id: "nyc", name: "NYC", cc: "US", lat: 40.7128, lon: -74.006, score: 81, type: "TRANSIT", agents: 7 },
+      { id: "tokyo", name: "Tokyo", cc: "JP", lat: 35.6762, lon: 139.6503, score: 79, type: "SET", agents: 10 },
+      { id: "seoul", name: "Seoul", cc: "KR", lat: 37.5665, lon: 126.978, score: 78, type: "QUEUE", agents: 6 },
+      { id: "sao-paulo", name: "Sao Paulo", cc: "BR", lat: -23.5558, lon: -46.6396, score: 77, type: "SET", agents: 11 },
+      { id: "geneva", name: "Geneva", cc: "CH", lat: 46.2044, lon: 6.1432, score: 76, type: "TRANSIT", agents: 9 },
+      { id: "lisbon", name: "Lisbon", cc: "PT", lat: 38.7223, lon: -9.1393, score: 75, type: "CLOSE", agents: 8 },
+      { id: "miami", name: "Miami", cc: "US", lat: 25.7617, lon: -80.1918, score: 74, type: "SOLDOUT", agents: 9 },
+      { id: "marrakech", name: "Marrakech", cc: "MA", lat: 31.6295, lon: -7.9811, score: 73, type: "TRANSIT", agents: 6 },
+      { id: "athens", name: "Athens", cc: "GR", lat: 37.9838, lon: 23.7275, score: 72, type: "SET", agents: 7 },
+      { id: "melbourne", name: "Melbourne", cc: "AU", lat: -37.8136, lon: 144.9631, score: 71, type: "QUEUE", agents: 5 },
+      { id: "bangkok", name: "Bangkok", cc: "TH", lat: 13.7563, lon: 100.5018, score: 70, type: "SOLDOUT", agents: 8 }
+    ];
+
+    const FLOWS = [
+      ["annecy", "ibiza", "SET"], ["annecy", "geneva", "TRANSIT"], ["ibiza", "berlin", "QUEUE"],
+      ["tulum", "ibiza", "SET"], ["dubai", "london", "SOLDOUT"], ["london", "nyc", "QUEUE"],
+      ["paris", "berlin", "SET"], ["tokyo", "seoul", "QUEUE"], ["sao-paulo", "miami", "SET"],
+      ["marrakech", "lisbon", "TRANSIT"], ["athens", "dubai", "CLOSE"], ["melbourne", "tokyo", "TRANSIT"],
+      ["amsterdam", "paris", "CLOSE"], ["nyc", "tulum", "SOLDOUT"], ["bangkok", "seoul", "QUEUE"]
+    ].map((flow, index) => ({ from: flow[0], to: flow[1], type: flow[2], id: index }));
+
+    const cityById = Object.fromEntries(CITIES.map((city) => [city.id, city]));
+    const filtersEl = document.getElementById("filters");
+    const rankListEl = document.getElementById("rank-list");
+    const metricsEl = document.getElementById("metrics");
+    const feedEl = document.getElementById("feed");
+    const statusEl = document.getElementById("status");
+    const tickerEl = document.getElementById("ticker");
+    const perfEl = document.getElementById("perf");
+
+    let activeCity = CITIES[0];
+    let activeType = "ALL";
+    let zoom = 1;
+    let speed = 1;
+    let rings = [];
+    let app;
+    let mapLayer;
+    let arcLayer;
+    let pointLayer;
+    let labelLayer;
+    let w = 0;
+    let h = 0;
+    let frames = 0;
+    let fpsStamp = performance.now();
+
+    function project(lat, lon) {
+      const mapW = Math.min(w * 0.78, 1120) * zoom;
+      const mapH = mapW * 0.48;
+      const cx = w < 920 ? w * 0.5 : w * 0.54;
+      const cy = w < 920 ? h * 0.43 : h * 0.51;
+      return {
+        x: cx + ((lon + 180) / 360 - 0.5) * mapW,
+        y: cy + ((90 - lat) / 180 - 0.5) * mapH
+      };
+    }
+
+    function hexToCss(hex) {
+      return "#" + hex.toString(16).padStart(6, "0");
+    }
+
+    function simplify(coords) {
+      const stride = coords.length > 220 ? Math.ceil(coords.length / 220) : 1;
+      return coords
+        .filter((_, index) => index % stride === 0 || index === coords.length - 1)
+        .map(([lon, lat]) => [lat, lon]);
+    }
+
+    function extractRings(geometry) {
+      if (!geometry) return [];
+      if (geometry.type === "Polygon") return geometry.coordinates.map(simplify);
+      if (geometry.type === "MultiPolygon") return geometry.coordinates.flatMap((polygon) => polygon.map(simplify));
+      return [];
+    }
+
+    async function loadGeo() {
+      const response = await fetch("/data/countries.geo.json", { cache: "force-cache" });
+      const json = await response.json();
+      rings = json.features.flatMap((feature) => extractRings(feature.geometry)).filter((ring) => ring.length > 4);
+      statusEl.textContent = `${rings.length} local geo rings`;
+    }
+
+    async function initPixi() {
+      app = new PIXI.Application();
+      await app.init({
+        resizeTo: window,
+        backgroundAlpha: 0,
+        antialias: true,
+        resolution: Math.min(window.devicePixelRatio || 1, 2),
+        autoDensity: true,
+        preference: "webgl"
+      });
+      document.getElementById("stage").appendChild(app.canvas);
+      mapLayer = new PIXI.Graphics();
+      arcLayer = new PIXI.Graphics();
+      pointLayer = new PIXI.Graphics();
+      labelLayer = new PIXI.Container();
+      app.stage.addChild(mapLayer, arcLayer, pointLayer, labelLayer);
+      app.ticker.add(tick);
+      app.canvas.addEventListener("click", onCanvasClick);
+      window.addEventListener("resize", drawStatic);
+    }
+
+    function drawStatic() {
+      w = window.innerWidth;
+      h = window.innerHeight;
+      mapLayer.clear();
+
+      const gridColor = 0x2b6d64;
+      for (let lat = -60; lat <= 75; lat += 15) {
+        let first = true;
+        for (let lon = -180; lon <= 180; lon += 4) {
+          const p = project(lat, lon);
+          if (first) { mapLayer.moveTo(p.x, p.y); first = false; } else mapLayer.lineTo(p.x, p.y);
+        }
+        mapLayer.stroke({ width: 1, color: gridColor, alpha: 0.26 });
+      }
+
+      for (let lon = -180; lon <= 180; lon += 15) {
+        let first = true;
+        for (let lat = -75; lat <= 82; lat += 3) {
+          const p = project(lat, lon);
+          if (first) { mapLayer.moveTo(p.x, p.y); first = false; } else mapLayer.lineTo(p.x, p.y);
+        }
+        mapLayer.stroke({ width: 1, color: gridColor, alpha: 0.20 });
+      }
+
+      rings.forEach((ring, ringIndex) => {
+        let first = true;
+        let previous = null;
+        ring.forEach(([lat, lon]) => {
+          const p = project(lat, lon);
+          if (!previous || Math.abs(p.x - previous.x) > w * 0.42) {
+            mapLayer.moveTo(p.x, p.y);
+            first = false;
+          } else if (first) {
+            mapLayer.moveTo(p.x, p.y);
+            first = false;
+          } else {
+            mapLayer.lineTo(p.x, p.y);
+          }
+          previous = p;
+        });
+        mapLayer.stroke({ width: 1.05, color: ringIndex % 2 ? 0x5bcfff : 0xc2ff3d, alpha: ringIndex % 2 ? 0.30 : 0.24 });
+      });
+    }
+
+    function quadratic(a, c, b, t) {
+      const mt = 1 - t;
+      return {
+        x: mt * mt * a.x + 2 * mt * t * c.x + t * t * b.x,
+        y: mt * mt * a.y + 2 * mt * t * c.y + t * t * b.y
+      };
+    }
+
+    function drawDynamic(time) {
+      arcLayer.clear();
+      pointLayer.clear();
+
+      FLOWS.forEach((flow) => {
+        if (activeType !== "ALL" && flow.type !== activeType) return;
+        const from = cityById[flow.from];
+        const to = cityById[flow.to];
+        if (!from || !to) return;
+        const a = project(from.lat, from.lon);
+        const b = project(to.lat, to.lon);
+        const c = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - Math.min(130, Math.abs(a.x - b.x) * 0.16) };
+        const meta = TYPE[flow.type];
+        arcLayer.moveTo(a.x, a.y);
+        arcLayer.quadraticCurveTo(c.x, c.y, b.x, b.y);
+        arcLayer.stroke({ width: 1.2, color: meta.color, alpha: 0.34 });
+
+        const t = (time * 0.00008 * speed + flow.id * 0.073) % 1;
+        const p = quadratic(a, c, b, t);
+        pointLayer.circle(p.x, p.y, 2.5).fill({ color: meta.color, alpha: 0.96 });
+      });
+
+      CITIES.forEach((city) => {
+        if (activeType !== "ALL" && city.type !== activeType) return;
+        const meta = TYPE[city.type];
+        const p = project(city.lat, city.lon);
+        const isActive = city === activeCity;
+        const pulse = (Math.sin(time * 0.004 + city.score) + 1) / 2;
+        pointLayer.circle(p.x, p.y, isActive ? 16 + pulse * 5 : 7 + pulse * 2).fill({ color: meta.color, alpha: isActive ? 0.20 : 0.16 });
+        pointLayer.circle(p.x, p.y, isActive ? 6 : 4).fill({ color: meta.color, alpha: 0.95 });
+      });
+    }
+
+    function tick(ticker) {
+      const time = performance.now();
+      drawDynamic(time);
+      frames += 1;
+      if (time - fpsStamp > 700) {
+        perfEl.textContent = `${Math.round(frames * 1000 / (time - fpsStamp))} fps`;
+        frames = 0;
+        fpsStamp = time;
+      }
+    }
+
+    function onCanvasClick(event) {
+      const rect = app.canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      let best = null;
+      let bestDistance = Infinity;
+      CITIES.forEach((city) => {
+        const p = project(city.lat, city.lon);
+        const d = Math.hypot(p.x - x, p.y - y);
+        if (d < bestDistance) {
+          best = city;
+          bestDistance = d;
+        }
+      });
+      if (best && bestDistance < 34) setActiveCity(best);
+    }
+
+    function setupDom() {
+      document.getElementById("kpi-cities").textContent = CITIES.length;
+      document.getElementById("kpi-flows").textContent = FLOWS.length;
+      document.getElementById("kpi-live").textContent = Math.max(...CITIES.map((city) => city.score));
+
+      const filters = [{ id: "ALL", label: "ALL", color: 0xf5f0e4, css: "#f5f0e4" }, ...Object.entries(TYPE).map(([id, meta]) => ({ id, ...meta }))];
+      filtersEl.innerHTML = filters.map((item) => `<button type="button" data-filter="${item.id}" class="${item.id === activeType ? "is-active" : ""}" style="--c:${item.css || hexToCss(item.color)}">${item.label}</button>`).join("");
+      filtersEl.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-filter]");
+        if (!button) return;
+        activeType = button.dataset.filter;
+        filtersEl.querySelectorAll("button").forEach((item) => item.classList.toggle("is-active", item === button));
+        drawStatic();
+      });
+
+      document.querySelector("[data-zoom='in']").addEventListener("click", () => {
+        zoom = Math.min(1.8, zoom + 0.12);
+        drawStatic();
+      });
+      document.querySelector("[data-zoom='out']").addEventListener("click", () => {
+        zoom = Math.max(0.72, zoom - 0.12);
+        drawStatic();
+      });
+      document.querySelector("[data-speed]").addEventListener("click", (event) => {
+        speed = speed === 1 ? 2.6 : 1;
+        event.currentTarget.textContent = speed === 1 ? "x1" : "x3";
+      });
+
+      tickerEl.innerHTML = [...CITIES, ...CITIES].map((city, index) => {
+        const meta = TYPE[city.type];
+        return `<span><b>${String(index % 9).padStart(2, "0")}:${String((city.score + index) % 60).padStart(2, "0")}</b> <i style="color:${meta.css}">${city.name}</i> ${meta.label} · ${city.agents} agents</span>`;
+      }).join("");
+      renderRank();
+      setActiveCity(activeCity);
+    }
+
+    function renderRank() {
+      rankListEl.innerHTML = CITIES
+        .slice()
+        .sort((a, b) => b.score - a.score)
+        .map((city, index) => `<div class="rank-row ${city === activeCity ? "is-active" : ""}" data-city="${city.id}">
+          <code>${String(index + 1).padStart(2, "0")}</code>
+          <div><strong>${city.name}</strong><span>${TYPE[city.type].label} · ${city.agents} agents</span></div>
+          <b class="score">${city.score}</b>
+        </div>`)
+        .join("");
+      rankListEl.querySelectorAll("[data-city]").forEach((row) => {
+        row.addEventListener("click", () => setActiveCity(cityById[row.dataset.city]));
+      });
+    }
+
+    function setActiveCity(city) {
+      activeCity = city;
+      document.getElementById("panel-title").textContent = city.name;
+      document.getElementById("city-name").textContent = city.name;
+      document.getElementById("city-code").textContent = city.cc;
+      const metrics = [
+        ["HEAT", city.score, TYPE[city.type].css],
+        ["AGENTS", city.agents * 4, "#5bcfff"],
+        ["TREND", Math.max(18, city.score - 13), "#c2ff3d"],
+        ["RISK", Math.max(8, 110 - city.score), "#ffb13d"]
+      ];
+      metricsEl.innerHTML = metrics.map(([label, value, color]) => `<div class="metric-line">
+        <span>${label}</span><span class="bar"><i style="--w:${Math.min(100, value)}%;--c:${color}"></i></span><b>${value}</b>
+      </div>`).join("");
+      feedEl.innerHTML = FLOWS
+        .filter((flow) => flow.from === city.id || flow.to === city.id)
+        .slice(0, 5)
+        .map((flow) => {
+          const other = flow.from === city.id ? cityById[flow.to] : cityById[flow.from];
+          const meta = TYPE[flow.type];
+          return `<div class="feed-item"><i style="--c:${meta.css}"></i><div><b>${meta.label}</b> ${city.name} / ${other.name}</div></div>`;
+        }).join("") || `<div class="feed-item"><i style="--c:${TYPE[city.type].css}"></i><div><b>${TYPE[city.type].label}</b> monitoring active</div></div>`;
+      renderRank();
+    }
+
+    async function start() {
+      if (window.__nightIntelFileRedirect) return;
+      setupDom();
+      await initPixi();
+      await loadGeo();
+      drawStatic();
+      window.__nightIntel2DFast = { lib: "pixi.js", cities: CITIES.length, flows: FLOWS.length, rings: () => rings.length };
+    }
+
+    start().catch((error) => {
+      statusEl.textContent = "map init failed";
+      console.error(error);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>GroceryNanny — Vérifie ta livraison en quelques secondes</title>
+  <meta name="description" content="Ajoute ta facture, photographie tes courses et GroceryNanny vérifie automatiquement ce qui manque.">
+  <meta name="theme-color" content="#0c0a0d">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="GroceryNanny — Photo + Facture → CHECK">
+  <meta property="og:description" content="La Nanny qui surveille tes courses. Découvre la V1 en mode démo.">
+  <meta property="og:image" content="https://bizc0m.github.io/GroceryNanny/assets/logo.png">
+  <meta property="og:url" content="https://bizc0m.github.io/GroceryNanny/">
+  <link rel="icon" type="image/png" href="assets/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/app.css?v=2">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#check-form" data-i18n="skip">Aller au CHECK</a>
+  <div class="app-shell">
+    <header class="header">
+      <a class="brand" href="./" aria-label="GroceryNanny"><img src="assets/logo.png" width="320" height="213" alt="GroceryNanny"><small>PHOTO + FACTURE → CHECK</small></a>
+      <label class="language"><span class="sr-only" data-i18n="language">Langue</span><select id="language"><option value="fr">FR</option><option value="en">EN</option><option value="de">DE</option><option value="it">IT</option><option value="es">ES</option><option value="pt">PT</option><option value="nl">NL</option><option value="ko">KO</option><option value="ja">JP</option></select></label>
+    </header>
+    <main>
+      <section class="intro" aria-labelledby="intro-title">
+        <p class="eyebrow"><span class="pixel-dot" aria-hidden="true"></span><span data-i18n="tagline">La Nanny qui surveille tes courses.</span></p>
+        <h1 id="intro-title"><span data-i18n="headline1">Nanny veille</span><br><span class="pink" data-i18n="headline2">au grain.</span></h1>
+        <p class="intro-copy" data-i18n="intro">Une facture. Quelques photos. Repère les écarts et prépare ta réclamation.</p>
+      </section>
+      <aside id="mode-notice" class="mode-notice"><strong id="mode-label"></strong><p id="mode-copy"></p></aside>
+      <form id="check-form">
+        <fieldset id="uploads">
+          <legend class="sr-only" data-i18n="files">Facture et photos</legend>
+          <section class="step" aria-labelledby="invoice-title">
+            <div class="step-title"><span class="step-number">01</span><h2 id="invoice-title" data-i18n="invoiceTitle">Ajouter la facture</h2><span class="step-mark" id="invoice-mark" aria-hidden="true">+</span></div>
+            <label class="upload-zone" for="invoice"><span class="upload-symbol" aria-hidden="true">↥</span><span><strong data-i18n="invoiceChoose">Choisir ma facture</strong><small data-i18n="invoiceFormats">PDF, JPG, PNG · HEIC si compatible</small></span></label>
+            <input class="sr-only file-input" type="file" id="invoice" accept=".pdf,image/*">
+            <div id="invoice-info" class="file-info" hidden><div><strong id="invoice-name"></strong><small id="invoice-size"></small></div><button type="button" class="icon-button" id="remove-invoice" data-i18n-aria="removeInvoice">×</button></div>
+          </section>
+          <section class="step" aria-labelledby="photos-title">
+            <div class="step-title"><span class="step-number">02</span><h2 id="photos-title" data-i18n="photosTitle">Photographier les courses</h2><span class="step-mark" id="photos-mark" aria-hidden="true">+</span></div>
+            <p class="photo-tip" data-i18n="photoTip">Étale les produits, étiquettes visibles. Ajoute plusieurs angles si besoin.</p>
+            <div class="photo-actions"><button type="button" class="secondary camera-button" id="camera-button"><span aria-hidden="true">⊞</span><span data-i18n="camera">Appareil photo</span></button><button type="button" class="secondary" id="gallery-button" data-i18n="gallery">Galerie</button></div>
+            <input type="file" class="sr-only" id="camera" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
+            <input type="file" class="sr-only" id="gallery" accept="image/*" multiple tabindex="-1" aria-hidden="true">
+            <ul id="thumbnails" class="thumbnails" aria-label="Photos"></ul>
+            <small id="photo-count" class="muted"></small>
+          </section>
+        </fieldset>
+        <div id="error" class="error" role="alert" hidden></div>
+        <div class="check-action"><button class="primary check-button" type="submit" id="check" disabled><span aria-hidden="true">✦</span> CHECK <span aria-hidden="true">→</span></button><p id="check-hint"></p></div>
+      </form>
+      <section id="analysis" class="analysis" hidden aria-labelledby="analysis-title" aria-busy="true">
+        <div class="section-heading"><h2 id="analysis-title" data-i18n="analysisTitle">CHECK en cours</h2><output id="elapsed" data-i18n-aria="analysisTitle">0 s</output></div>
+        <div class="progress" role="progressbar" data-i18n-aria="analysisTitle"><span></span></div>
+        <p class="muted" data-i18n="progressNote">Demande envoyée. Les étapes détaillées ne sont pas communiquées par le serveur.</p>
+        <ol class="analysis-steps"><li data-i18n="stageInvoice"></li><li data-i18n="stageRecognition"></li><li data-i18n="stageCount"></li><li data-i18n="stageCompare"></li><li data-i18n="stageVerify"></li></ol>
+        <button id="cancel" type="button" class="secondary" data-i18n="cancel">Annuler</button>
+      </section>
+      <section id="results" hidden aria-labelledby="result-title">
+        <div class="result-heading"><p class="eyebrow" id="result-mode"></p><h2 id="result-title" tabindex="-1" data-i18n="resultsTitle">Le verdict de Nanny.</h2><p id="order-info" class="muted"></p></div>
+        <p id="demo-result-note" class="demo-result-note" data-i18n="demoResultNote"></p>
+        <div class="summary-grid" id="summary"></div>
+        <div class="time-card"><div><span data-i18n="timeSaved"></span><strong id="time-saved"></strong></div><dl><div><dt data-i18n="manualTime"></dt><dd id="manual-time"></dd></div><div><dt>GroceryNanny</dt><dd id="check-time"></dd></div></dl><small data-i18n="manualFormula"></small></div>
+        <div class="section-heading"><h3 data-i18n="detailsTitle"></h3><span id="reference-count" class="muted"></span></div>
+        <div class="table-scroll" tabindex="0" data-i18n-aria="detailsTitle"><table><thead><tr><th data-i18n="product"></th><th data-i18n="expected"></th><th data-i18n="seen"></th><th data-i18n="status"></th><th data-i18n="difference"></th></tr></thead><tbody id="products"></tbody></table></div>
+        <button type="button" id="generate-claim" class="primary claim-button" data-i18n="generateClaim" hidden></button>
+        <section id="claim-section" class="claim-section" hidden><label for="claim" data-i18n="claimTitle"></label><textarea id="claim" rows="12"></textarea><p class="muted" data-i18n="claimNote"></p><div class="photo-actions"><button type="button" class="secondary" id="copy" data-i18n="copy"></button><button type="button" class="secondary" id="download" data-i18n="download"></button></div></section>
+        <button type="button" class="text-button" id="new-check" data-i18n="newCheck"></button>
+      </section>
+      <section class="proof"><span aria-hidden="true">▧</span><div><h2>Proof Mode</h2><p data-i18n="proofSoon"></p></div><span class="small-tag" data-i18n="soon"></span></section>
+      <details class="plans"><summary data-i18n="plansTitle"></summary><div class="plan-content"><h3 data-i18n="free"></h3><p data-i18n="freeFeatures"></p><h3 data-i18n="premiumFuture"></h3><p data-i18n="premiumFeatures"></p><div id="pricing"></div><small data-i18n="pricingNote"></small></div></details>
+      <a id="support" class="secondary support" hidden target="_blank" rel="noopener noreferrer" data-i18n="support"></a>
+    </main>
+    <footer><span>GroceryNanny <span class="pink">✦</span> V1</span><span data-i18n="footer"></span></footer>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  </div>
+  <noscript>GroceryNanny nécessite JavaScript / requires JavaScript.</noscript>
+</body>
+</html>

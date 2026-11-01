@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANNECY NIGHTLIFE — Bars & Boîtes</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f5f3ef;
+  --surface:#ffffff;
+  --border:#e2ddd6;
+  --border2:#c8c2b8;
+  --text:#1a1814;
+  --muted:#6b6560;
+  --dim:#9c9690;
+  --gold:#8b6914;
+  --gold-bg:#fdf6e3;
+  --gold-bdr:#d4a929;
+  --red:#b83225;
+  --red-bg:#fdf0ee;
+  --blue:#1a4a7a;
+  --blue-bg:#eef3fa;
+  --green:#1a6b3c;
+  --green-bg:#eef7f2;
+  --purple:#6b3fa0;
+  --purple-bg:#f4eefa;
+  --teal:#1a6b6b;
+  --teal-bg:#eaf5f5;
+}
+html{font-size:14px}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace;font-weight:300;min-height:100vh}
+
+header{background:var(--surface);border-bottom:2px solid var(--text);padding:0 28px;display:flex;align-items:center;height:60px;gap:20px;position:sticky;top:0;z-index:200;flex-wrap:wrap}
+.logo{font-family:'Bebas Neue',cursive;font-size:26px;letter-spacing:5px;color:var(--text);display:flex;align-items:center;gap:9px}
+.logo .sub{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);font-weight:500;margin-left:6px}
+.pip{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hsep{flex:1}
+#count-badge{font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase}
+#count-badge b{font-family:'Bebas Neue',cursive;font-size:16px;color:var(--text);letter-spacing:1px}
+
+.toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;position:sticky;top:60px;z-index:199}
+#search{flex:1;min-width:200px;background:var(--bg);border:1px solid var(--border2);padding:9px 12px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text)}
+#search:focus{outline:none;border-color:var(--gold)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:8px 12px;border:1px solid var(--border);cursor:pointer;white-space:nowrap;transition:all .15s;user-select:none;font-weight:500;background:var(--surface)}
+.tab:hover{border-color:var(--border2);color:var(--text)}
+.tab.on{color:#fff;border-color:transparent}
+.tab.on[data-type="all"]{background:var(--text)}
+.tab.on[data-type="club"]{background:var(--red)}
+.tab.on[data-type="cocktail"]{background:var(--gold)}
+.tab.on[data-type="bar"]{background:var(--purple)}
+.tab.on[data-type="pub"]{background:var(--blue)}
+.tab.on[data-type="beer"]{background:var(--green)}
+.tab.on[data-type="lake"]{background:var(--teal)}
+
+main{padding:24px 28px 60px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--border);padding:16px;display:flex;flex-direction:column;gap:8px;transition:border-color .15s,transform .1s}
+.card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.card-name{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--text);line-height:1.25}
+.badge{font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:4px 8px;border-radius:2px;white-space:nowrap;font-weight:500;flex-shrink:0}
+.badge.club{background:var(--red-bg);color:var(--red)}
+.badge.cocktail{background:var(--gold-bg);color:var(--gold)}
+.badge.bar{background:var(--purple-bg);color:var(--purple)}
+.badge.pub{background:var(--blue-bg);color:var(--blue)}
+.badge.beer{background:var(--green-bg);color:var(--green)}
+.badge.lake{background:var(--teal-bg);color:var(--teal)}
+.card-addr{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.card-addr a{color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--border2)}
+.card-addr a:hover{color:var(--gold);border-color:var(--gold)}
+.card-desc{font-size:11.5px;color:var(--text);line-height:1.5;opacity:.85}
+.card-hours{font-size:10px;color:var(--dim);letter-spacing:.5px;margin-top:2px;border-top:1px solid var(--border);padding-top:8px}
+
+.empty{display:none;text-align:center;padding:60px 20px;color:var(--muted);font-size:12px;letter-spacing:1px}
+
+footer{padding:20px 28px 40px;font-size:10px;color:var(--dim);line-height:1.8;border-top:1px solid var(--border);margin-top:20px}
+footer b{color:var(--muted)}
+
+@media(max-width:640px){
+  header{height:auto;padding:12px 16px}
+  .toolbar{padding:12px 16px;position:static}
+  main{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="pip"></span>ANNECY NIGHTLIFE<span class="sub">BARS &amp; BOÎTES</span></div>
+  <div class="hsep"></div>
+  <div id="count-badge"><b id="count-num">0</b> ÉTABLISSEMENTS</div>
+</header>
+
+<div class="toolbar">
+  <input id="search" type="text" placeholder="Rechercher un nom, une rue, un quartier…">
+  <div class="tabs" id="tabs"></div>
+</div>
+
+<main>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty">Aucun établissement ne correspond à cette recherche.</div>
+</main>
+
+<footer>
+  <div><b>Données :</b> compilées à partir de sources publiques (offices de tourisme, guides locaux, annuaires), puis chaque établissement vérifié individuellement sur Google Maps le 13/07/2026 (statut, adresse, avis récents). Un établissement initialement listé (Happy People) a été retiré car marqué définitivement fermé. Liste non exhaustive : horaires et statut peuvent changer, à reconfirmer avant de vous déplacer.</div>
+</footer>
+
+<script>
+const TYPES = {
+  all:{label:'Tous'},
+  club:{label:'Boîtes de nuit'},
+  cocktail:{label:'Bars à cocktails'},
+  bar:{label:'Bars & lounges'},
+  pub:{label:'Pubs'},
+  beer:{label:'Bars à bière'},
+  lake:{label:'Bord de lac'}
+};
+
+const VENUES = [
+  {name:"Le Pop — Night Club",type:"club",addr:"30 avenue d'Albigny, Annecy",desc:"La boîte de nuit historique d'Annecy, au sein du complexe Le Pop (plage privée Pop Plage, restaurant Popine), vue imprenable sur le lac.",hours:"Ouvert en saison estivale"},
+  {name:"Le Garage",type:"club",addr:"36 rue Sommeiller, Annecy",desc:"400 m² en plein centre : mainstream jusqu'à 2h puis bascule vers des sons électro.",hours:""},
+  {name:"Téléphone Rose",type:"club",addr:"8 faubourg des Annonciades, Annecy",desc:"Deux salles, deux ambiances, DJ résidents et invités, en plein centre piéton.",hours:""},
+  {name:"Le Bowl",type:"club",addr:"9 boulevard du Fier, Annecy",desc:"Restaurant et bowling le jour, club électro le soir avec soirées à thème.",hours:""},
+  {name:"Le Duo",type:"club",addr:"104 avenue de Genève, Annecy",desc:"Piano-bar karaoké atypique, lumières tamisées et cocktails, près du Parc des Sports.",hours:"Jeu–lun · 19h–1h"},
+  {name:"Le 24 du Faubourg",type:"club",addr:"24 faubourg Sainte-Claire, Annecy",desc:"Discothèque avec programmation hebdomadaire de soirées clubbing.",hours:""},
+
+  {name:"Le Society",type:"cocktail",addr:"4 rue Vaugelas, Annecy",desc:"Bar caché à l'ambiance tamisée et élégante, cocktails soignés.",hours:"Mar–sam · soirée"},
+  {name:"Le Shelter Bar",type:"cocktail",addr:"6 rue Vaugelas, Annecy",desc:"Cocktails de caractère près de Bonlieu, soirées DJ techno.",hours:""},
+  {name:"La Queue du Coq",type:"cocktail",addr:"10 rue Vaugelas, Annecy",desc:"Petit bar à cocktails intimiste, décor vintage inspiré de la Prohibition.",hours:"Mar–sam · 18h–1h"},
+  {name:"El Pueblo",type:"cocktail",addr:"33 rue Sommeiller, Annecy",desc:"Ambiance latine, cocktails tropicaux et déco bois, tapas conviviales.",hours:"Dim–mer 18h–23h · jeu–sam 18h–1h"},
+
+  {name:"Le Barberousse",type:"bar",addr:"32 rue des Marquisats, Annecy",desc:"Bar dansant sur le thème des pirates : lumières tamisées, sable au sol, spécialiste du rhum.",hours:""},
+  {name:"Woodstock Garden",type:"bar",addr:"32 avenue de Loverchy, Annecy",desc:"Bar caché à la sortie de la vieille ville, ambiance hippie chic, burgers et terrasse en palettes.",hours:"16h–22h · fermé oct.–avril"},
+  {name:"Café des Arts",type:"bar",addr:"4 passage de l'Isle, Annecy",desc:"Jeux de société, lecture, ambiance détendue autour d'un café ou d'une bière.",hours:""},
+  {name:"Café de la Poste",type:"bar",addr:"11 rue Royale, Annecy",desc:"Bar rock au cœur de la vieille ville.",hours:""},
+  {name:"Bistro des Tilleuls",type:"bar",addr:"13 chemin de la Prairie, Annecy",desc:"Bistrot de quartier convivial, terrain de pétanque.",hours:""},
+  {name:"Le Ouistiti à Roulettes",type:"bar",addr:"31 rue Sommeiller, Annecy",desc:"Bières et vins locaux et artisanaux, ambiance décontractée.",hours:"Lun–sam · 17h30–1h"},
+  {name:"La Buvette du Marché",type:"bar",addr:"20 rue Sainte-Claire, Annecy",desc:"Adresse incontournable de la vieille ville, terrasse chaleureuse prisée des locaux et touristes.",hours:""},
+  {name:"L'Amnésie",type:"bar",addr:"37 avenue des Barattes, Annecy",desc:"Brasserie le midi, bar d'ambiance festif le soir : blind-tests, karaoké, DJ sets et cocktails.",hours:""},
+
+  {name:"Finn Kelly's Irish Pub",type:"pub",addr:"10 faubourg des Annonciades, Annecy",desc:"Pub irlandais, grand choix de bières, sport, fléchettes et baby-foot.",hours:"Dim–jeu 16h30–1h30 · ven–sam 16h30–2h30"},
+  {name:"The Craic",type:"pub",addr:"1 place Marie Curie / 1 avenue Berthollet, Annecy",desc:"Pétanque, frites maison, ouvert toute la journée.",hours:"Tous les jours · 7h–23h30"},
+  {name:"Captain Pub",type:"pub",addr:"11 rue du Pont Morens, Annecy",desc:"Pub irlandais en vieille ville.",hours:""},
+
+  {name:"Beer O'Clock",type:"beer",addr:"18 faubourg Sainte-Claire, Annecy",desc:"Bar de dégustation dédié aux bières artisanales, large sélection de brasseries.",hours:""},
+  {name:"ALPY Bières",type:"beer",addr:"50 chemin de la Croix, Annecy",desc:"Cave à bières avec plus de 500 références.",hours:"Mar–mer 17h–22h · jeu–ven 17h–1h · sam 17h–minuit"},
+
+  {name:"L'Oasis",type:"lake",addr:"525 route d'Albertville, Sévrier",desc:"Guinguette plage au bord du lac, ambiance estivale.",hours:"Saisonnier"},
+  {name:"La Bodega",type:"lake",addr:"525 route d'Albertville, Sévrier",desc:"Bar de plage avec barbecue, au bord du lac.",hours:"Saisonnier"},
+  {name:"La Guinguette des Cassines",type:"lake",addr:"228 route du Ponton, Talloires-Montmin",desc:"Vue à couper le souffle sur le lac, guinguette d'été.",hours:"7j/7 juil.–août · mer–dim mai/juin/sept · 12h–23h"}
+];
+
+let activeType = 'all';
+let query = '';
+
+function mapsUrl(addr){ return 'https://www.google.com/maps/search/' + encodeURIComponent(addr); }
+
+function renderTabs(){
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML = Object.keys(TYPES).map(t=>{
+    const n = t==='all' ? VENUES.length : VENUES.filter(v=>v.type===t).length;
+    return `<div class="tab ${t===activeType?'on':''}" data-type="${t}">${TYPES[t].label} (${n})</div>`;
+  }).join('');
+  tabsEl.querySelectorAll('.tab').forEach(el=>{
+    el.addEventListener('click',()=>{ activeType = el.dataset.type; renderTabs(); renderGrid(); });
+  });
+}
+
+function renderGrid(){
+  const q = query.trim().toLowerCase();
+  const list = VENUES.filter(v=>{
+    if(activeType!=='all' && v.type!==activeType) return false;
+    if(q && !(v.name.toLowerCase().includes(q) || v.addr.toLowerCase().includes(q))) return false;
+    return true;
+  });
+  document.getElementById('count-num').textContent = list.length;
+  const grid = document.getElementById('grid');
+  document.getElementById('empty').style.display = list.length ? 'none' : 'block';
+  grid.innerHTML = list.map(v=>`
+    <div class="card">
+      <div class="card-top">
+        <div class="card-name">${v.name}</div>
+        <div class="badge ${v.type}">${TYPES[v.type].label.replace(/s$/,'')}</div>
+      </div>
+      <div class="card-addr">📍 <a href="${mapsUrl(v.addr)}" target="_blank" rel="noopener">${v.addr}</a></div>
+      <div class="card-desc">${v.desc}</div>
+      ${v.hours ? `<div class="card-hours">${v.hours}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+document.getElementById('search').addEventListener('input', e=>{ query = e.target.value; renderGrid(); });
+
+renderTabs();
+renderGrid();
+</script>
+</body>
+</html>

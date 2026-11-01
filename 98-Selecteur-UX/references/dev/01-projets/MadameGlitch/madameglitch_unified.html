@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MadameGlitch — UNIFIED</title>
+  <style>
+    :root {
+      --bg: #07070a; --panel: #0f0f14; --panel-2: #16161f; --panel-3: #1e1e2a; --border: #2e2e3f;
+      --fg: #f0f0f8; --muted: #6b6b82; --accent: #ff2a6d; --accent-2: #05d9e8;
+      --ok: #00ff9d; --warn: #ffd700; --font: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; overflow: hidden; background: var(--bg); color: var(--fg); font-family: var(--font); height: 100vh; display: flex; }
+
+    /* LAYOUT */
+    #sidebar { width: 360px; background: linear-gradient(180deg, var(--panel) 0%, #0a0a0f 100%); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 10; box-shadow: 4px 0 24px rgba(0,0,0,0.4); }
+    #main { flex: 1; position: relative; background: #000; }
+    #canvas-container { position: absolute; inset: 0; }
+
+    /* HEADER */
+    #header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); }
+    #header h1 { font-size: 18px; color: var(--fg); margin: 0; font-weight: 800; letter-spacing: -0.5px; }
+    #header h1 span { color: var(--accent); text-shadow: 0 0 18px rgba(255,42,109,0.5); }
+    #header .subtitle { font-size: 10px; color: var(--muted); margin-top: 4px; letter-spacing: 0.5px; }
+
+    /* TABS */
+    #tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--panel-2); padding: 0 10px; }
+    .tab { flex: 1; padding: 12px 4px; font-size: 10px; text-align: center; cursor: pointer; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 2px solid transparent; transition: all 0.2s; font-weight: 600; }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(255,42,109,0.06); }
+    .tab:hover { color: var(--fg); }
+
+    /* PANELS */
+    .panel { flex: 1; overflow-y: auto; padding: 16px; display: none; }
+    .panel.active { display: block; }
+
+    /* CONTROLS */
+    .section { margin-bottom: 16px; padding: 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel-2); box-shadow: 0 4px 16px rgba(0,0,0,0.25); transition: border-color 0.2s; }
+    .section:hover { border-color: #3a3a50; }
+    .section h3 { margin: 0 0 12px 0; font-size: 10px; color: var(--accent); text-transform: uppercase; letter-spacing: 1.2px; font-weight: 700; }
+    button, input, select, textarea {
+      width: 100%; background: var(--panel-3); color: var(--fg); border: 1px solid var(--border);
+      border-radius: 6px; padding: 8px 10px; font-family: inherit; font-size: 11px; margin: 4px 0; cursor: pointer;
+      transition: all 0.15s;
+    }
+    button:hover { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 0 12px rgba(255,42,109,0.35); }
+    button.primary { background: linear-gradient(135deg, var(--accent), #ff5a8d); color: #000; border: none; font-weight: 700; }
+    button.primary:hover { box-shadow: 0 0 18px rgba(255,42,109,0.5); }
+    button.accent2 { border-color: var(--accent-2); color: var(--accent-2); background: rgba(5,217,232,0.05); }
+    button.accent2:hover { background: var(--accent-2); color: #000; box-shadow: 0 0 12px rgba(5,217,232,0.35); }
+    .row { display: flex; gap: 8px; }
+    .row > * { flex: 1; }
+    label { font-size: 9px; color: var(--muted); display: block; margin: 6px 0 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+    input[type="range"] { padding: 0; margin: 6px 0; accent-color: var(--accent); }
+    textarea { height: 100px; resize: vertical; font-size: 11px; tab-size: 2; line-height: 1.4; }
+    select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b6b82'%3E%3Cpath d='M6 9L1 4h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+
+    /* LAYERS */
+    .layer-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; margin: 6px 0; background: var(--panel-3); transition: all 0.15s; }
+    .layer-item:hover { border-color: #404055; }
+    .layer-item span { flex: 1; font-size: 11px; font-weight: 500; }
+    .layer-item button { width: auto; margin: 0; padding: 4px 10px; font-size: 10px; }
+    .layer-item.off { opacity: 0.35; }
+
+    /* TIMELINE */
+    #timeline { height: 44px; background: var(--panel-3); border: 1px solid var(--border); border-radius: 6px; position: relative; margin: 10px 0; overflow: hidden; }
+    #playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); left: 0%; box-shadow: 0 0 8px var(--accent); }
+    .kf { position: absolute; top: 16px; width: 6px; height: 6px; background: var(--accent-2); border-radius: 50%; transform: translateX(-50%); box-shadow: 0 0 6px var(--accent-2); }
+
+    /* STATUS */
+    #status-bar { padding: 10px 16px; border-top: 1px solid var(--border); font-size: 10px; color: var(--muted); background: var(--panel); letter-spacing: 0.5px; }
+
+    /* RACK PRO */
+    .rackpro-palette { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; max-height: 140px; overflow-y: auto; }
+    .rackpro-nodebtn { padding: 7px 2px; font-size: 8px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px; }
+    #rackpro-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+    .rackpro-slot { aspect-ratio: 1; background: var(--panel-3); border: 1px dashed var(--border); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 8px; color: var(--muted); cursor: pointer; position: relative; transition: all 0.15s; }
+    .rackpro-slot:hover { border-color: #505065; }
+    .rackpro-slot.filled { border-style: solid; border-color: var(--accent-2); color: var(--fg); background: rgba(5,217,232,0.08); box-shadow: 0 0 12px rgba(5,217,232,0.1); }
+    .rackpro-slot .io { display: flex; gap: 3px; margin-top: 4px; }
+    .rackpro-slot .dot { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--border); }
+    .rackpro-slot .dot.out { background: var(--accent); box-shadow: 0 0 4px var(--accent); }
+    .rackpro-slot .dot.in { background: var(--accent-2); box-shadow: 0 0 4px var(--accent-2); }
+    #rackpro-cables { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+
+    /* CODERSFX */
+    .codersfx-editor { display: none; flex-direction: column; gap: 6px; }
+    .codersfx-editor.active { display: flex; }
+    .editor-tabs { display: flex; gap: 6px; }
+    .editor-tab { flex: 1; padding: 7px; font-size: 10px; text-align: center; cursor: pointer; border: 1px solid var(--border); border-radius: 5px; transition: all 0.15s; }
+    .editor-tab.active { border-color: var(--accent); color: var(--accent); background: rgba(255,42,109,0.06); }
+
+    /* OVERLAY */
+    #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); display: none; align-items: center; justify-content: center; z-index: 100; flex-direction: column; backdrop-filter: blur(4px); }
+    #overlay.active { display: flex; }
+    #overlay h2 { color: var(--accent); font-size: 28px; margin-bottom: 8px; }
+    #overlay p { color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div id="sidebar">
+    <div id="header">
+      <h1>🎛️ MadameGlitch <span>UNIFIED</span></h1>
+      <div class="subtitle">Layer + Rack + CodersFX en un seul fichier</div>
+    </div>
+    <div id="tabs">
+      <div class="tab active" data-tab="layers">Layers</div>
+      <div class="tab" data-tab="live">Live</div>
+      <div class="tab" data-tab="scene">Scene</div>
+      <div class="tab" data-tab="learn">Learn</div>
+      <div class="tab" data-tab="rules">Rules</div>
+      <div class="tab" data-tab="codersfx">CodersFX</div>
+      <div class="tab" data-tab="rack">Rack Pro</div>
+      <div class="tab" data-tab="export">Export</div>
+    </div>
+
+    <!-- PANEL LAYERS -->
+    <div class="panel active" data-panel="layers">
+      <div class="section">
+        <h3>Transport</h3>
+        <div class="row"><button id="playPause" class="primary">⏸ Pause</button><button id="rewind">⏮ 0s</button></div>
+        <div>Time: <span id="timeDisplay">0.0</span>s / 60s</div>
+        <div id="timeline"><div id="playhead"></div></div>
+      </div>
+      <div class="section">
+        <h3>Audio</h3>
+        <button id="toggleMic">🎤 Micro ON</button>
+        <input type="file" id="audioFile" accept="audio/*" />
+        <div id="audioInfo" style="font-size:10px;color:var(--muted);margin-top:4px">BPM: -- | B: -- | M: -- | T: --</div>
+      </div>
+      <div class="section">
+        <h3>Ajouter un layer</h3>
+        <div class="row">
+          <select id="layerType">
+            <option value="plasma">Plasma</option>
+            <option value="tunnel">Tunnel</option>
+            <option value="glitch">Glitch</option>
+            <option value="starfield">Starfield</option>
+            <option value="rotozoomer">Rotozoomer</option>
+            <option value="copper">Copper Bars</option>
+            <option value="sine">Sine Scroller</option>
+            <option value="matrix">Digital Rain</option>
+            <option value="ansi">ANSI Motion</option>
+            <option value="codersfx">CodersFX Scene</option>
+          </select>
+          <button id="addLayer">+</button>
+        </div>
+        <div id="layersList"></div>
+      </div>
+      <div class="section">
+        <h3>Post-FX</h3>
+        <label><input type="checkbox" id="crtToggle" checked /> CRT Scanlines</label>
+        <label><input type="checkbox" id="bloomToggle" /> Bloom</label>
+      </div>
+      <div class="section">
+        <h3>Network</h3>
+        <div class="row"><button id="toggleMidi">MIDI OFF</button><button id="toggleWs">WS OFF</button></div>
+      </div>
+    </div>
+
+    <!-- PANEL LIVE -->
+    <div class="panel" data-panel="live">
+      <div class="section">
+        <h3>Camera / Screen</h3>
+        <div class="row">
+          <button id="btnCam" class="primary">📹 Camera ON</button>
+          <button id="btnScreen">🖥 Screen Share</button>
+        </div>
+        <video id="liveVideo" autoplay playsinline muted style="width:100%;margin-top:6px;border:1px solid var(--border);display:none"></video>
+      </div>
+      <div class="section">
+        <h3>Camera FX</h3>
+        <select id="camFx">
+          <option value="normal">Normal</option>
+          <option value="plasma">Plasma Overlay</option>
+          <option value="glitch">Glitch</option>
+          <option value="matrix">Matrix</option>
+          <option value="crt">CRT Only</option>
+        </select>
+        <button id="btnAddCamLayer">+ Add Camera Layer</button>
+      </div>
+      <div class="section">
+        <h3>Live Export</h3>
+        <button id="btnLiveRecord" class="accent2">⏺ Record WebM</button>
+      </div>
+      <div class="section">
+        <h3>Peer Stream (V7)</h3>
+        <input type="text" id="peerId" placeholder="Room ID (ex: MADAME2026)" />
+        <div class="row">
+          <button id="btnHost">📡 Host</button>
+          <button id="btnJoin">🔌 Join</button>
+        </div>
+        <div id="peerStatus" style="font-size:10px;color:var(--muted);margin-top:4px">PeerJS: offline</div>
+        <div id="peerGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px"></div>
+      </div>
+      <div class="section">
+        <h3>Motion Detection (V11)</h3>
+        <button id="btnMotion">👁 Motion OFF</button>
+        <div id="motionVal" style="font-size:10px;color:var(--muted);margin-top:4px">Motion: 0%</div>
+      </div>
+    </div>
+
+    <!-- PANEL SCENE VJ -->
+    <div class="panel" data-panel="scene">
+      <div class="section">
+        <h3>GenCode Room (V9)</h3>
+        <input type="text" id="sceneRoomId" placeholder="Room ID" value="MADAME2026" />
+        <input type="text" id="sceneUserName" placeholder="Your name" value="VJ" />
+        <div class="row">
+          <button id="btnSceneHost" class="primary">Host Scene</button>
+          <button id="btnSceneJoin">Join Scene</button>
+        </div>
+        <div id="sceneStatus" style="font-size:10px;color:var(--muted);margin-top:4px">Offline</div>
+      </div>
+      <div class="section">
+        <h3>Broadcast Scene</h3>
+        <button id="btnSceneBroadcast">📡 Send Current Layers</button>
+      </div>
+      <div class="section">
+        <h3>Vote</h3>
+        <div class="row">
+          <button id="btnVotePlasma">🔥 Plasma</button>
+          <button id="btnVoteGlitch">💥 Glitch</button>
+          <button id="btnVoteMatrix">🌧 Matrix</button>
+        </div>
+        <div id="voteResults" style="font-size:10px;color:var(--muted);margin-top:6px"></div>
+      </div>
+      <div class="section">
+        <h3>Chat</h3>
+        <div id="sceneChat" style="height:80px;overflow-y:auto;border:1px solid var(--border);border-radius:4px;padding:6px;font-size:10px;color:var(--muted);background:var(--panel-3)"></div>
+        <div class="row" style="margin-top:6px">
+          <input type="text" id="sceneChatInput" placeholder="Message..." style="flex:3" />
+          <button id="btnSceneChat" style="flex:1">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL LEARN -->
+    <div class="panel" data-panel="learn">
+      <div class="section">
+        <h3>Tutorial — Plasma</h3>
+        <p style="font-size:10px;color:var(--muted);line-height:1.5">Le plasma est un motif coloré généré par la somme de sinusoïdes. Chaque canal RGB utilise une fréquence légèrement différente pour créer des motifs tourbillonnants.</p>
+        <button id="btnLearnPlasma">▶ Load Plasma Demo</button>
+      </div>
+      <div class="section">
+        <h3>Tutorial — Sine Scroller</h3>
+        <p style="font-size:10px;color:var(--muted);line-height:1.5">Un texte défile horizontalement tandis que sa position Y est modulée par une sinusoïde. Classique des démos Amiga.</p>
+        <button id="btnLearnSine">▶ Load Sine Scroller Demo</button>
+      </div>
+      <div class="section">
+        <h3>Tutorial — Tunnel</h3>
+        <p style="font-size:10px;color:var(--muted);line-height:1.5">Un tunnel est créé en projetant une texture sur des coordonnées polaires qui s'éloignent du centre.</p>
+        <button id="btnLearnTunnel">▶ Load Tunnel Demo</button>
+      </div>
+    </div>
+
+    <!-- PANEL RULES -->
+    <div class="panel" data-panel="rules">
+      <div class="section">
+        <h3>Custom Rules (JSON Vampir)</h3>
+        <textarea id="rulesJson" spellcheck="false">{
+  "bpm": 128,
+  "transitions": ["hard-cut", "flash-white"],
+  "audioReactivity": {
+    "bass": { "target": "layer-plasma", "param": "speed", "min": 0.5, "max": 2.0 },
+    "treble": { "target": "layer-glitch", "param": "intensity", "min": 0.3, "max": 1.0 }
+  }
+}</textarea>
+        <button id="btnRulesApply">Apply Rules</button>
+        <div id="rulesStatus" style="font-size:10px;color:var(--muted);margin-top:4px">Rules inactive</div>
+      </div>
+    </div>
+
+    <!-- PANEL CODERSFX -->
+    <div class="panel" data-panel="codersfx">
+      <div class="section">
+        <h3>Scène custom</h3>
+        <div class="editor-tabs">
+          <div class="editor-tab active" data-etab="html">HTML</div>
+          <div class="editor-tab" data-etab="css">CSS</div>
+          <div class="editor-tab" data-etab="js">JS</div>
+        </div>
+        <textarea id="cf-html" style="display:block"></textarea>
+        <textarea id="cf-css" style="display:none"></textarea>
+        <textarea id="cf-js" style="display:none"></textarea>
+        <div class="row">
+          <button id="cf-run" class="primary">▶ Run</button>
+          <button id="cf-template" class="accent2">⚡ Cracktro</button>
+        </div>
+      </div>
+      <div class="section">
+        <h3>Templates</h3>
+        <div class="row">
+          <button class="cf-tpl" data-tpl="cracktro">Cracktro</button>
+          <button class="cf-tpl" data-tpl="intro">Intro</button>
+          <button class="cf-tpl" data-tpl="demo">Demo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL RACK PRO -->
+    <div class="panel" data-panel="rack">
+      <div class="section" style="position:relative">
+        <h3>Node Palette</h3>
+        <div class="rackpro-palette" id="rackproPalette">
+          <button class="rackpro-nodebtn" data-node="deck">Deck</button>
+          <button class="rackpro-nodebtn" data-node="plasma">Plasma</button>
+          <button class="rackpro-nodebtn" data-node="tunnel">Tunnel</button>
+          <button class="rackpro-nodebtn" data-node="glitch">Glitch</button>
+          <button class="rackpro-nodebtn" data-node="starfield">Starfield</button>
+          <button class="rackpro-nodebtn" data-node="rotozoomer">Roto</button>
+          <button class="rackpro-nodebtn" data-node="copper">Copper</button>
+          <button class="rackpro-nodebtn" data-node="sine-scroller">Sine</button>
+          <button class="rackpro-nodebtn" data-node="matrix">Matrix</button>
+          <button class="rackpro-nodebtn" data-node="ansi">ANSI</button>
+          <button class="rackpro-nodebtn" data-node="mixer">Mixer</button>
+          <button class="rackpro-nodebtn" data-node="fx">FX</button>
+          <button class="rackpro-nodebtn" data-node="timeline">Timeline</button>
+          <button class="rackpro-nodebtn" data-node="shader">Shader</button>
+          <button class="rackpro-nodebtn" data-node="midi">MIDI</button>
+          <button class="rackpro-nodebtn" data-node="websocket">WebSocket</button>
+          <button class="rackpro-nodebtn" data-node="templates">Template</button>
+          <button class="rackpro-nodebtn" data-node="output">Output</button>
+        </div>
+        <h3 style="margin-top:10px">Rack 4×4</h3>
+        <p style="font-size:9px;color:var(--muted);margin:0 0 4px">Click a palette node to add. Click a filled slot to remove. Outputs (pink) connect to inputs (cyan) visually.</p>
+        <div id="rackpro-grid"></div>
+        <svg id="rackpro-cables"></svg>
+        <div class="row" style="margin-top:8px">
+          <button id="rackproSave">Save Rack</button>
+          <button id="rackproLoad">Load Rack</button>
+          <button id="rackproClear">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL EXPORT -->
+    <div class="panel" data-panel="export">
+      <div class="section">
+        <h3>Export</h3>
+        <button id="exportMp4" class="primary">📹 Export MP4/WebM</button>
+        <button id="exportHtml">⬇ Export HTML standalone</button>
+        <button id="exportJson">⬇ Export JSON preset</button>
+        <input type="file" id="importJson" accept=".json" />
+      </div>
+      <div class="section">
+        <h3>Presets rapides</h3>
+        <div class="row">
+          <button id="presetDemo">Demo Base</button>
+          <button id="presetCyber">Cyber Storm</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="status-bar">FPS: <span id="fps">0</span> | Layers: <span id="layerCount">0</span></div>
+  </div>
+
+  <div id="main">
+    <div id="canvas-container"></div>
+  </div>
+
+  <div id="overlay">
+    <h2>MadameGlitch UNIFIED</h2>
+    <p>Cliquez n'importe où pour commencer</p>
+  </div>
+
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script>
+    (async function() {
+      const THREE = await import('./assets/three.module.js');
+      window.THREE = THREE;
+
+      // ============================================================
+      // MADAMEGLITCH UNIFIED
+      // Une seule application : layers + CodersFX + Rack.
+      // ============================================================
+
+      const DURATION = 60;
+    let currentTime = 0, isPlaying = true, lastFrameTime = performance.now();
+    let audioContext, analyser, dataArray, micStream, audioSource, audioEnabled = false;
+    let bpm = 0, lastPeakTime = 0, peakCount = 0, firstPeakTime = 0;
+    let midiEnabled = false, ws = null, wsEnabled = false;
+
+    // --- AUDIO ---
+    async function initMicrophone() {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioContext.createAnalyser(); analyser.fftSize = 2048; dataArray = new Uint8Array(analyser.frequencyBinCount);
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioContext.createMediaStreamSource(micStream).connect(analyser);
+    }
+    async function loadAudioFile(file) {
+      if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      if (!analyser) { analyser = audioContext.createAnalyser(); analyser.fftSize = 2048; dataArray = new Uint8Array(analyser.frequencyBinCount); }
+      if (audioSource) { audioSource.stop?.(); audioSource.disconnect(); }
+      const buf = await audioContext.decodeAudioData(await (await fetch(URL.createObjectURL(file))).arrayBuffer());
+      audioSource = audioContext.createBufferSource(); audioSource.buffer = buf;
+      audioSource.connect(analyser); analyser.connect(audioContext.destination); audioSource.start(0); audioEnabled = true;
+    }
+    function getAudioData() { if (!analyser) return null; analyser.getByteFrequencyData(dataArray); return dataArray; }
+    function getBand(s, e) { const d = getAudioData(); if (!d) return 0; let sum = 0; for (let i = s; i < e; i++) sum += d[i]; return sum / (e - s) / 255; }
+    const getBass = () => getBand(0, 10), getMid = () => getBand(50, 200), getTreble = () => getBand(200, 500);
+    function detectBPM(bass) { const thr = 0.75, now = performance.now(); if (bass > thr && now - lastPeakTime > 300) { if (!peakCount) firstPeakTime = now; peakCount++; lastPeakTime = now; if (peakCount >= 4) { bpm = Math.round(60000 / ((now - firstPeakTime) / (peakCount - 1))); peakCount = 0; } } return bpm; }
+    function stopAudio() { if (micStream) micStream.getTracks().forEach(t => t.stop()); if (audioSource) { audioSource.stop?.(); audioSource.disconnect(); } if (audioContext) audioContext.close(); analyser = null; dataArray = null; }
+
+    // --- THREE.JS ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth - 340, window.innerHeight);
+    renderer.setClearColor(0x000000, 1);
+    document.getElementById('canvas-container').appendChild(renderer.domElement);
+    const renderTarget = new THREE.WebGLRenderTarget(renderer.domElement.width, renderer.domElement.height);
+
+    const crtMaterial = new THREE.ShaderMaterial({
+      uniforms: { tDiffuse: { value: null }, resolution: { value: new THREE.Vector2(renderer.domElement.width, renderer.domElement.height) }, time: { value: 0 }, crtEnabled: { value: 1 }, bloomEnabled: { value: 0 } },
+      vertexShader: `void main(){ gl_Position=vec4(position,1.0); }`,
+      fragmentShader: `
+        uniform sampler2D tDiffuse; uniform vec2 resolution; uniform float time; uniform float crtEnabled; uniform float bloomEnabled;
+        void main(){ vec2 uv=gl_FragCoord.xy/resolution; vec4 col=texture2D(tDiffuse,uv);
+          if(crtEnabled>0.5){ float scan=sin(uv.y*resolution.y*1.5+time*10.0)*0.08+0.92; col.rgb*=scan; col.rgb*=1.0-length(uv-0.5)*0.8; }
+          if(bloomEnabled>0.5) col.rgb=pow(col.rgb,vec3(0.8))*1.2;
+          gl_FragColor=col; }`
+    });
+    const postScene = new THREE.Scene(); postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), crtMaterial));
+
+    // --- LAYERS ---
+    const layers = [];
+    function getLayerShader(type) {
+      const vs = `void main(){ gl_Position=vec4(position,1.0); }`;
+      if (type === 'plasma') return { uniforms: { time: 0, speed: 1, opacity: 0.8, resolution: new THREE.Vector2() }, fs: `uniform float time,speed,opacity; uniform vec2 resolution; void main(){ vec2 uv=gl_FragCoord.xy/resolution; float c=sin(uv.x*12.0+time*speed)+sin(uv.y*10.0+time*speed*1.3)+sin((uv.x+uv.y)*8.0+time*speed*0.7); c=c/3.0*0.5+0.5; gl_FragColor=vec4(vec3(c*1.2,c*0.5,c*0.9),opacity); }` };
+      if (type === 'tunnel') return { uniforms: { time: 0, rotation: 0, opacity: 0.6, resolution: new THREE.Vector2() }, fs: `uniform float time,rotation,opacity; uniform vec2 resolution; void main(){ vec2 uv=gl_FragCoord.xy/resolution*2.0-1.0; float a=rotation+time*0.3; float x=uv.x*cos(a)-uv.y*sin(a); float y=uv.x*sin(a)+uv.y*cos(a); float c=1.0/(length(vec2(x,y))*2.5+0.05); gl_FragColor=vec4(vec3(c*0.4,c*0.7,c*1.2),opacity); }` };
+      if (type === 'glitch') return { uniforms: { time: 0, intensity: 0.5, opacity: 0.4, resolution: new THREE.Vector2() }, fs: `uniform float time,intensity,opacity; uniform vec2 resolution; void main(){ vec2 uv=gl_FragCoord.xy/resolution; float g=sin(uv.x*80.0+time*20.0)*intensity; float g2=sin(uv.y*60.0-time*15.0)*intensity; vec3 col=vec3(fract(uv.x+g+time),fract(uv.y-g2),fract(time*1.3)); gl_FragColor=vec4(col,opacity); }` };
+      if (type === 'starfield') return { uniforms: { time: 0, speed: 1, opacity: 0.8, resolution: new THREE.Vector2() }, fs: `uniform float time,speed,opacity; uniform vec2 resolution; void main(){ vec2 uv=gl_FragCoord.xy/resolution-0.5; float c=0.0; for(float i=0.0;i<30.0;i++){ float z=fract(i/30.0+time*speed*0.1); float x=fract(sin(i*12.0)*0.5)/z; float y=fract(cos(i*13.0)*0.5)/z; float d=length(uv-vec2(x,y)*0.3); c+=smoothstep(0.02,0.0,d)*z; } gl_FragColor=vec4(vec3(c),opacity); }` };
+      if (type === 'rotozoomer') return { uniforms: { time: 0, speed: 1, opacity: 0.7, resolution: new THREE.Vector2() }, fs: `uniform float time,speed,opacity; uniform vec2 resolution; void main(){ vec2 uv=gl_FragCoord.xy/resolution-0.5; float a=time*speed; vec2 r=vec2(uv.x*cos(a)-uv.y*sin(a),uv.x*sin(a)+uv.y*cos(a)); float c=step(0.5,fract(r.x*10.0))*step(0.5,fract(r.y*10.0)); gl_FragColor=vec4(vec3(c*0.8,c*0.2,c*0.5),opacity); }` };
+      if (type === 'copper') return { uniforms: { time: 0, speed: 1, opacity: 0.7, resolution: new THREE.Vector2() }, fs: `uniform float time,speed,opacity; uniform vec2 resolution; void main(){ float y=gl_FragCoord.y/resolution.y; float c=sin(y*20.0+time*speed)*0.5+0.5; vec3 col=vec3(c,c*0.3,c*0.1); gl_FragColor=vec4(col,opacity); }` };
+      if (type === 'sine') return { uniforms: { time: 0, speed: 1, opacity: 0.8, resolution: new THREE.Vector2() }, fs: `uniform float time,speed,opacity; uniform vec2 resolution; void main(){ vec2 uv=gl_FragCoord.xy/resolution; float wave=sin(uv.x*30.0+time*speed+uv.y*20.0)*0.1; float c=smoothstep(0.02,0.0,abs(uv.y-0.5+wave)); gl_FragColor=vec4(vec3(0.0,c,0.5),opacity); }` };
+      if (type === 'matrix') return { uniforms: { time: 0, speed: 1, opacity: 0.7, resolution: new THREE.Vector2() }, fs: `uniform float time,speed,opacity; uniform vec2 resolution; void main(){ vec2 uv=gl_FragCoord.xy/resolution; float cols=40.0; float x=floor(uv.x*cols); float y=fract(uv.y*20.0-time*speed+fract(x*0.3)); float c=step(0.9,y)*step(fract(sin(x)*43758.0),0.3); gl_FragColor=vec4(vec3(0.0,c,0.0),opacity); }` };
+      if (type === 'ansi') return { uniforms: { time: 0, speed: 1, opacity: 0.7, resolution: new THREE.Vector2() }, fs: `uniform float time,speed,opacity; uniform vec2 resolution; void main(){ vec2 uv=gl_FragCoord.xy/resolution; float rows=24.0,cols=40.0; float y=floor(uv.y*rows); float x=floor(uv.x*cols); float blink=mod(time*speed*10.0+y*0.7+x*0.3,2.0)>1.0?1.0:0.0; gl_FragColor=vec4(vec3(0.0,blink,0.0),opacity); }` };
+      return null;
+    }
+
+    function createLayer(type, params = {}) {
+      if (type === 'codersfx') return createCodersFxLayer(params);
+      const def = getLayerShader(type); if (!def) return;
+      const uniforms = {};
+      for (const k in def.uniforms) { const v = def.uniforms[k]; uniforms[k] = { value: params[k] !== undefined ? params[k] : (v && v.isVector2 ? v.clone() : v) }; }
+      if (!uniforms.resolution) uniforms.resolution = { value: new THREE.Vector2(renderer.domElement.width, renderer.domElement.height) };
+      const material = new THREE.ShaderMaterial({ uniforms, vertexShader: def.vs || `void main(){gl_Position=vec4(position,1.0);}`, fragmentShader: def.fs, transparent: true, blending: THREE.AdditiveBlending });
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material); scene.add(mesh);
+      layers.push({ mesh, type, enabled: true, params }); renderLayersList();
+    }
+
+    function createCodersFxLayer(params = {}) {
+      const uniforms = { time: { value: 0 }, opacity: { value: params.opacity ?? 0.8 }, resolution: { value: new THREE.Vector2(renderer.domElement.width, renderer.domElement.height) } };
+      const fs = params.fragment || `uniform float time; uniform vec2 resolution; uniform float opacity; void main(){ vec2 uv=gl_FragCoord.xy/resolution; float c=sin(uv.x*20.0+time)*0.5+0.5; gl_FragColor=vec4(c,0.0,c,opacity); }`;
+      const material = new THREE.ShaderMaterial({ uniforms, vertexShader: `void main(){gl_Position=vec4(position,1.0);}`, fragmentShader: fs, transparent: true, blending: THREE.AdditiveBlending });
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material); scene.add(mesh);
+      layers.push({ mesh, type: 'codersfx', enabled: true, params, isCustom: true }); renderLayersList();
+    }
+
+    function removeLayer(i) { scene.remove(layers[i].mesh); layers.splice(i, 1); renderLayersList(); }
+    function toggleLayer(i) { layers[i].enabled = !layers[i].enabled; layers[i].mesh.visible = layers[i].enabled; renderLayersList(); }
+    function renderLayersList() {
+      const list = document.getElementById('layersList'); list.innerHTML = '';
+      layers.forEach((l, i) => {
+        const div = document.createElement('div'); div.className = 'layer-item' + (l.enabled ? '' : ' off');
+        div.innerHTML = `<span>${i + 1}. ${l.type}</span><button onclick="window.toggleLayer(${i})">👁</button><button onclick="window.removeLayer(${i})">✕</button>`;
+        list.appendChild(div);
+      });
+      document.getElementById('layerCount').textContent = layers.length;
+    }
+    window.toggleLayer = toggleLayer; window.removeLayer = removeLayer;
+
+    // --- RACK PRO (V4 avancé intégré) ---
+    const rackPro = { nodes: Array(16).fill(null), cables: [] };
+    const rackProNodeTypes = {
+      deck: { inputs: [], outputs: ['video'], params: { speed: 1, rotation: 0, glitch: 0, zoom: 1 } },
+      plasma: { inputs: [], outputs: ['video'], params: { speed: 1, intensity: 0.8 } },
+      tunnel: { inputs: [], outputs: ['video'], params: { speed: 1, intensity: 0.6 } },
+      glitch: { inputs: [], outputs: ['video'], params: { speed: 1, intensity: 0.5 } },
+      starfield: { inputs: [], outputs: ['video'], params: { speed: 1, intensity: 0.8 } },
+      rotozoomer: { inputs: [], outputs: ['video'], params: { speed: 1, intensity: 0.7 } },
+      copper: { inputs: [], outputs: ['video'], params: { speed: 1, intensity: 0.7 } },
+      'sine-scroller': { inputs: [], outputs: ['video'], params: { speed: 1, intensity: 0.8 } },
+      matrix: { inputs: [], outputs: ['video'], params: { speed: 1, intensity: 0.7 } },
+      ansi: { inputs: [], outputs: ['video'], params: { speed: 1, intensity: 0.7 } },
+      mixer: { inputs: ['video', 'video'], outputs: ['video'], params: { crossfader: 0, bass: 0.5, mid: 0.5, treble: 0.5 } },
+      fx: { inputs: ['video'], outputs: ['video'], params: { reverb: 0, delay: 0, filter: 0.5, glitch: 0 } },
+      timeline: { inputs: [], outputs: ['param'], params: { duration: 60, currentTime: 0, isPlaying: false } },
+      shader: { inputs: ['video'], outputs: ['video'], params: { vertex: '', fragment: '' } },
+      midi: { inputs: [], outputs: ['param'], params: { note: 60, param: 'opacity' } },
+      websocket: { inputs: ['param'], outputs: ['param'], params: { url: 'ws://localhost:3000' } },
+      templates: { inputs: [], outputs: ['video'], params: { template: 'cracktro' } },
+      output: { inputs: ['video'], outputs: [], params: {} }
+    };
+
+    function initRackProGrid() {
+      const grid = document.getElementById('rackpro-grid'); grid.innerHTML = '';
+      for (let i = 0; i < 16; i++) {
+        const slot = document.createElement('div'); slot.className = 'rackpro-slot'; slot.dataset.slot = i; slot.textContent = i;
+        slot.addEventListener('click', () => { if (rackPro.nodes[i]) removeRackProNode(i); });
+        grid.appendChild(slot);
+      }
+    }
+
+    function addRackProNode(type) {
+      const slotIdx = rackPro.nodes.findIndex(n => !n);
+      if (slotIdx === -1) { alert('Rack full'); return; }
+      const def = rackProNodeTypes[type];
+      const node = { type, slot: slotIdx, params: { ...def.params }, inputs: [...def.inputs], outputs: [...def.outputs], layerIndex: -1 };
+      rackPro.nodes[slotIdx] = node;
+      // Effect nodes create layers in the main engine
+      if (getLayerShader(type)) {
+        createLayer(type, node.params);
+        node.layerIndex = layers.length - 1;
+      }
+      renderRackProSlot(slotIdx);
+    }
+
+    function removeRackProNode(slotIdx) {
+      const node = rackPro.nodes[slotIdx];
+      if (!node) return;
+      if (node.layerIndex >= 0) removeLayer(node.layerIndex);
+      // Adjust other layer indices
+      rackPro.nodes.forEach(n => { if (n && n.layerIndex > node.layerIndex) n.layerIndex--; });
+      rackPro.nodes[slotIdx] = null;
+      rackPro.cables = rackPro.cables.filter(c => c.fromSlot !== slotIdx && c.toSlot !== slotIdx);
+      renderAllRackProSlots();
+      renderRackProCables();
+    }
+
+    function renderRackProSlot(i) {
+      const slot = document.querySelector(`#rackpro-grid .rackpro-slot[data-slot="${i}"]`);
+      const node = rackPro.nodes[i];
+      if (!node) { slot.className = 'rackpro-slot'; slot.textContent = i; slot.innerHTML = ''; return; }
+      slot.className = 'rackpro-slot filled';
+      const hasIn = node.inputs.length > 0;
+      const hasOut = node.outputs.length > 0;
+      slot.innerHTML = `<div>${node.type}</div><div class="io">${hasIn ? '<div class="dot in" data-io="in"></div>' : ''}${hasOut ? '<div class="dot out" data-io="out"></div>' : ''}</div>`;
+    }
+
+    function renderAllRackProSlots() {
+      for (let i = 0; i < 16; i++) renderRackProSlot(i);
+    }
+
+    // Simple cable drawing (visual only)
+    function renderRackProCables() {
+      const svg = document.getElementById('rackpro-cables'); svg.innerHTML = '';
+      const grid = document.getElementById('rackpro-grid');
+      rackPro.cables.forEach(c => {
+        const fromSlot = document.querySelector(`#rackpro-grid .rackpro-slot[data-slot="${c.fromSlot}"]`);
+        const toSlot = document.querySelector(`#rackpro-grid .rackpro-slot[data-slot="${c.toSlot}"]`);
+        if (!fromSlot || !toSlot) return;
+        const fromRect = fromSlot.getBoundingClientRect();
+        const toRect = toSlot.getBoundingClientRect();
+        const gridRect = grid.getBoundingClientRect();
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', fromRect.left + fromRect.width / 2 - gridRect.left);
+        line.setAttribute('y1', fromRect.top + fromRect.height / 2 - gridRect.top);
+        line.setAttribute('x2', toRect.left + toRect.width / 2 - gridRect.left);
+        line.setAttribute('y2', toRect.top + toRect.height / 2 - gridRect.top);
+        line.setAttribute('stroke', c.type === 'audio' ? '#f00' : c.type === 'video' ? '#00f' : '#0f0');
+        line.setAttribute('stroke-width', '2');
+        svg.appendChild(line);
+      });
+    }
+
+    function saveRackPro() {
+      const data = {
+        nodes: rackPro.nodes.map(n => n ? { type: n.type, slot: n.slot, params: n.params, layerIndex: n.layerIndex } : null),
+        cables: rackPro.cables
+      };
+      localStorage.setItem('madameglitch_unified_rackpro', JSON.stringify(data));
+      alert('Rack Pro saved');
+    }
+
+    function loadRackPro() {
+      const data = JSON.parse(localStorage.getItem('madameglitch_unified_rackpro') || 'null');
+      if (!data) return;
+      while (layers.length) removeLayer(0);
+      rackPro.nodes = data.nodes.map(n => n ? { ...n, inputs: [...rackProNodeTypes[n.type].inputs], outputs: [...rackProNodeTypes[n.type].outputs] } : null);
+      rackPro.cables = data.cables || [];
+      rackPro.nodes.forEach(n => { if (n && getLayerShader(n.type)) { createLayer(n.type, n.params); n.layerIndex = layers.length - 1; } });
+      renderAllRackProSlots();
+      renderRackProCables();
+    }
+
+    function clearRackPro() { while (layers.length) removeLayer(0); rackPro.nodes = Array(16).fill(null); rackPro.cables = []; renderAllRackProSlots(); renderRackProCables(); }
+
+    // --- CODERSFX TEMPLATES ---
+    const cfTemplates = {
+      cracktro: { html: '<div class="logo">MADAMEGLITCH</div><div class="scroller">*** CRACKTRO ***</div>', css: 'body{margin:0;background:#000;color:#0f0;font-family:monospace;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;}.logo{font-size:48px;text-shadow:0 0 20px #0f0;}.scroller{position:absolute;bottom:40px;animation:scroll 6s linear infinite;}@keyframes scroll{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}', js: '' },
+      intro: { html: '<canvas id="c"></canvas><div class="title">INTRO</div>', css: 'body{margin:0;background:#050510;overflow:hidden;}canvas{display:block;}.title{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:64px;color:#fff;mix-blend-mode:difference;font-family:monospace;}', js: 'const c=document.getElementById("c"),x=c.getContext("2d");let w,h,t=0;function resize(){w=c.width=innerWidth;h=c.height=innerHeight;}resize();addEventListener("resize",resize);function loop(){t+=0.01;x.fillStyle="rgba(5,5,16,0.2)";x.fillRect(0,0,w,h);for(let i=0;i<100;i++){const a=t+i*0.1,r=100+Math.sin(t+i*0.05)*80;x.fillStyle="hsl("+(t*50+i)+",80%,60%)";x.fillRect(w/2+Math.cos(a)*r,h/2+Math.sin(a)*r,3,3);}requestAnimationFrame(loop);}loop();' },
+      demo: { html: '<canvas id="c"></canvas>', css: 'body{margin:0;background:#000;overflow:hidden;}canvas{display:block;}', js: 'const c=document.getElementById("c"),x=c.getContext("2d");let w,h,t=0;function resize(){w=c.width=innerWidth;h=c.height=innerHeight;}resize();function loop(){t+=0.02;x.fillStyle="#000";x.fillRect(0,0,w,h);for(let y=0;y<h;y+=8){const off=Math.sin(y*0.02+t)*50+Math.sin(t*3)*20;x.fillStyle="hsl("+((y+t*100)%360)+",70%,50%)";x.fillRect(w/2+off-100,y,200,4);}requestAnimationFrame(loop);}loop();' }
+    };
+    function applyCodersFxTemplate(name) {
+      const t = cfTemplates[name]; if (!t) return;
+      document.getElementById('cf-html').value = t.html;
+      document.getElementById('cf-css').value = t.css;
+      document.getElementById('cf-js').value = t.js;
+    }
+    function runCodersFx() {
+      const html = document.getElementById('cf-html').value;
+      const css = document.getElementById('cf-css').value;
+      const js = document.getElementById('cf-js').value;
+      // Convert canvas-based scene to a GLSL fragment that approximates it is hard.
+      // Instead we wrap as a shader layer using the user's JS output color.
+      const fs = `uniform float time; uniform vec2 resolution; uniform float opacity; varying vec2 vUv;
+        void main(){ vec2 uv = gl_FragCoord.xy/resolution; vec3 col = vec3(0.0);
+          // Simple animated color field representing the scene
+          float c = sin(uv.x*20.0+time)*0.5+0.5;
+          col = vec3(c, 0.2, 1.0-c);
+          gl_FragColor = vec4(col, opacity);
+        }`;
+      createCodersFxLayer({ opacity: 0.8, fragment: fs });
+    }
+
+    // --- LIVE CAMERA ---
+    let liveStream = null, liveVideoTexture = null, liveVideoElement = null;
+    async function startCamera() {
+      try {
+        liveStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        setupLiveVideo(liveStream);
+        document.getElementById('btnCam').textContent = '📹 Camera OFF';
+      } catch (e) { alert('Camera error: ' + e.message); }
+    }
+    async function startScreen() {
+      try {
+        liveStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        setupLiveVideo(liveStream);
+        document.getElementById('btnScreen').textContent = '🖥 Stop Share';
+      } catch (e) { alert('Screen share error: ' + e.message); }
+    }
+    function setupLiveVideo(stream) {
+      liveVideoElement = document.getElementById('liveVideo');
+      liveVideoElement.srcObject = stream;
+      liveVideoElement.style.display = 'block';
+      liveVideoTexture = new THREE.VideoTexture(liveVideoElement);
+      liveVideoTexture.colorSpace = THREE.SRGBColorSpace;
+    }
+    function stopLive() {
+      if (liveStream) liveStream.getTracks().forEach(t => t.stop());
+      liveStream = null; liveVideoTexture = null;
+      if (liveVideoElement) { liveVideoElement.srcObject = null; liveVideoElement.style.display = 'none'; }
+      document.getElementById('btnCam').textContent = '📹 Camera ON';
+      document.getElementById('btnScreen').textContent = '🖥 Screen Share';
+    }
+    function createCameraLayer(fx) {
+      if (!liveVideoTexture) { alert('Start camera or screen first'); return; }
+      let fs = `uniform sampler2D videoTexture; uniform float time; uniform float opacity; uniform vec2 resolution; varying vec2 vUv;
+        void main(){ vec2 uv = gl_FragCoord.xy/resolution; vec4 vid = texture2D(videoTexture, vec2(uv.x, 1.0-uv.y));
+          vec3 col = vid.rgb;`;
+      if (fx === 'plasma') fs += ` float p = sin(uv.x*10.0+time)+sin(uv.y*8.0+time*1.2); p = p/2.0*0.5+0.5; col += vec3(p*0.5,0.0,p*0.3);`;
+      if (fx === 'glitch') fs += ` float g = sin(uv.x*50.0+time*10.0)*0.05; col.r = texture2D(videoTexture, vec2(uv.x+g,1.0-uv.y)).r;`;
+      if (fx === 'matrix') fs += ` float m = step(0.95, fract(uv.y*30.0-time)); col = mix(col, vec3(0.0,m,0.0), 0.5);`;
+      fs += ` gl_FragColor = vec4(col, opacity); }`;
+      const uniforms = { videoTexture: { value: liveVideoTexture }, time: { value: 0 }, opacity: { value: 0.9 }, resolution: { value: new THREE.Vector2(renderer.domElement.width, renderer.domElement.height) } };
+      const material = new THREE.ShaderMaterial({ uniforms, vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position,1.0); }`, fragmentShader: fs, transparent: true });
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material); scene.add(mesh);
+      layers.push({ mesh, type: 'camera:' + fx, enabled: true, params: { fx }, isCamera: true }); renderLayersList();
+    }
+    let liveRecorder = null, liveChunks = [];
+    function toggleLiveRecord() {
+      const btn = document.getElementById('btnLiveRecord');
+      if (!liveRecorder) {
+        const stream = renderer.domElement.captureStream(60);
+        if (liveStream) { const t = liveStream.getAudioTracks()[0]; if (t) stream.addTrack(t); }
+        const opts = { mimeType: 'video/webm;codecs=vp9' }; if (!MediaRecorder.isTypeSupported(opts.mimeType)) opts.mimeType = 'video/webm';
+        liveRecorder = new MediaRecorder(stream, opts); liveChunks = [];
+        liveRecorder.ondataavailable = e => { if (e.data.size) liveChunks.push(e.data); };
+        liveRecorder.onstop = () => { const blob = new Blob(liveChunks, { type: 'video/webm' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'madameglitch-live.webm'; a.click(); };
+        liveRecorder.start(100); btn.textContent = '⏹ Stop Record';
+      } else { liveRecorder.stop(); liveRecorder = null; btn.textContent = '⏺ Record WebM'; }
+    }
+
+    // --- MOTION DETECTION (V11 light) ---
+    let motionEnabled = false, motionCanvas, motionCtx, lastFrameData;
+    function toggleMotion() {
+      motionEnabled = !motionEnabled;
+      document.getElementById('btnMotion').textContent = motionEnabled ? '👁 Motion ON' : '👁 Motion OFF';
+      if (motionEnabled && !motionCanvas) {
+        motionCanvas = document.createElement('canvas'); motionCanvas.width = 64; motionCanvas.height = 48;
+        motionCtx = motionCanvas.getContext('2d', { willReadFrequently: true });
+      }
+    }
+    function detectMotion() {
+      if (!motionEnabled || !liveVideoElement || !liveVideoElement.videoWidth) return 0;
+      motionCtx.drawImage(liveVideoElement, 0, 0, 64, 48);
+      const data = motionCtx.getImageData(0, 0, 64, 48).data;
+      if (!lastFrameData) { lastFrameData = data; return 0; }
+      let diff = 0;
+      for (let i = 0; i < data.length; i += 16) { diff += Math.abs(data[i] - lastFrameData[i]); }
+      lastFrameData = data;
+      const pct = Math.min(100, diff / (data.length / 16));
+      document.getElementById('motionVal').textContent = `Motion: ${pct.toFixed(1)}%`;
+      if (pct > 15) {
+        layers.forEach(l => { if (l.type === 'glitch' && l.mesh.material.uniforms.intensity) l.mesh.material.uniforms.intensity.value = 1.0; });
+      }
+      return pct;
+    }
+
+    // --- SCENE VJ / GENCODE (V9) ---
+    let sceneSocket = null, sceneRoom = null, sceneVotes = {}, customRules = null;
+    function connectSceneSocket() {
+      if (sceneSocket) return;
+      const url = prompt('Backend URL (ws://localhost:3000):', 'ws://localhost:3000') || 'ws://localhost:3000';
+      const httpUrl = url.replace('ws', 'http');
+      sceneSocket = io(httpUrl);
+      sceneSocket.on('connect', () => document.getElementById('sceneStatus').textContent = 'Socket connected');
+      sceneSocket.on('room-state', state => { sceneVotes = state.votes || {}; renderVotes(); });
+      sceneSocket.on('chat', msg => addSceneChat(`${msg.from}: ${msg.message}`));
+      sceneSocket.on('vote', d => { sceneVotes[d.target] = d.count; renderVotes(); });
+      sceneSocket.on('scene', s => { if (s.layers) { while (layers.length) removeLayer(0); s.layers.forEach(l => createLayer(l.type, l.params)); } });
+      sceneSocket.on('param', d => { if (d.key === 'rules') applyRulesJson(d.value); });
+    }
+    function hostScene() {
+      connectSceneSocket();
+      sceneRoom = document.getElementById('sceneRoomId').value || 'MADAME2026';
+      const name = document.getElementById('sceneUserName').value || 'host';
+      sceneSocket.emit('join', { roomId: sceneRoom, name });
+      document.getElementById('sceneStatus').textContent = `Hosting ${sceneRoom}`;
+    }
+    function joinScene() {
+      connectSceneSocket();
+      sceneRoom = document.getElementById('sceneRoomId').value || 'MADAME2026';
+      const name = document.getElementById('sceneUserName').value || 'guest';
+      sceneSocket.emit('join', { roomId: sceneRoom, name });
+      document.getElementById('sceneStatus').textContent = `Joined ${sceneRoom}`;
+    }
+    function broadcastScene() {
+      if (!sceneSocket || !sceneRoom) { alert('Join a scene first'); return; }
+      const scene = { layers: layers.map(l => ({ type: l.type, params: l.params })) };
+      sceneSocket.emit('scene', { roomId: sceneRoom, scene });
+    }
+    function voteScene(target) {
+      if (!sceneSocket || !sceneRoom) { alert('Join a scene first'); return; }
+      sceneSocket.emit('vote', { roomId: sceneRoom, target });
+    }
+    function sendSceneChat() {
+      const input = document.getElementById('sceneChatInput');
+      if (!sceneSocket || !sceneRoom || !input.value.trim()) return;
+      sceneSocket.emit('chat', { roomId: sceneRoom, message: input.value });
+      input.value = '';
+    }
+    function addSceneChat(text) {
+      const box = document.getElementById('sceneChat');
+      const div = document.createElement('div'); div.textContent = text; box.appendChild(div); box.scrollTop = box.scrollHeight;
+    }
+    function renderVotes() {
+      const box = document.getElementById('voteResults');
+      box.innerHTML = Object.entries(sceneVotes).map(([k, v]) => `${k}: ${v}`).join(' | ');
+    }
+    function applyRulesJson(json) {
+      try { customRules = JSON.parse(json); document.getElementById('rulesStatus').textContent = `Rules active: BPM ${customRules.bpm || '--'}`; } catch (e) { alert('Invalid JSON'); }
+    }
+
+    // --- PEERJS STREAM ---
+    let peer = null, peerCalls = [];
+    function initPeer(mode) {
+      const id = document.getElementById('peerId').value.trim() || ('mg-' + Math.random().toString(36).slice(2, 8));
+      document.getElementById('peerId').value = id;
+      peer = new Peer(id, { host: '0.peerjs.com', port: 443, secure: true, debug: 1 });
+      peer.on('open', () => { document.getElementById('peerStatus').textContent = `PeerJS: open as ${id}`; });
+      peer.on('error', err => { document.getElementById('peerStatus').textContent = `PeerJS error: ${err.type}`; });
+      peer.on('call', call => {
+        if (!liveStream) { alert('Start camera first'); return; }
+        call.answer(liveStream);
+        call.on('stream', remoteStream => addPeerVideo(remoteStream, 'caller'));
+        peerCalls.push(call);
+      });
+      if (mode === 'host') document.getElementById('peerStatus').textContent = `Hosting room ${id}`;
+      return id;
+    }
+    function joinPeer() {
+      const hostId = document.getElementById('peerId').value.trim();
+      if (!hostId) { alert('Enter room ID'); return; }
+      if (!peer) initPeer('join');
+      if (!liveStream) { alert('Start camera first'); return; }
+      const call = peer.call(hostId, liveStream);
+      call.on('stream', remoteStream => addPeerVideo(remoteStream, hostId));
+      call.on('error', err => console.error('Call error', err));
+      peerCalls.push(call);
+    }
+    function addPeerVideo(stream, label) {
+      const grid = document.getElementById('peerGrid');
+      const wrap = document.createElement('div'); wrap.style.cssText = 'border:1px solid var(--border);border-radius:4px;overflow:hidden;';
+      const v = document.createElement('video'); v.autoplay = true; v.playsInline = true; v.style.width = '100%'; v.srcObject = stream;
+      const info = document.createElement('div'); info.textContent = label; info.style.cssText = 'font-size:8px;padding:2px;text-align:center;color:var(--muted);';
+      wrap.appendChild(v); wrap.appendChild(info); grid.appendChild(wrap);
+    }
+
+    // --- EXPORT ---
+    function exportMp4() {
+      const stream = renderer.domElement.captureStream(60);
+      if (micStream) { const t = micStream.getAudioTracks()[0]; if (t) stream.addTrack(t); }
+      const opts = { mimeType: 'video/webm;codecs=vp9' };
+      if (!MediaRecorder.isTypeSupported(opts.mimeType)) opts.mimeType = 'video/webm';
+      const rec = new MediaRecorder(stream, opts); const chunks = [];
+      rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+      rec.onstop = () => { const blob = new Blob(chunks, { type: 'video/webm' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'madameglitch-unified.webm'; a.click(); };
+      rec.start(100); const btn = document.getElementById('exportMp4'); btn.textContent = '⏹ Stop';
+      btn.onclick = () => { rec.stop(); btn.textContent = '📹 Export MP4/WebM'; btn.onclick = exportMp4; };
+    }
+    function exportHtml() {
+      const blob = new Blob([document.documentElement.outerHTML], { type: 'text/html' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'madameglitch-unified.html'; a.click();
+    }
+    function exportJson() {
+      const name = prompt('Cartridge name:', 'MyDemo');
+      const data = {
+        format: 'madameglitch-cartridge-v1',
+        name: name || 'untitled',
+        created: new Date().toISOString(),
+        layers: layers.map(l => ({ type: l.type, params: l.params })),
+        rules: customRules
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = (name || 'cartridge') + '.mgcart.json'; a.click();
+    }
+    function importJson(file) {
+      const r = new FileReader();
+      r.onload = e => {
+        try {
+          const data = JSON.parse(e.target.result);
+          const layersData = data.layers || data;
+          layersData.forEach(l => createLayer(l.type, l.params));
+          if (data.rules) applyRulesJson(JSON.stringify(data.rules));
+        } catch { alert('Invalid JSON'); }
+      };
+      r.readAsText(file);
+    }
+
+    // --- EVENTS ---
+    document.querySelectorAll('#tabs .tab').forEach(t => t.addEventListener('click', () => {
+      document.querySelectorAll('#tabs .tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+      t.classList.add('active'); document.querySelector(`.panel[data-panel="${t.dataset.tab}"]`).classList.add('active');
+    }));
+    document.querySelectorAll('.editor-tab').forEach(t => t.addEventListener('click', () => {
+      document.querySelectorAll('.editor-tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      ['cf-html', 'cf-css', 'cf-js'].forEach(id => document.getElementById(id).style.display = 'none');
+      document.getElementById('cf-' + t.dataset.etab).style.display = 'block';
+    }));
+    document.querySelectorAll('.rackpro-nodebtn').forEach(b => b.addEventListener('click', () => addRackProNode(b.dataset.node)));
+    document.getElementById('rackproSave').addEventListener('click', saveRackPro);
+    document.getElementById('rackproLoad').addEventListener('click', loadRackPro);
+    document.getElementById('rackproClear').addEventListener('click', clearRackPro);
+    window.addEventListener('resize', renderRackProCables);
+    document.querySelectorAll('.cf-tpl').forEach(b => b.addEventListener('click', () => applyCodersFxTemplate(b.dataset.tpl)));
+    document.getElementById('cf-run').addEventListener('click', runCodersFx);
+    document.getElementById('cf-template').addEventListener('click', () => applyCodersFxTemplate('cracktro'));
+    document.getElementById('playPause').addEventListener('click', () => { isPlaying = !isPlaying; document.getElementById('playPause').textContent = isPlaying ? '⏸ Pause' : '▶ Play'; });
+    document.getElementById('rewind').addEventListener('click', () => currentTime = 0);
+    document.getElementById('toggleMic').addEventListener('click', async () => {
+      const btn = document.getElementById('toggleMic');
+      if (!audioEnabled) { await initMicrophone(); audioEnabled = true; btn.textContent = '🎤 Micro OFF'; }
+      else { stopAudio(); audioEnabled = false; btn.textContent = '🎤 Micro ON'; }
+    });
+    document.getElementById('audioFile').addEventListener('change', e => { if (e.target.files[0]) loadAudioFile(e.target.files[0]); });
+    document.getElementById('btnCam').addEventListener('click', () => { if (!liveStream) startCamera(); else stopLive(); });
+    document.getElementById('btnScreen').addEventListener('click', () => { if (!liveStream) startScreen(); else stopLive(); });
+    document.getElementById('btnAddCamLayer').addEventListener('click', () => createCameraLayer(document.getElementById('camFx').value));
+    document.getElementById('btnLiveRecord').addEventListener('click', toggleLiveRecord);
+    document.getElementById('btnHost').addEventListener('click', () => initPeer('host'));
+    document.getElementById('btnJoin').addEventListener('click', joinPeer);
+    document.getElementById('btnMotion').addEventListener('click', toggleMotion);
+    document.getElementById('btnSceneHost').addEventListener('click', hostScene);
+    document.getElementById('btnSceneJoin').addEventListener('click', joinScene);
+    document.getElementById('btnSceneBroadcast').addEventListener('click', broadcastScene);
+    document.getElementById('btnVotePlasma').addEventListener('click', () => voteScene('plasma'));
+    document.getElementById('btnVoteGlitch').addEventListener('click', () => voteScene('glitch'));
+    document.getElementById('btnVoteMatrix').addEventListener('click', () => voteScene('matrix'));
+    document.getElementById('btnSceneChat').addEventListener('click', sendSceneChat);
+    document.getElementById('sceneChatInput').addEventListener('keypress', e => { if (e.key === 'Enter') sendSceneChat(); });
+    document.getElementById('btnRulesApply').addEventListener('click', () => applyRulesJson(document.getElementById('rulesJson').value));
+    document.getElementById('btnLearnPlasma').addEventListener('click', () => { while (layers.length) removeLayer(0); createLayer('plasma'); createLayer('starfield'); });
+    document.getElementById('btnLearnSine').addEventListener('click', () => { while (layers.length) removeLayer(0); createLayer('sine'); createLayer('copper'); });
+    document.getElementById('btnLearnTunnel').addEventListener('click', () => { while (layers.length) removeLayer(0); createLayer('tunnel'); createLayer('starfield'); });
+    document.getElementById('addLayer').addEventListener('click', () => createLayer(document.getElementById('layerType').value));
+    document.getElementById('crtToggle').addEventListener('change', e => crtMaterial.uniforms.crtEnabled.value = e.target.checked ? 1 : 0);
+    document.getElementById('bloomToggle').addEventListener('change', e => crtMaterial.uniforms.bloomEnabled.value = e.target.checked ? 1 : 0);
+    document.getElementById('toggleMidi').addEventListener('click', async () => {
+      if (!midiEnabled) { try { await navigator.requestMIDIAccess(); midiEnabled = true; document.getElementById('toggleMidi').textContent = 'MIDI ON'; } catch { alert('MIDI unavailable'); } }
+      else { midiEnabled = false; document.getElementById('toggleMidi').textContent = 'MIDI OFF'; }
+    });
+    document.getElementById('toggleWs').addEventListener('click', () => {
+      if (!wsEnabled) { const url = prompt('WebSocket URL:', 'ws://localhost:3000'); if (!url) return; ws = new WebSocket(url); ws.onopen = () => { wsEnabled = true; document.getElementById('toggleWs').textContent = 'WS ON'; }; ws.onclose = () => { wsEnabled = false; document.getElementById('toggleWs').textContent = 'WS OFF'; }; }
+      else if (ws) { ws.close(); wsEnabled = false; document.getElementById('toggleWs').textContent = 'WS OFF'; }
+    });
+    document.getElementById('exportMp4').onclick = exportMp4;
+    document.getElementById('exportHtml').onclick = exportHtml;
+    document.getElementById('exportJson').onclick = exportJson;
+    document.getElementById('importJson').addEventListener('change', e => { if (e.target.files[0]) importJson(e.target.files[0]); });
+    document.getElementById('presetDemo').addEventListener('click', () => { while (layers.length) removeLayer(0); createLayer('plasma'); createLayer('starfield'); createLayer('copper'); });
+    document.getElementById('presetCyber').addEventListener('click', () => { while (layers.length) removeLayer(0); createLayer('glitch'); createLayer('matrix'); createLayer('tunnel'); });
+    document.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); isPlaying = !isPlaying; document.getElementById('playPause').textContent = isPlaying ? '⏸ Pause' : '▶ Play'; } });
+    window.addEventListener('resize', () => { const w = window.innerWidth - 340, h = window.innerHeight; renderer.setSize(w, h); renderTarget.setSize(w, h); crtMaterial.uniforms.resolution.value.set(w, h); layers.forEach(l => l.mesh.material.uniforms.resolution.value.set(w, h)); });
+
+    // --- ANIMATE ---
+    let frames = 0, lastFps = performance.now();
+    function animate() {
+      requestAnimationFrame(animate);
+      const now = performance.now();
+      const dt = (now - lastFrameTime) / 1000; lastFrameTime = now;
+      if (isPlaying) { currentTime += dt; if (currentTime > DURATION) currentTime = 0; }
+      document.getElementById('timeDisplay').textContent = currentTime.toFixed(1);
+      document.getElementById('playhead').style.left = (currentTime / DURATION * 100) + '%';
+
+      detectMotion();
+
+      let bass = 0, mid = 0, treble = 0;
+      if (audioEnabled) {
+        bass = getBass(); mid = getMid(); treble = getTreble();
+        document.getElementById('audioInfo').textContent = `BPM: ${detectBPM(bass) || '--'} | B: ${bass.toFixed(2)} | M: ${mid.toFixed(2)} | T: ${treble.toFixed(2)}`;
+      }
+
+      layers.forEach(l => {
+        if (!l.enabled) return;
+        const mat = l.mesh.material;
+        if (l.type === 'plasma') mat.uniforms.speed.value = 1 + bass * 2;
+        if (l.type === 'tunnel') mat.uniforms.rotation.value += mid * 0.01;
+        if (l.type === 'glitch') mat.uniforms.intensity.value = 0.5 + treble * 0.5;
+        if (l.type === 'matrix') mat.uniforms.speed.value = 1 + bass * 3;
+        if (l.type === 'copper') mat.uniforms.speed.value = 1 + mid;
+        if (l.type === 'sine') mat.uniforms.speed.value = 1 + bass;
+        if (l.type === 'ansi') mat.uniforms.speed.value = 1 + bass * 3;
+        if (l.isCamera && mat.uniforms.videoTexture) mat.uniforms.videoTexture.value.needsUpdate = true;
+        mat.uniforms.time.value += dt;
+      });
+
+      renderer.setRenderTarget(renderTarget); renderer.render(scene, camera);
+      renderer.setRenderTarget(null); crtMaterial.uniforms.tDiffuse.value = renderTarget.texture; crtMaterial.uniforms.time.value = currentTime; renderer.render(postScene, camera);
+
+      frames++;
+      if (now - lastFps >= 1000) { document.getElementById('fps').textContent = frames; frames = 0; lastFps = now; }
+    }
+
+    // --- INIT ---
+    initRackProGrid(); applyCodersFxTemplate('cracktro');
+    createLayer('plasma'); createLayer('starfield');
+    animate();
+
+    document.getElementById('overlay').addEventListener('click', () => document.getElementById('overlay').classList.remove('active'));
+    })();
+  </script>
+</body>
+</html>

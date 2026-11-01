@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NotePlan Style Simulator</title>
+<style>
+:root{
+  --bg:#f4f5f6;
+  --window:#fbfbfc;
+  --glass:rgba(244,244,246,.82);
+  --line:rgba(60,60,67,.13);
+  --text:#1f2329;
+  --muted:#8a8f98;
+  --orange:#d89b36;
+  --orange-soft:#f7e9cf;
+  --blue:#4c8df6;
+  --shadow:0 18px 50px rgba(0,0,0,.16);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:#d8dadd;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;
+  color:var(--text);height:100vh;overflow:hidden;
+}
+.mac{
+  width:min(1480px,96vw);height:94vh;margin:3vh auto;background:var(--window);
+  border-radius:20px;box-shadow:var(--shadow);overflow:hidden;border:1px solid rgba(0,0,0,.08);
+  display:grid;grid-template-rows:42px 1fr;
+}
+.titlebar{
+  display:flex;align-items:center;padding:0 14px;gap:9px;background:rgba(248,248,249,.86);
+  backdrop-filter:blur(24px);border-bottom:1px solid var(--line);
+}
+.dot{width:12px;height:12px;border-radius:50%}.red{background:#ff5f57}.yellow{background:#febc2e}.green{background:#28c840}
+.windowtitle{margin:auto;font-size:12px;color:#6f747c;transform:translateX(-32px)}
+.toolbar{display:flex;align-items:center;gap:6px}
+.iconbtn{
+  width:30px;height:30px;border:0;border-radius:8px;background:transparent;color:#6c7178;
+  font-size:16px;cursor:pointer;
+}
+.iconbtn:hover{background:rgba(0,0,0,.055)}
+.workspace{display:grid;grid-template-columns:255px minmax(520px,1fr) 335px;min-height:0}
+.sidebar{
+  margin:10px 0 10px 10px;border-radius:16px;background:var(--glass);
+  backdrop-filter:blur(28px);border:1px solid rgba(255,255,255,.72);
+  box-shadow:0 8px 30px rgba(0,0,0,.08);padding:10px 8px;overflow:auto;
+}
+.search{
+  display:flex;align-items:center;gap:7px;background:rgba(118,118,128,.10);
+  border-radius:9px;padding:7px 9px;color:var(--muted);margin-bottom:10px;
+}
+.search input{border:0;background:transparent;outline:none;width:100%;font:inherit}
+.sideitem{
+  display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;font-size:13px;
+  cursor:pointer;
+}
+.sideitem:hover{background:rgba(0,0,0,.05)}
+.sideitem.active{background:rgba(216,155,54,.18)}
+.count{margin-left:auto;font-size:11px;color:var(--muted)}
+.group{font-size:10px;letter-spacing:.04em;color:#9a9ea6;text-transform:uppercase;margin:15px 9px 5px;font-weight:700}
+.chev{width:12px;color:#a0a4aa}.folder{color:#7d838a}.calendaricon{color:#d99431}
+.editorpane{min-width:0;display:grid;grid-template-rows:46px 1fr;background:white}
+.notehead{
+  display:flex;align-items:center;padding:0 18px;border-bottom:1px solid var(--line);gap:8px;
+}
+.todaytitle{font-weight:700;font-size:15px}
+.week{font-size:11px;color:#92979e}
+.noteactions{margin-left:auto;display:flex;gap:2px}
+.scroll{overflow:auto}
+.paper{max-width:820px;margin:0 auto;padding:20px 38px 120px}
+.meta{font-size:11px;color:#a3a7ad;margin-bottom:22px}
+h1{font-size:26px;line-height:1.2;margin:0 0 23px;font-weight:760}
+h2{font-size:20px;margin:30px 0 13px}
+h3{font-size:15px;margin:24px 0 9px}
+p{margin:7px 0}
+.task{
+  display:flex;align-items:flex-start;gap:9px;padding:4px 0;font-size:14px;line-height:1.45;
+}
+.check{
+  width:15px;height:15px;border-radius:50%;border:1.7px solid #d3a34d;margin-top:2px;flex:0 0 auto;cursor:pointer;
+}
+.task.done .check{background:#d3a34d;box-shadow:inset 0 0 0 3px white}
+.task.done .txt{text-decoration:line-through;color:#9da1a7}
+.time{font-size:12px;color:#c08c2f;margin-right:3px}
+.link{color:#c28b2c;text-decoration:none}
+.tag{color:#c28b2c}
+.quote{border-left:3px solid #ebd6ad;padding-left:12px;color:#6f747a;margin:12px 0}
+.editor{
+  width:100%;min-height:300px;border:0;outline:none;resize:none;font:14px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;color:var(--text);
+  background:transparent;padding:0;
+}
+.rightbar{border-left:1px solid var(--line);background:#fbfbfc;display:grid;grid-template-rows:auto 1fr;min-height:0}
+.calendar{padding:15px 16px 10px;border-bottom:1px solid var(--line)}
+.calhead{display:flex;align-items:center;font-size:13px;font-weight:650;margin-bottom:10px}
+.calarrows{margin-left:auto;color:#8d9299}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.dow{font-size:9px;color:#a1a5ab;padding-bottom:4px}
+.day{font-size:11px;padding:6px 0;border-radius:50%}
+.day.dim{color:#c0c3c7}.day.today{background:#dba042;color:white;font-weight:700}
+.timeline{overflow:auto;padding:12px 14px 50px;position:relative}
+.tltop{display:flex;align-items:center;margin-bottom:10px;font-size:12px;font-weight:600}
+.tltop span{margin-left:auto;color:#92979d;font-weight:400}
+.slot{height:52px;border-top:1px solid #eceef0;position:relative;margin-left:38px}
+.hour{position:absolute;left:-38px;top:-7px;font-size:10px;color:#a4a8ad}
+.event{
+  position:absolute;left:4px;right:3px;border-radius:7px;background:#f5e5c7;border-left:3px solid #d59b3c;
+  padding:6px 8px;font-size:11px;color:#5d5140;
+}
+.e1{top:36px;height:43px}.e2{top:141px;height:62px;background:#e8eef9;border-left-color:#6b95dd;color:#40516c}
+.e3{top:256px;height:48px}
+.modebar{
+  position:absolute;bottom:22px;left:50%;transform:translateX(-50%);display:flex;gap:4px;
+  padding:4px;background:rgba(255,255,255,.88);backdrop-filter:blur(18px);border:1px solid var(--line);
+  border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.12)
+}
+.modebar button{border:0;background:transparent;border-radius:8px;padding:7px 12px;font:12px inherit;color:#70757c;cursor:pointer}
+.modebar button.active{background:#fff;box-shadow:0 1px 5px rgba(0,0,0,.12);color:#222}
+.raw{display:none}
+body.rawmode .rendered{display:none}
+body.rawmode .raw{display:block}
+@media(max-width:1050px){.workspace{grid-template-columns:220px 1fr}.rightbar{display:none}}
+</style>
+</head>
+<body>
+<div class="mac">
+  <div class="titlebar">
+    
+    <div class="toolbar"><button class="iconbtn">☰</button></div>
+    <div class="windowtitle">NotePlan</div>
+    <div class="toolbar"><button class="iconbtn">⌘</button><button class="iconbtn">⋯</button></div>
+  </div>
+
+  <div class="workspace">
+    <aside class="sidebar">
+      <div class="search">⌕ <input placeholder="Search"></div>
+      <div class="sideitem active"><span class="calendaricon">▣</span> Today <span class="count">14</span></div>
+      <div class="sideitem"><span>◫</span> Week</div>
+      <div class="sideitem"><span>◇</span> Filters</div>
+
+      <div class="group">Calendar Notes</div>
+      <div class="sideitem"><span class="chev">›</span> Daily</div>
+      <div class="sideitem"><span class="chev">›</span> Weekly</div>
+      <div class="sideitem"><span class="chev">›</span> Monthly</div>
+
+      <div class="group">Notes</div>
+      <div class="sideitem"><span class="chev">⌄</span><span class="folder">▱</span> 10 - Projects</div>
+      <div class="sideitem" style="padding-left:31px"><span>📄</span> Nyx</div>
+      <div class="sideitem" style="padding-left:31px"><span>📄</span> Mistress Apps</div>
+      <div class="sideitem" style="padding-left:31px"><span>📄</span> NoteCortex</div>
+      <div class="sideitem"><span class="chev">›</span><span class="folder">▱</span> 20 - Areas</div>
+      <div class="sideitem"><span class="chev">›</span><span class="folder">▱</span> 30 - Resources</div>
+      <div class="sideitem"><span class="chev">›</span><span class="folder">▱</span> 40 - Archive</div>
+
+      <div class="group">Smart Folders</div>
+      <div class="sideitem"><span>◌</span> Recent</div>
+      <div class="sideitem"><span>✓</span> Completed</div>
+      <div class="sideitem"><span>⊞</span> Templates</div>
+    </aside>
+
+    <section class="editorpane">
+      <div class="notehead">
+        <div>
+          <div class="todaytitle">Today, Mon, 14 Sep</div>
+          <div class="week">WEEK 38</div>
+        </div>
+        <div class="noteactions">
+          <button class="iconbtn">←</button><button class="iconbtn">→</button>
+          <button class="iconbtn">☁</button><button class="iconbtn">⋯</button>
+        </div>
+      </div>
+      <div class="scroll">
+        <div class="paper">
+          <div class="rendered" id="rendered">
+            <div class="meta">MONDAY · SEPTEMBER 14, 2026</div>
+            <h1>Today’s Plan</h1>
+
+            <h3>Nyx</h3>
+            <div class="task done"><div class="check"></div><div class="txt">Valider le vocabulaire Modules / Racks / Blades / Combos</div></div>
+            <div class="task"><div class="check"></div><div class="txt">Finaliser le <a class="link">FX Composer</a> <span class="tag">#priority</span></div></div>
+            <div class="task"><div class="check"></div><div class="txt">Créer la Blade « Créer Blade »</div></div>
+            <div class="task"><div class="check"></div><div class="txt">Relier <a class="link">[[Mistress Apps]]</a></div></div>
+
+            <h3>Planning</h3>
+            <div class="task"><div class="check"></div><div class="txt"><span class="time">09:00 → 10:00</span> Revue architecture Nyx</div></div>
+            <div class="task"><div class="check"></div><div class="txt"><span class="time">11:30 → 12:00</span> Design NotePlan simulator</div></div>
+            <div class="task"><div class="check"></div><div class="txt"><span class="time">14:00 → 15:30</span> Dashboard integration</div></div>
+
+            <h2>Notes</h2>
+            <p>Le simulateur doit garder le Markdown comme source, avec rendu visuel NotePlan et compatibilité Obsidian.</p>
+            <div class="quote">Objectif : une même note, trois lectures — Markdown brut, Obsidian, NotePlan.</div>
+
+            <h2>References</h2>
+            <p><a class="link">[[Nyx Dashboard]]</a> · <a class="link">[[NoteCortex]]</a> · <span class="tag">#nyx</span> <span class="tag">#dev</span></p>
+          </div>
+
+          <div class="raw">
+<textarea class="editor" id="rawEditor">---
+title: Today
+date: 2026-09-14
+tags: [nyx, dev]
+---
+
+# Today’s Plan
+
+## Nyx
+- [x] Valider le vocabulaire Modules / Racks / Blades / Combos
+- [ ] Finaliser le FX Composer #priority
+- [ ] Créer la Blade "Créer Blade"
+- [ ] Relier [[Mistress Apps]]
+
+## Planning
+- [ ] 09:00 → 10:00 Revue architecture Nyx
+- [ ] 11:30 → 12:00 Design NotePlan simulator
+- [ ] 14:00 → 15:30 Dashboard integration
+
+## Notes
+Le simulateur doit garder le Markdown comme source, avec rendu visuel NotePlan et compatibilité Obsidian.
+
+> Objectif : une même note, trois lectures — Markdown brut, Obsidian, NotePlan.
+
+## References
+[[Nyx Dashboard]] · [[NoteCortex]] · #nyx #dev</textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="rightbar">
+      <div class="calendar">
+        <div class="calhead">September 2026 <span class="cal arrows" style="margin-left:auto">‹ &nbsp; ›</span></div>
+        <div class="grid">
+          <div class="dow">MO</div><div class="dow">TU</div><div class="dow">WE</div><div class="dow">TH</div><div class="dow">FR</div><div class="dow">SA</div><div class="dow">SU</div>
+          <div class="day dim">31</div><div class="day">1</div><div class="day">2</div><div class="day">3</div><div class="day">4</div><div class="day">5</div><div class="day">6</div>
+          <div class="day">7</div><div class="day">8</div><div class="day">9</div><div class="day">10</div><div class="day">11</div><div class="day">12</div><div class="day">13</div>
+          <div class="day today">14</div><div class="day">15</div><div class="day">16</div><div class="day">17</div><div class="day">18</div><div class="day">19</div><div class="day">20</div>
+          <div class="day">21</div><div class="day">22</div><div class="day">23</div><div class="day">24</div><div class="day">25</div><div class="day">26</div><div class="day">27</div>
+          <div class="day">28</div><div class="day">29</div><div class="day">30</div><div class="day dim">1</div><div class="day dim">2</div><div class="day dim">3</div><div class="day dim">4</div>
+        </div>
+      </div>
+
+      <div class="timeline">
+        <div class="tltop">Timeline <span>Today ▾</span></div>
+        <div style="position:relative;height:520px">
+          <div class="slot"><span class="hour">08:00</span></div>
+          <div class="slot"><span class="hour">09:00</span></div>
+          <div class="slot"><span class="hour">10:00</span></div>
+          <div class="slot"><span class="hour">11:00</span></div>
+          <div class="slot"><span class="hour">12:00</span></div>
+          <div class="slot"><span class="hour">13:00</span></div>
+          <div class="slot"><span class="hour">14:00</span></div>
+          <div class="slot"><span class="hour">15:00</span></div>
+          <div class="slot"><span class="hour">16:00</span></div>
+          <div class="event e1">09:00<br><b>Revue architecture Nyx</b></div>
+          <div class="event e2">11:30<br><b>Design simulator</b></div>
+          <div class="event e3">14:00<br><b>Dashboard integration</b></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="modebar">
+  <button class="active" id="visualBtn">NotePlan</button>
+  <button id="rawBtn">Markdown brut</button>
+</div>
+
+<script>
+const rawBtn=document.getElementById('rawBtn');
+const visualBtn=document.getElementById('visualBtn');
+rawBtn.onclick=()=>{document.body.classList.add('rawmode');rawBtn.classList.add('active');visualBtn.classList.remove('active')}
+visualBtn.onclick=()=>{document.body.classList.remove('rawmode');visualBtn.classList.add('active');rawBtn.classList.remove('active')}
+document.querySelectorAll('.check').forEach(c=>c.onclick=()=>c.parentElement.classList.toggle('done'));
+</script>
+</body>
+</html>

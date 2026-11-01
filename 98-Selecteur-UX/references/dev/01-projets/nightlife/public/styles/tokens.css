@@ -1,0 +1,249 @@
+/* =====================================================================
+   Night Intel Design System — tokens
+   Dark by default. The neon is rationed.
+   ===================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+
+:root {
+  /* -------- Color: neutrals (the room with the lights off) -------- */
+  --ink-0: #07070B;    /* deepest — app background */
+  --ink-1: #0F0F15;    /* page background */
+  --ink-2: #16161E;    /* card surface */
+  --ink-3: #1F1F2A;    /* raised surface, hover */
+  --ink-4: #2C2C3A;    /* border / divider */
+
+  /* -------- Color: text (warm off-white, never pure) -------- */
+  --bone-0: #F5F0E4;   /* primary text */
+  --bone-1: #C9C2B6;   /* secondary text */
+  --bone-2: #7A7589;   /* tertiary text, axis labels */
+  --bone-3: #48455A;   /* disabled, faintest */
+
+  /* -------- Color: brand neon -------- */
+  --neon-pink: #FF2D6F;         /* primary accent */
+  --neon-pink-glow: #FF6FA3;    /* glow / hover lift */
+  --neon-pink-deep: #B81550;    /* pressed */
+  --neon-pink-soft: rgba(255, 45, 111, 0.12);  /* tinted fill */
+
+  /* -------- Color: data viz palette -------- */
+  --acid: #C2FF3D;       /* positive deltas, up arrows */
+  --electric: #5BCFFF;   /* secondary chart, neutral info */
+  --amber: #FFB13D;      /* capacity nearing, warn */
+  --blood: #FF4D4D;      /* over capacity, danger */
+  --violet: #B47BFF;     /* fifth-series chart only */
+
+  /* Semantic shorthands */
+  --fg: var(--bone-0);
+  --fg-muted: var(--bone-1);
+  --fg-faint: var(--bone-2);
+  --fg-disabled: var(--bone-3);
+  --bg: var(--ink-1);
+  --bg-app: var(--ink-0);
+  --bg-card: var(--ink-2);
+  --bg-raised: var(--ink-3);
+  --border: var(--ink-4);
+  --border-strong: var(--bone-3);
+  --accent: var(--neon-pink);
+  --accent-glow: var(--neon-pink-glow);
+  --accent-soft: var(--neon-pink-soft);
+  --positive: var(--acid);
+  --negative: var(--blood);
+  --warn: var(--amber);
+
+  /* -------- Typography -------- */
+  --font-display: "Unbounded", "Inter Tight", system-ui, sans-serif;
+  --font-body: "Manrope", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Type scale — display sizes assume tight tracking */
+  --size-eyebrow: 11px;
+  --size-xs: 12px;
+  --size-sm: 13px;
+  --size-md: 14px;
+  --size-lg: 16px;
+  --size-xl: 20px;
+  --size-2xl: 28px;
+  --size-3xl: 36px;
+  --size-4xl: 48px;
+  --size-5xl: 64px;
+  --size-6xl: 96px;   /* hero KPI numbers */
+
+  --leading-tight: 1.05;
+  --leading-snug: 1.2;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.6;
+
+  --track-tight: -0.02em;
+  --track-snug: -0.01em;
+  --track-normal: 0;
+  --track-loose: 0.04em;
+  --track-eyebrow: 0.12em;
+
+  /* -------- Spacing — base 4px -------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-14: 56px;
+  --space-18: 72px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* -------- Radius -------- */
+  --radius-0: 0px;
+  --radius-1: 2px;     /* charts, tabular cells */
+  --radius-2: 6px;     /* input, small chip */
+  --radius-3: 10px;    /* card */
+  --radius-4: 14px;    /* modal, hero tile */
+  --radius-full: 999px;
+
+  /* -------- Shadow — sparse on purpose -------- */
+  --shadow-1: 0 4px 24px -8px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 0 1px var(--neon-pink), 0 0 24px -4px rgba(255, 45, 111, 0.5);
+  --shadow-press-inset: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+
+  /* -------- Motion -------- */
+  --ease-enter: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --dur-micro: 120ms;
+  --dur-ui: 220ms;
+  --dur-page: 400ms;
+
+  /* -------- Layout -------- */
+  --maxw-dashboard: 1440px;
+  --maxw-marketing: 1280px;
+  --gutter: 24px;
+}
+
+/* =====================================================================
+   Base reset + body
+   ===================================================================== */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-app);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: var(--size-md);
+  line-height: var(--leading-normal);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--neon-pink); color: var(--ink-0); }
+
+/* =====================================================================
+   Semantic type — utility classes
+   ===================================================================== */
+.eyebrow,
+[data-type="eyebrow"] {
+  font-family: var(--font-body);
+  font-size: var(--size-eyebrow);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+
+h1, .h1, [data-type="h1"] {
+  font-family: var(--font-display);
+  font-size: var(--size-4xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--track-tight);
+  line-height: var(--leading-tight);
+  color: var(--fg);
+  margin: 0;
+}
+
+h2, .h2, [data-type="h2"] {
+  font-family: var(--font-display);
+  font-size: var(--size-2xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--track-snug);
+  line-height: var(--leading-snug);
+  color: var(--fg);
+  margin: 0;
+}
+
+h3, .h3, [data-type="h3"] {
+  font-family: var(--font-display);
+  font-size: var(--size-xl);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--track-snug);
+  line-height: var(--leading-snug);
+  color: var(--fg);
+  margin: 0;
+}
+
+p, .body, [data-type="body"] {
+  font-family: var(--font-body);
+  font-size: var(--size-md);
+  line-height: var(--leading-relaxed);
+  color: var(--fg-muted);
+  margin: 0;
+}
+
+.label, [data-type="label"] {
+  font-family: var(--font-body);
+  font-size: var(--size-sm);
+  font-weight: var(--weight-medium);
+  color: var(--fg-muted);
+}
+
+.caption, [data-type="caption"] {
+  font-family: var(--font-body);
+  font-size: var(--size-xs);
+  color: var(--fg-faint);
+}
+
+/* KPI hero number — display mono, huge */
+.kpi-hero, [data-type="kpi-hero"] {
+  font-family: var(--font-mono);
+  font-size: var(--size-6xl);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--track-tight);
+  line-height: 0.95;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+/* KPI mid number */
+.kpi, [data-type="kpi"] {
+  font-family: var(--font-mono);
+  font-size: var(--size-3xl);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--track-snug);
+  line-height: 1;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Any inline numeric */
+.num, [data-type="num"], code, kbd {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum", "zero";
+}
+
+/* Wordmark */
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--track-tight);
+  text-transform: uppercase;
+}

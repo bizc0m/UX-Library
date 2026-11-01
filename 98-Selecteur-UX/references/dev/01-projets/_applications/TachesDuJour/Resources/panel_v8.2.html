@@ -1,0 +1,792 @@
+<!doctype html>
+<!--
+v8.2 2026-10-31 EXPÉRIMENTAL
+DEMANDE: « Control pour continuer à descendre »
+SORTIE: ⌃ Entrée (ou ⌃⇧ Entrée) = addInline avec sub + deep (un cran sous la dernière tâche) ; Control maintenu = rappel « ↳↳ sous « X » » ; ⇧ Entrée inchangé
+PREUVE: navigateur (harnais), voir README
+Fichier précédent: panel_v8.0.html
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<!-- Aucune ressource externe : tout est inline, aucune connexion autorisée. -->
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2e3135; --muted: #8b9097; --line: #e5e5e2;
+    --accent: #3a78c9; --hover: #eef3fa;
+    --p3: #cf4a3c; --p2: #dc7d2a; --p1: #c3a03a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%; background: var(--bg); color: var(--fg);
+    font: 11px/17px -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    overflow: hidden; -webkit-user-select: none; cursor: default;
+  }
+  body { display: flex; flex-direction: column; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; outline: none; }
+
+  #head { flex: none; display: flex; align-items: center; height: 24px; padding: 0 4px 0 22px; }
+  #head .title { font-weight: 600; cursor: pointer; white-space: nowrap; }
+  #head .title.today { color: var(--accent); }
+  .nav { width: 16px; height: 16px; line-height: 15px; margin: 0 3px; color: #fff; background: #1f2226;
+         border-radius: 3px; font-size: 13px; font-weight: 700; }
+  .nav:hover { background: var(--accent); }
+  #date { flex: 1; min-width: 0; margin-left: 6px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .icon { width: 24px; height: 22px; line-height: 22px; color: var(--muted); border-radius: 4px; font-size: 16px; }
+  .icon:hover { color: var(--accent); background: var(--hover); }
+  #lock[hidden] { display: none; }
+  #prio { flex: none; width: 16px; height: 16px; line-height: 16px; margin-right: 2px; padding: 0; border-radius: 3px;
+          background: #d93025; color: #fff; font-size: 12px; font-weight: 800; text-align: center; opacity: .45; }
+  #prio:hover { opacity: .8; }
+  #prio.on { opacity: 1; box-shadow: 0 0 0 2px #f6c5c0; }
+  .tags { flex: 0 0 auto; display: flex; gap: 6px; max-width: 60%; overflow: hidden; margin-left: 6px; margin-right: auto; }
+  .hastags .t { flex: 0 1 auto; }
+  .tag { flex: none; color: var(--accent); font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .tag.off { cursor: default; }
+  .tag.ctx { font-style: italic; }
+  .lnk { color: var(--accent); text-decoration: underline; cursor: pointer; }
+  .lnk:hover { text-decoration-thickness: 2px; }
+  .lnk.blocked { color: var(--muted); text-decoration: underline dotted; text-underline-offset: 2px; cursor: help; }
+  .tag:hover { text-decoration: underline; }
+  #lock svg { width: 12px; height: 12px; vertical-align: -1px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+  #lock { color: #2f9e57; }
+  #lock.on { color: #d93025; }
+  #lock svg { stroke-width: 1.8; }
+  .tagres { margin: 2px 8px 6px 28px; border: 1px solid var(--line); border-radius: 6px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .tagres .th { display: flex; align-items: center; gap: 8px; padding: 3px 8px; border-bottom: 1px solid var(--line); font-weight: 600; }
+  .tagres .th .tgn { color: var(--accent); }
+  .tagres .th .np, .tagres .th .x { margin-left: auto; color: var(--accent); cursor: pointer; font-weight: 400; }
+  .tagres .th .x { margin-left: 4px; color: var(--muted); }
+  .tagres .it { display: flex; gap: 8px; padding: 1px 8px; cursor: pointer; white-space: nowrap; }
+  .tagres .it:hover { background: var(--hover); }
+  .tagres .it .d { flex: none; width: 92px; color: var(--muted); }
+  .tagres .it .tt { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .tagres .it.today .d { color: var(--accent); font-weight: 600; }
+  .tagres .none { padding: 3px 8px; color: var(--muted); }
+  #add.dropped { box-shadow: inset 0 0 0 2px var(--accent); }
+
+  #bar { display: none; }
+  #head .icon { flex: none; }
+  #head { border-bottom: 1px solid var(--line); }
+  #menus { display: flex; min-width: 0; overflow: hidden; margin-left: 5px; }
+  .mn { flex: 0 0 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; height: 17px; line-height: 15px; margin-left: 3px; padding: 0 4px; border: 1px solid var(--line); border-radius: 3px;
+        background: #fff; font-size: 11px; white-space: nowrap; }
+  .mn:hover { border-color: #cfd6e0; color: var(--accent); }
+  .mn.tint { border-color: rgba(0,0,0,.12); color: #2e3135; }
+  .mn .em { margin-right: 3px; }
+  #menus.compact .mn { flex-shrink: 1; }
+  #menus.compact .mn.hasEm .nm { display: none; }
+  #menus.compact .mn.hasEm .em { margin-right: 1px; }
+
+  #list { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  /* Barre fine visible dès que la liste dépasse (les barres macOS par défaut se cachent). */
+  #list::-webkit-scrollbar { width: 8px; }
+  #list::-webkit-scrollbar-track { background: transparent; }
+  #list::-webkit-scrollbar-thumb { background: #c9ced6; border-radius: 4px; border: 2px solid var(--bg); }
+  #list::-webkit-scrollbar-thumb:hover { background: #a9b0ba; }
+  .row { display: flex; align-items: center; height: 17px; line-height: 17px; padding: 0 2px 0 6px; }
+  .row:hover { background: var(--hover); }
+  .prio { flex: none; width: 18px; font-size: 10px; font-weight: 700; letter-spacing: -1px; }
+  .p3 { color: var(--p3); } .p2 { color: var(--p2); } .p1 { color: var(--p1); }
+  .t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+  .lk { flex: none; width: 18px; height: 17px; line-height: 17px; text-align: center; color: var(--accent); border-radius: 3px; }
+  .lk:hover { background: #dde7f5; }
+  .lk.blocked { color: var(--muted); opacity: .5; cursor: not-allowed; }
+  .lk.blocked:hover { background: none; }
+  /* Priorité : toute la ligne colorée. */
+  .row.pr1 { background: #fdf1c2; } .row.pr2 { background: #fde0c3; } .row.pr3 { background: #fbd0cb; }
+  .row.pr1:hover, .row.pr2:hover, .row.pr3:hover { filter: brightness(.96); }
+  .row.hl:hover { filter: brightness(.96); }
+  .row.sel { background: #dfe8f7; box-shadow: inset 2px 0 0 var(--accent); }
+  .ed { flex: 1; min-width: 0; height: 15px; font: inherit; color: var(--fg); background: #fff; border: 1px solid #9fbbe3;
+        border-radius: 3px; padding: 0 3px; outline: none; -webkit-user-select: text; }
+  .row.dragging { opacity: .4; }
+  .row.dropBefore { box-shadow: inset 0 2px 0 var(--accent); }
+  .row.dropAfter { box-shadow: inset 0 -2px 0 var(--accent); }
+  body.dnd, body.dnd * { cursor: grabbing !important; }
+  .mv { flex: none; width: 18px; height: 17px; line-height: 17px; text-align: center; color: var(--muted); border-radius: 3px; opacity: 0; }
+  /* Toujours visibles (le survol n'est pas détecté quand le panneau n'a pas le focus) ; pleines au survol / à la sélection. */
+  .mv { opacity: .45 !important; }
+  .row:hover .mv, .row.sel .mv { opacity: 1 !important; }
+  .mv { font-size: 10px; font-weight: 600; }
+  .mv.back { margin-right: 1px; }
+  .mv:hover { color: var(--accent); background: #dde7f5; }
+  .tg { flex: none; width: 11px; color: var(--muted); font-size: 8px; cursor: pointer; text-align: center; }
+  .tg:hover { color: var(--accent); }
+  .box { flex: none; width: 9px; height: 9px; margin: 0 5px 0 1px; border: 1px solid #b4bac3; border-radius: 2px; cursor: pointer; }
+  .box:hover { border-color: var(--accent); }
+  .box.on { background: var(--accent); border-color: var(--accent); }
+  .grp .t { color: #3f444b; font-weight: 700; }
+  .par .t { font-weight: 700; }
+
+  .msg { padding: 5px 8px; color: var(--muted); line-height: 15px; }
+  .msg.err { color: #b0402f; }
+  .msg .detail { font-size: 10px; }
+  .msg .act { display: block; margin-top: 3px; color: var(--accent); }
+  .msg .act:hover { text-decoration: underline; }
+
+  #add { flex: none; height: 42px; display: flex; align-items: center; gap: 6px; padding: 0 8px; border-top: 1px solid #d9dde3; background: #eef1f5; }
+  #addPlus { flex: none; width: 16px; color: var(--accent); font-size: 17px; font-weight: 400; text-align: center; cursor: text; }
+  #addInput { flex: 1; min-width: 0; height: 24px; padding: 0 8px; font: inherit; color: var(--fg); background: transparent;
+              border: 0; border-radius: 0; outline: none; -webkit-user-select: text; cursor: text; box-shadow: none; }
+  #addInput::placeholder { color: #8b9097; }
+  #add { position: relative; }
+  #addHint { position: absolute; left: 0; right: 0; top: 0; bottom: 0; line-height: 42px; text-align: center; color: #8b9097;
+             pointer-events: none; }
+  #addHint.off { display: none; }
+  #addPos { flex: none; max-width: 120px; height: 18px; line-height: 16px; padding: 0 8px; border: 1px solid var(--line); border-radius: 9px;
+            background: #fff; color: #5b6068; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #addPos:hover { color: var(--accent); border-color: #b9cde9; }
+  #addOk { flex: none; color: #3f8f52; font-size: 10px; opacity: 0; transition: opacity .2s; }
+  #addOk.show { opacity: 1; }
+  #addOk.warn { color: #c26a00; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
+  #addOk.warn.sub { color: #8b9097; font-weight: 400; max-width: 40%; }
+  #foot { flex: none; border-top: 1px solid var(--line); }
+  #open { display: flex; width: 100%; height: 20px; line-height: 20px; padding: 0 2px 0 6px; color: var(--accent); text-align: left; }
+  #open:hover { background: var(--hover); }
+  #open:disabled { color: var(--muted); cursor: default; background: none; }
+  #open .t { cursor: inherit; }
+  #open .lk { background: none; color: inherit; }
+</style>
+</head>
+<body>
+  <div id="head">
+    <button id="prio" title="Afficher seulement les tâches prioritaires">!</button>
+    <button id="prev" class="nav" title="Jour précédent">‹</button>
+    <span id="title" class="title" title="Revenir à aujourd’hui">Aujourd’hui</span>
+    <button id="next" class="nav" title="Jour suivant">›</button>
+    <span id="menus"></span>
+    <span id="date"></span>
+    <button id="lock" class="icon" title="Bloquer la position du panneau" hidden></button>
+    <button id="prefs" class="icon" title="Préférences">⚙</button>
+    <button id="refresh" class="icon" title="Actualiser">↻</button>
+  </div>
+  <div id="bar"></div>
+  <div id="list"><div id="inner"></div></div>
+  <div id="add">
+    <span id="addPlus">+</span>
+    <span id="addHint">Ajouter une tâche</span>
+    <input id="addInput" type="text" autocomplete="off" spellcheck="false" aria-label="Ajouter une tâche" title="Entrée : ajouter · ⇧ Entrée : sous-tâche de la dernière tâche · ⌃ Entrée : un cran plus bas">
+    <span id="addOk">✓ Ajoutée</span>
+    <button id="addPos" title="Où ajouter la tâche">Fin de note ▾</button>
+  </div>
+  <div id="foot">
+    <button id="open" disabled><span class="t" id="openLabel">Ouvrir la note du jour dans NotePlan</span><span class="lk">↗</span></button>
+  </div>
+<script>
+  "use strict";
+  const post = (m) => window.webkit.messageHandlers.bridge.postMessage(m);
+  const $ = (id) => document.getElementById(id);
+  // Traductions : table envoyée par l'app (clé = texte français) ; vide en français.
+  let I18N = {}, i18nKey = null;
+  const T = (s) => I18N[s] || s;
+  /// Textes fixes du HTML : le français d'origine est gardé dans data-fr puis traduit à chaque changement de langue.
+  function applyStatic() {
+    document.querySelectorAll("[title]").forEach((e) => {
+      if (e.dataset.frTitle === undefined) e.dataset.frTitle = e.title;
+      e.title = T(e.dataset.frTitle);
+    });
+    for (const id of ["addHint", "addOk"]) {
+      const e = $(id);
+      if (e.dataset.fr === undefined) e.dataset.fr = e.textContent;
+      e.textContent = T(e.dataset.fr);
+    }
+    const inp = $("addInput");
+    if (inp.dataset.fr === undefined) inp.dataset.fr = inp.getAttribute("aria-label");
+    inp.setAttribute("aria-label", T(inp.dataset.fr));
+  }
+  const PRIO = { 3: "!!!", 2: "!!", 1: "!" };
+  const ACTIONS = { reselect: "Sélectionner à nouveau le dossier…", pickNote: "Sélectionner la note du jour…" };
+
+  // Construction DOM par textContent uniquement : aucun contenu de note n'est interprété comme HTML.
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  // Remplit `span` avec le texte du titre ; chaque lien trouvé (dans l'ordre) devient un span cliquable.
+  // Texte uniquement (textContent) ; l'adresse n'est jamais ouverte par le JS : Swift la retrouve par son rang et la revérifie.
+  // Lien écrit en entier (pas un libellé) coupé au milieu : « exemple.com/…/doc.pdf ». 0 = sans limite.
+  let linkMax = 40;
+  function shortLink(l) {
+    const t = l.t, bare = t === l.u || "https://" + t === l.u;
+    if (!bare || !linkMax || t.length <= linkMax) return t;
+    const head = Math.ceil((linkMax - 1) * 0.6), tail = linkMax - 1 - head;
+    return t.slice(0, head) + "…" + t.slice(t.length - tail);
+  }
+
+  // Bulle d'un lien bloqué ; pour un lien d'app (codex:, obsidian:…), dit où l'autoriser. Jamais pour un schéma dangereux.
+  const NEVER = ["javascript", "vbscript", "livescript", "data", "file", "blob", "about", "filesystem", "view-source", "applescript", "x-apple-applescript", "shell", "ssh", "telnet", "x-man-page", "help", "http", "https", "noteplan"];
+  function blockedTip(u) {
+    const m = /^([a-z][a-z0-9+.\-]{0,31}):/i.exec(u);
+    const tip = T("Lien non autorisé : ") + u;
+    return m && NEVER.indexOf(m[1].toLowerCase()) < 0 ? tip + "\n" + T("Pour l'autoriser : Préférences → Général → Liens vers d'autres apps") : tip;
+  }
+
+  function fillTitle(span, r) {
+    const text = r.t, links = r.k === "t" && Array.isArray(r.links) ? r.links : [];
+    let cur = 0;
+    links.forEach((l, n) => {
+      if (!l || typeof l.t !== "string" || !l.t) return;
+      const at = text.indexOf(l.t, cur);
+      if (at < 0) return;
+      if (at > cur) span.appendChild(document.createTextNode(text.slice(cur, at)));
+      const a = el("span", l.ok === true ? "lnk" : "lnk blocked", shortLink(l));
+      a.title = l.ok === true ? String(l.u || "") : blockedTip(String(l.u || ""));
+      a.addEventListener("mousedown", (e) => e.stopPropagation());
+      a.addEventListener("dblclick", (e) => e.stopPropagation());
+      a.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (l.ok === true) post({ type: "openLink", i: r.id, n });
+      });
+      span.appendChild(a);
+      cur = at + l.t.length;
+    });
+    if (cur < text.length) span.appendChild(document.createTextNode(text.slice(cur)));
+  }
+
+  // Lignes visibles : au-delà de maxRows lignes affichées, la liste défile. 0 = illimité (l'écran borne).
+  let maxRows = 25;
+  function listHeight() {
+    const inner = $("inner"), full = inner.offsetHeight;
+    // Résultats de tag ouverts : toute la liste (l'écran borne).
+    if (!maxRows || inner.querySelector(".tagres")) return full;
+    const vis = [...inner.querySelectorAll(".row")].filter((x) => x.offsetParent !== null);
+    if (vis.length <= maxRows) return full;
+    const r = vis[maxRows - 1];
+    return Math.min(full, Math.ceil(r.getBoundingClientRect().bottom - inner.getBoundingClientRect().top));
+  }
+
+  function reportHeight() {
+    const h = $("head").offsetHeight + $("bar").offsetHeight + listHeight() + $("add").offsetHeight + $("foot").offsetHeight;
+    post({ type: "height", h });
+  }
+
+  let last = null;
+  function toggle(key) {
+    const f = new Set(last.folded || []);
+    const now = !f.has(key);
+    if (now) f.add(key); else f.delete(key);
+    last.folded = [...f];
+    post({ type: "fold", key, folded: now });
+    window.render(last);
+  }
+
+  let followRaw = null, selLn = null, editing = false, pending = null, clickTimer = null, drag = null, justDragged = false;
+
+  function clearDrop() {
+    document.querySelectorAll(".dropBefore, .dropAfter, .dragging").forEach((x) => x.classList.remove("dropBefore", "dropAfter", "dragging"));
+    document.body.classList.remove("dnd");
+  }
+
+  document.addEventListener("mousemove", (e) => {
+    if (!drag) return;
+    if (!drag.active) {
+      if (Math.abs(e.clientY - drag.y) < 5) return;
+      drag.active = true;
+      post({ type: "log", msg: "glisser début ligne " + drag.r.ln });
+      drag.row.classList.add("dragging");
+      document.body.classList.add("dnd");
+    }
+    // Défilement automatique près des bords de la liste.
+    const l = $("list"), lr = l.getBoundingClientRect();
+    if (e.clientY < lr.top + 18) l.scrollTop -= 8; else if (e.clientY > lr.bottom - 18) l.scrollTop += 8;
+    document.querySelectorAll(".dropBefore, .dropAfter").forEach((x) => x.classList.remove("dropBefore", "dropAfter"));
+    const over = document.elementFromPoint(lr.left + 20, Math.min(Math.max(e.clientY, lr.top + 1), lr.bottom - 1));
+    const tr = over && over.closest("#inner .row");
+    if (!tr || tr === drag.row) { drag.target = null; return; }
+    const b = tr.getBoundingClientRect();
+    const after = e.clientY > b.top + b.height / 2;
+    tr.classList.add(after ? "dropAfter" : "dropBefore");
+    drag.target = { ln: Number(tr.dataset.ln), after };
+  });
+
+  document.addEventListener("mouseup", () => {
+    if (!drag) return;
+    const d = drag;
+    drag = null;
+    clearDrop();
+    if (!d.active) return;
+    post({ type: "log", msg: "lâcher cible=" + (d.target ? d.target.ln + (d.target.after ? " après" : " avant") : "aucune") });
+    justDragged = true;
+    setTimeout(() => { justDragged = false; }, 60);
+    const t = d.target && rowsByLn.get(d.target.ln);
+    if (t) post({ type: "move", i: d.r.id, target: t.r.id, after: d.target.after });
+  });
+  const rowsByLn = new Map();
+
+  function markSel() {
+    document.querySelectorAll("#inner .row").forEach((x) => x.classList.toggle("sel", Number(x.dataset.ln) === selLn));
+  }
+
+  // Édition en place : Entrée enregistre (Swift revérifie la ligne), Échap annule, sortie du champ = enregistrer.
+  function startEdit(r, title) {
+    if (editing || r.k !== "t") return;
+    editing = true;
+    const inp = document.createElement("input");
+    inp.className = "ed";
+    inp.value = r.raw || r.t;
+    title.replaceWith(inp);
+    inp.focus();
+    inp.select();
+    const done = (save) => {
+      if (!editing) return;
+      editing = false;
+      const v = inp.value.trim();
+      if (save && v && v !== (r.raw || r.t)) post({ type: "edit", i: r.id, text: v });
+      const d = pending || last;
+      pending = null;
+      window.render(d);
+    };
+    inp.addEventListener("keydown", (e) => {
+      e.stopPropagation();
+      if (e.key === "Enter") { e.preventDefault(); done(true); }
+      else if (e.key === "Escape") { e.preventDefault(); done(false); }
+    });
+    inp.addEventListener("blur", () => done(true));
+  }
+
+  // Jour affiché dans le passé : ajout seulement après une 2e Entrée (voir le champ d'ajout).
+  let pastDay = false, pastArmed = null;
+  window.render = function (d) {
+    pastDay = typeof d.offset === "number" && d.offset < 0;
+    if (!pastDay) disarmPast();
+    const ik = JSON.stringify(d.i18n || {}).length + ":" + (d.lang || "fr");
+    if (ik !== i18nKey) {
+      i18nKey = ik;
+      I18N = d.i18n || {};
+      document.documentElement.lang = d.lang || "fr";
+      applyStatic();
+      lockKey = null;
+    }
+    // Pas de rendu pendant une édition (rechargement du fichier) : appliqué à la sortie du champ.
+    if (editing) { pending = d; return; }
+    last = d;
+    if (/^#[0-9A-Fa-f]{6}$/.test(d.accent || "")) document.documentElement.style.setProperty("--accent", d.accent);
+    if ([25, 40, 60, 0].includes(d.linkMax)) linkMax = d.linkMax;
+    if ([5, 10, 15, 20, 25, 0].includes(d.maxRows)) maxRows = d.maxRows;
+    renderMenus(d.menus);
+    renderLock(d.lock);
+    // Après ⇧↑ / ⇧↓ : la sélection suit la ligne déplacée (son numéro a changé).
+    if (followRaw !== null && d.rows) {
+      const f = d.rows.find((r) => r.raw === followRaw || r.raw === followRaw.replace(/^[\t ]*/, ""));
+      if (f) selLn = f.ln;
+      followRaw = null;
+    }
+    $("date").textContent = "";
+    // Champ d'ajout : seulement quand le dossier est lisible (note présente ou absente).
+    $("add").style.display = d.state === "ok" || d.state === "noNote" ? "flex" : "none";
+    subParent = typeof d.subParent === "string" ? d.subParent : "";
+    $("addPos").textContent = (d.addLabel || T("Fin de note")) + " ▾";
+    $("addPos").title = T("Où ajouter la tâche : ") + (d.addLabel || T("Fin de note"));
+    // Date seule dans l'en-tête ; « Aujourd'hui / Hier / Demain… » en infobulle.
+    const label = d.date ? d.date.charAt(0).toUpperCase() + d.date.slice(1) : (d.title || T("Aujourd’hui"));
+    $("title").textContent = label;
+    $("title").classList.toggle("today", d.offset === 0);
+    $("title").title = (d.title || "") + (d.offset === 0 ? "" : T(" — clic : revenir à aujourd’hui"));
+    $("openLabel").textContent = d.offset === 0 ? T("Ouvrir la note du jour dans NotePlan") : T("Ouvrir cette note dans NotePlan");
+    $("open").disabled = !d.canOpenNote;
+    const inner = $("inner");
+    inner.replaceChildren();
+    rowsByLn.clear();
+
+    $("prio").classList.toggle("on", !!d.prioOnly);
+    $("prio").title = d.prioOnly ? T("Priorités seulement — cliquer pour tout afficher") : T("Afficher seulement les tâches prioritaires");
+    // Filtre « ! » : tâches à priorité + leurs parents (pour garder la hiérarchie).
+    let keep = null;
+    if (d.state === "ok" && d.prioOnly) {
+      keep = new Set();
+      const stack = [];
+      d.rows.forEach((r) => {
+        while (stack.length && stack[stack.length - 1].d >= r.d) stack.pop();
+        if (r.k === "t" && r.p > 0) { keep.add(r.id); stack.forEach((a) => keep.add(a.id)); }
+        stack.push(r);
+      });
+    }
+    if (keep && keep.size === 0) {
+      const box = el("div", "msg");
+      box.appendChild(el("div", "", T("Aucune tâche prioritaire ce jour.")));
+      const a = el("button", "act", T("Tout afficher"));
+      a.addEventListener("click", () => post({ type: "prioOnly" }));
+      box.appendChild(a);
+      inner.appendChild(box);
+    } else if (d.state === "ok" && d.rows.length) {
+      const folded = new Set(d.folded || []);
+      const anyKids = d.rows.some((r) => r.kids);
+      let hideBelow = null;
+      d.rows.forEach((r) => {
+        if (keep && !keep.has(r.id)) return;
+        // Descendants d'un nœud plié : masqués jusqu'au retour à sa profondeur.
+        if (hideBelow !== null && r.d > hideBelow) return;
+        hideBelow = null;
+        const isFolded = r.kids && folded.has(r.key);
+        const row = el("div", "row" + (r.k === "g" ? " grp" : "") + (r.kids ? " par" : "") + (r.k === "t" && r.p ? " pr" + r.p : "") + (r.ln === selLn ? " sel" : ""));
+        row.dataset.ln = r.ln;
+        // Surlignage choisi dans TinyPlan (jamais écrit dans la note) : seulement une couleur #RRGGBB.
+        if (r.k === "t" && /^#[0-9A-Fa-f]{6}$/.test(r.hl || "")) { row.classList.add("hl"); row.style.backgroundColor = r.hl; }
+        if (r.k === "t") row.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+          selLn = r.ln; markSel();
+          post({ type: "rowMenu", i: r.id, x: e.clientX, y: e.clientY });
+        });
+        row.addEventListener("mousedown", (e) => {
+          selLn = r.ln; markSel();
+          // Glisser-déposer : pas depuis une case, un bouton ou un champ.
+          if (e.button === 0 && !e.target.closest(".box, button, input, .tg")) drag = { r, row, y: e.clientY, active: false, target: null };
+        });
+        row.style.paddingLeft = (6 + r.d * 12) + "px";
+        if (anyKids) {
+          const tg = el("span", "tg", r.kids ? (isFolded ? "▸" : "▾") : "");
+          if (r.kids) tg.addEventListener("click", (e) => { e.stopPropagation(); toggle(r.key); });
+          row.appendChild(tg);
+        }
+        if (r.k === "t") {
+          // Ramener au jour d'avant : seulement sur un jour futur (jamais avant aujourd'hui).
+          if (d.offset > 0) {
+            const back = el("button", "mv back", "−1");
+            back.title = d.offset === 1 ? T("Ramener à aujourd’hui") : T("Ramener au jour d’avant");
+            back.addEventListener("click", (e) => { e.stopPropagation(); post({ type: "reschedule", i: r.id, delta: -1 }); });
+            row.appendChild(back);
+          }
+          const box = el("span", "box");
+          box.title = T("Cocher dans la note");
+          box.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (box.classList.contains("on")) return;
+            box.classList.add("on");
+            post({ type: "complete", i: r.id });
+          });
+          row.appendChild(box);
+          row.appendChild(el("span", "prio p" + r.p, PRIO[r.p] || ""));
+        }
+        const title = el("span", "t");
+        const tx = el("span", r.k === "t" && r.p ? "hl" : "");
+        fillTitle(tx, r);
+        title.appendChild(tx);
+        title.title = r.tip;
+        if (r.k === "g") title.addEventListener("click", () => toggle(r.key));
+        else {
+          // Clic simple différé : un double-clic doit éditer sans ouvrir NotePlan.
+          title.addEventListener("click", () => {
+            if (justDragged) return;
+            clearTimeout(clickTimer);
+            clickTimer = setTimeout(() => post({ type: "openTask", i: r.id }), 280);
+          });
+          title.addEventListener("dblclick", (e) => { e.preventDefault(); clearTimeout(clickTimer); startEdit(r, title); });
+        }
+        rowsByLn.set(r.ln, { r, title });
+        row.dataset.id = r.id;
+        row.appendChild(title);
+        if (r.k === "t" && r.tags && r.tags.length) {
+          const tags = el("span", "tags");
+          r.tags.forEach((t) => {
+            const c = el("span", t.startsWith("@") ? "tag ctx" : "tag", t);
+            c.title = T("Tâches avec %@").replace("%@", t);
+            c.addEventListener("mousedown", (e) => e.stopPropagation());
+            if (d.tagsOn === false) c.classList.add("off");
+            else c.addEventListener("click", (e) => { e.stopPropagation(); post({ type: "tag", i: r.id, tag: t }); });
+            tags.appendChild(c);
+          });
+          row.appendChild(tags);
+          row.classList.add("hastags");
+        }
+        if (r.k === "t") {
+          const mv = el("button", "mv", "+1");
+          mv.title = T("Reporter à demain");
+          mv.addEventListener("click", (e) => { e.stopPropagation(); post({ type: "reschedule", i: r.id, delta: 1 }); });
+          row.appendChild(mv);
+        }
+        if (r.link !== "none") {
+          const b = el("button", "lk" + (r.link === "blocked" ? " blocked" : ""), "↗");
+          b.title = r.link === "blocked" ? blockedTip(String(r.url || "")) : r.url;
+          if (r.link === "ok") b.addEventListener("click", (e) => { e.stopPropagation(); post({ type: "openLink", i: r.id }); });
+          row.appendChild(b);
+        }
+        inner.appendChild(row);
+        if (isFolded) hideBelow = r.d;
+      });
+    } else {
+      const err = d.state === "error" || d.state === "accessLost" || d.state === "ambiguous";
+      const box = el("div", "msg" + (err ? " err" : ""));
+      box.appendChild(el("div", "", d.message || ""));
+      if (d.detail) box.appendChild(el("div", "detail", d.detail));
+      if (d.action && ACTIONS[d.action]) {
+        const a = el("button", "act", T(ACTIONS[d.action]));
+        a.addEventListener("click", () => post({ type: d.action }));
+        box.appendChild(a);
+      }
+      inner.appendChild(box);
+    }
+    requestAnimationFrame(reportHeight);
+  };
+
+  $("addInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.isComposing) {
+      e.preventDefault();
+      const v = e.target.value.trim();
+      if (v && pastDay && !(pastArmed && pastArmed.text === v && Date.now() - pastArmed.at < 4000)) {
+        // 1re Entrée sur un jour passé : rien n'est ajouté, on prévient.
+        pastArmed = { text: v, at: Date.now() };
+        const ok = $("addOk");
+        ok.textContent = T("Jour passé : Entrée encore pour ajouter");
+        ok.classList.add("warn", "show");
+        clearTimeout(window.pastTimer);
+        window.pastTimer = setTimeout(disarmPast, 4000);
+        return;
+      }
+      if (v) {
+        disarmPast();
+        hideSubHint();
+        // ⇧ Entrée : sous-tâche de la dernière tâche ouverte ; sans tâche ouverte, ajout normal et avertissement.
+        const wantSub = e.shiftKey || e.ctrlKey;
+        const sub = wantSub && subParent !== "";
+        post(sub ? { type: "addInline", text: v, sub: true, deep: e.ctrlKey } : { type: "addInline", text: v });
+        e.target.value = "";
+        syncHint();
+        const ok = $("addOk");
+        if (wantSub && !sub) {
+          ok.textContent = T("Pas de tâche au-dessus : ajoutée normalement");
+          ok.classList.add("warn", "show");
+          setTimeout(() => { ok.classList.remove("warn", "show"); ok.textContent = T("✓ Ajoutée"); }, 2500);
+        } else {
+          ok.textContent = sub ? T("✓ Sous-tâche ajoutée") : T("✓ Ajoutée");
+          ok.classList.add("show");
+          setTimeout(() => { ok.classList.remove("show"); ok.textContent = T("✓ Ajoutée"); }, 1400);
+        }
+      }
+    } else if ((e.key === "Shift" || e.key === "Control") && e.target.value.trim() && subParent && !pastArmed) {
+      // Rappel tant que Shift ou Control est maintenu : sous quelle tâche la sous-tâche arrivera (Control = un cran plus bas).
+      const ok = $("addOk");
+      const deep = e.key === "Control" || e.ctrlKey;
+      ok.textContent = (deep ? T("↳↳ sous « %@ »") : T("↳ sous « %@ »")).replace("%@", subParent);
+      ok.classList.add("warn", "show", "sub");
+    } else if (e.key === "Escape") {
+      e.target.value = "";
+      syncHint();
+      disarmPast();
+      e.target.blur();
+    }
+  });
+  let subParent = "";
+  function hideSubHint() {
+    const ok = $("addOk");
+    if (ok.classList.contains("sub")) { ok.classList.remove("warn", "show", "sub"); ok.textContent = T("✓ Ajoutée"); }
+  }
+  $("addInput").addEventListener("keyup", (e) => {
+    if (e.key === "Shift" || e.key === "Control") {
+      // L'autre touche encore enfoncée garde son rappel.
+      if (e.shiftKey || e.ctrlKey) {
+        $("addOk").textContent = (e.ctrlKey ? T("↳↳ sous « %@ »") : T("↳ sous « %@ »")).replace("%@", subParent);
+      } else hideSubHint();
+    }
+  });
+  $("addInput").addEventListener("blur", hideSubHint);
+  // Invite centrée sur tout le panneau : visible seulement quand le champ est vide.
+  function syncHint() { $("addHint").classList.toggle("off", $("addInput").value !== ""); }
+  function disarmPast() {
+    pastArmed = null;
+    const ok = $("addOk");
+    if (ok.classList.contains("warn")) { ok.classList.remove("warn", "show"); ok.textContent = T("✓ Ajoutée"); }
+  }
+  $("addInput").addEventListener("input", () => { syncHint(); disarmPast(); });
+  $("addPlus").addEventListener("click", () => $("addInput").focus());
+  // Lien glissé sur le panneau (texte préparé par Swift) : ajouté au champ, l'utilisateur valide par Entrée.
+  window.prefillAdd = function (text) {
+    if (typeof text !== "string" || !text) return;
+    const inp = $("addInput"), cur = inp.value.trim();
+    inp.value = (cur ? cur + " " : "") + text;
+    syncHint();
+    inp.focus();
+    inp.setSelectionRange(inp.value.length, inp.value.length);
+    $("add").classList.add("dropped");
+    setTimeout(() => $("add").classList.remove("dropped"), 900);
+  };
+  $("addPos").addEventListener("click", () => {
+    const r = $("addPos").getBoundingClientRect();
+    post({ type: "addPosMenu", x: r.left, y: r.bottom + 2 });
+  });
+  $("prev").addEventListener("click", () => post({ type: "shiftDay", delta: -1 }));
+  $("next").addEventListener("click", () => post({ type: "shiftDay", delta: 1 }));
+  // Aujourd'hui affiché : calendrier « aller à la date » ; autre jour : retour à aujourd'hui.
+  $("title").addEventListener("click", () => {
+    if (last && last.offset === 0) {
+      const r = $("title").getBoundingClientRect();
+      post({ type: "pickDate", x: r.left + r.width / 2, y: r.bottom });
+    } else post({ type: "today" });
+  });
+
+  // Lien glissé : rang de la tâche sous le point (pixels CSS), -1 si ce n'est pas une tâche.
+  window.rowAtPoint = function (x, y) {
+    const e = document.elementFromPoint(Number(x), Number(y));
+    const r = e && e.closest("#inner .row");
+    if (!r || r.classList.contains("grp") || r.dataset.id === undefined) return -1;
+    return Number(r.dataset.id);
+  };
+
+  // Résultats d'un tag (préparés par Swift) : bloc sous la ligne cliquée.
+  window.showTagResults = function (res) {
+    document.querySelectorAll(".tagres").forEach((x) => x.remove());
+    if (!res || typeof res.tag !== "string" || !Array.isArray(res.items)) return;
+    const row = document.querySelector('#inner .row[data-id="' + Number(res.i) + '"]');
+    if (!row) return;
+    const box = el("div", "tagres");
+    const th = el("div", "th");
+    th.appendChild(el("span", "tgn", res.tag));
+    th.appendChild(el("span", "", "· " + res.items.length + (res.more ? "+" : "")));
+    const np = el("span", "np", T("Rechercher dans NotePlan") + " ↗");
+    np.addEventListener("click", (e) => { e.stopPropagation(); post({ type: "tagSearch", i: Number(res.i), tag: res.tag }); });
+    const x = el("span", "x", "✕");
+    x.title = T("Fermer");
+    x.addEventListener("click", (e) => { e.stopPropagation(); box.remove(); requestAnimationFrame(reportHeight); });
+    th.append(np, x);
+    box.appendChild(th);
+    if (!res.items.length) box.appendChild(el("div", "none", T("Aucune tâche ouverte avec ce tag")));
+    res.items.forEach((it) => {
+      if (!it || typeof it.t !== "string") return;
+      const off = Number(it.off);
+      const line = el("div", "it" + (off === 0 ? " today" : ""));
+      line.appendChild(el("span", "d", String(it.d || "")));
+      line.appendChild(el("span", "tt", (PRIO[it.p] ? PRIO[it.p] + " " : "") + it.t));
+      line.title = it.t;
+      line.addEventListener("click", (e) => { e.stopPropagation(); if (Number.isInteger(off)) post({ type: "gotoDay", off }); });
+      box.appendChild(line);
+    });
+    box.addEventListener("mousedown", (e) => e.stopPropagation());
+    row.after(box);
+    requestAnimationFrame(reportHeight);
+  };
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && document.querySelector(".tagres")) {
+      document.querySelectorAll(".tagres").forEach((x) => x.remove());
+      requestAnimationFrame(reportHeight);
+    }
+  });
+  $("prefs").addEventListener("click", () => post({ type: "prefs" }));
+  $("lock").addEventListener("click", () => post({ type: "lock" }));
+  $("prio").addEventListener("click", () => {
+    // Réponse immédiate à l'écran ; Swift mémorise l'état et renvoie le rendu.
+    if (last) { last.prioOnly = !last.prioOnly; window.render(last); }
+    post({ type: "prioOnly" });
+  });
+
+  // Cadenas : dessiné en SVG (pas d'emoji coloré) ; anse fermée si bloqué, ouverte sinon.
+  let lockKey = null;
+  function renderLock(state) {
+    const b = $("lock");
+    const key = String(state);
+    if (key === lockKey) return;
+    lockKey = key;
+    b.hidden = state !== true && state !== false;
+    if (b.hidden) return;
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", "0 0 12 12");
+    const body = document.createElementNS(ns, "rect");
+    for (const [k, v] of [["x", "2"], ["y", "5.5"], ["width", "8"], ["height", "5.5"], ["rx", "1.2"]]) body.setAttribute(k, v);
+    const shackle = document.createElementNS(ns, "path");
+    shackle.setAttribute("d", state ? "M4 5.5V3.8a2 2 0 0 1 4 0v1.7" : "M4 5.5V3.8a2 2 0 0 1 4 0");
+    svg.append(body, shackle);
+    b.replaceChildren(svg);
+    b.classList.toggle("on", state);
+    b.title = state ? T("Position bloquée — cliquer pour débloquer") : T("Bloquer la position du panneau");
+  }
+  $("refresh").addEventListener("click", () => post({ type: "refresh" }));
+  $("open").addEventListener("click", () => post({ type: "openDay" }));
+  // Menus de l'en-tête : construits à chaque rendu depuis la liste choisie dans les préférences.
+  let menusKey = null;
+  const MENU_MAX = 15;
+  function renderMenus(names) {
+    const key = JSON.stringify(names || []);
+    if (key === menusKey) return;
+    menusKey = key;
+    const box = $("menus");
+    box.replaceChildren();
+    (names || []).forEach((m, i) => {
+      // Ancien format : simple nom.
+      const n = typeof m === "string" ? m : String((m && m.n) || "");
+      const c = m && typeof m.c === "string" && /^#[0-9A-Fa-f]{6}$/.test(m.c) ? m.c : "";
+      const e = m && typeof m.e === "string" ? m.e.slice(0, 8) : "";
+      const b = el("button", "mn");
+      // Nom affiché : 15 caractères au plus.
+      const chars = Array.from(n);
+      const short = chars.length > MENU_MAX ? chars.slice(0, MENU_MAX - 1).join("") + "…" : n;
+      if (e) { b.appendChild(el("span", "em", e)); b.classList.add("hasEm"); }
+      b.appendChild(el("span", "nm", short + " ▾"));
+      if (c) { b.style.backgroundColor = c; b.classList.add("tint"); }
+      b.title = n;
+      b.addEventListener("click", () => {
+        const r = b.getBoundingClientRect();
+        post({ type: "menu", index: i, x: r.left, y: r.bottom + 2 });
+      });
+      box.appendChild(b);
+    });
+    fitMenus();
+  }
+  // Pas assez de place : les menus à emoji passent en emoji seul.
+  function fitMenus() {
+    const box = $("menus");
+    box.classList.remove("compact");
+    if (box.scrollWidth > box.clientWidth + 1) box.classList.add("compact");
+  }
+  window.addEventListener("resize", fitMenus);
+  document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+  // Molette / trackpad n'importe où dans le panneau → défilement de la liste.
+  document.addEventListener("wheel", (e) => {
+    const l = $("list");
+    if (l.scrollHeight <= l.clientHeight) return;
+    l.scrollTop += e.deltaMode === 1 ? e.deltaY * 17 : e.deltaY;
+    e.preventDefault();
+  }, { passive: false });
+
+  // Flèches ↑ ↓ : sélection de ligne ; Entrée : éditer (tâche) ou plier (groupe) ; Échap : désélectionner.
+  document.addEventListener("keydown", (e) => {
+    if (editing || e.target.tagName === "INPUT") return;
+    const vis = [...document.querySelectorAll("#inner .row")];
+    if (!vis.length) return;
+    let idx = vis.findIndex((x) => Number(x.dataset.ln) === selLn);
+    if (e.key === "Tab") {
+      // Tab : sous-tâche (un niveau de plus) ; ⇧Tab : remonter d'un niveau.
+      e.preventDefault();
+      const it = rowsByLn.get(selLn);
+      if (it) post({ type: "indent", i: it.r.id, delta: e.shiftKey ? -1 : 1 });
+      return;
+    }
+    if (e.shiftKey && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
+      // ⇧↑ / ⇧↓ : échange avec la ligne sœur (même niveau, même parent).
+      e.preventDefault();
+      const it = rowsByLn.get(selLn);
+      if (!it || !last || !last.rows) return;
+      const rows = last.rows, cur = rows.findIndex((x) => x.id === it.r.id), up = e.key === "ArrowUp";
+      let t = null;
+      for (let k = cur + (up ? -1 : 1); k >= 0 && k < rows.length; k += up ? -1 : 1) {
+        if (rows[k].d < it.r.d) break;
+        if (rows[k].d === it.r.d) { t = rows[k]; break; }
+      }
+      if (!t) return;
+      followRaw = it.r.raw;
+      post({ type: "move", i: it.r.id, target: t.id, after: !up });
+      return;
+    }
+    if (e.key === "ArrowDown") idx = Math.min(vis.length - 1, idx + 1);
+    else if (e.key === "ArrowUp") idx = idx < 0 ? 0 : Math.max(0, idx - 1);
+    else if (e.key === "Enter" && idx >= 0) {
+      e.preventDefault();
+      const it = rowsByLn.get(selLn);
+      if (it && it.r.k === "g") toggle(it.r.key); else if (it) startEdit(it.r, it.title);
+      return;
+    } else if (e.key === "Escape") { selLn = null; markSel(); return; }
+    else return;
+    e.preventDefault();
+    selLn = Number(vis[idx].dataset.ln);
+    markSel();
+    vis[idx].scrollIntoView({ block: "nearest" });
+  });
+  post({ type: "ready" });
+</script>
+</body>
+</html>

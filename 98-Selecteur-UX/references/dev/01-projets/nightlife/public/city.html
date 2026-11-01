@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Night Intel · City File</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07070b;
+      --panel: rgba(17, 14, 30, 0.78);
+      --line: rgba(255, 255, 255, 0.14);
+      --text: #f5f0e4;
+      --muted: #a99fb8;
+      --pink: #ff2d6f;
+      --cyan: #5bcfff;
+      --acid: #c2ff3d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255, 45, 111, 0.16), transparent 28%),
+        radial-gradient(circle at 82% 20%, rgba(91, 207, 255, 0.12), transparent 30%),
+        var(--bg);
+      font-family: Manrope, Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: inherit; }
+    .city-shell {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 86px 0 48px;
+    }
+    .city-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+      margin-bottom: 22px;
+    }
+    .city-eyebrow {
+      margin: 0 0 10px;
+      color: var(--cyan);
+      font: 800 11px/1.1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(42px, 8vw, 92px);
+      line-height: 0.92;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+    }
+    .city-sub {
+      margin: 16px 0 0;
+      max-width: 720px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.55;
+    }
+    .city-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .city-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 16px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 900;
+      font-size: 13px;
+    }
+    .city-btn.primary {
+      border-color: rgba(255, 45, 111, 0.62);
+      background: linear-gradient(135deg, rgba(255, 45, 111, 0.9), rgba(91, 207, 255, 0.28));
+      box-shadow: 0 0 28px rgba(255, 45, 111, 0.22);
+    }
+    .city-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+      align-items: start;
+    }
+    .city-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+      -webkit-backdrop-filter: blur(18px);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+    .city-card h2 {
+      margin: 0;
+      padding: 18px 18px 0;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--cyan);
+    }
+    .city-list {
+      display: grid;
+      gap: 0;
+      padding: 10px 0 8px;
+    }
+    .city-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      padding: 14px 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      color: inherit;
+      text-decoration: none;
+    }
+    a.city-row:hover,
+    a.city-row:focus-visible {
+      background: rgba(255, 45, 111, 0.1);
+      outline: none;
+    }
+    .city-row:first-child { border-top: 0; }
+    .city-row strong { display: block; font-size: 15px; }
+    .city-row span { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
+    .city-pill {
+      align-self: center;
+      white-space: nowrap;
+      border: 1px solid rgba(194, 255, 61, 0.38);
+      border-radius: 999px;
+      padding: 7px 10px;
+      color: var(--acid);
+      font: 800 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .city-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      padding: 18px;
+    }
+    .city-stat {
+      min-height: 92px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .city-stat b { display: block; font-size: 28px; line-height: 1; }
+    .city-stat span { display: block; margin-top: 8px; color: var(--muted); font-size: 12px; }
+    .city-error {
+      padding: 18px;
+      color: var(--muted);
+    }
+    @media (max-width: 760px) {
+      .city-shell { width: min(100vw - 22px, 640px); padding-top: 72px; }
+      .city-top, .city-row { display: block; }
+      .city-actions { justify-content: flex-start; margin-top: 18px; }
+      .city-grid { grid-template-columns: 1fr; }
+      .city-pill { display: inline-block; margin-top: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="city-shell">
+    <section class="city-top">
+      <div>
+        <p class="city-eyebrow">Night Intel · City File</p>
+        <h1 id="cityName">City</h1>
+        <p class="city-sub" id="citySub">Loading nightlife signals, venues and local radar data.</p>
+      </div>
+      <nav class="city-actions" aria-label="City actions">
+        <a class="city-btn" href="/world-radar">World radar</a>
+        <a class="city-btn primary" id="dashboardLink" href="/annecy">Refresh Annecy</a>
+      </nav>
+    </section>
+    <section class="city-grid">
+      <article class="city-card">
+        <h2>Upcoming signals</h2>
+        <div class="city-list" id="eventList"></div>
+      </article>
+      <aside class="city-card">
+        <h2>Intel snapshot</h2>
+        <div class="city-stats" id="cityStats"></div>
+      </aside>
+      <article class="city-card">
+        <h2>Venues</h2>
+        <div class="city-list" id="venueList"></div>
+      </article>
+      <article class="city-card">
+        <h2>Data status</h2>
+        <div class="city-error" id="cityStatus">Loading...</div>
+      </article>
+    </section>
+  </main>
+  <script>
+    const FALLBACK_CITIES = {
+      paris: { name: "Paris", country: "France", totalVenues: 0, totalEvents: 0, note: "Network city tracked on the world radar. Local dataset pending." },
+      london: { name: "London", country: "United Kingdom", totalVenues: 0, totalEvents: 0, note: "Network city tracked on the world radar. Local dataset pending." },
+      berlin: { name: "Berlin", country: "Germany", totalVenues: 0, totalEvents: 0, note: "Network city tracked on the world radar. Local dataset pending." },
+      amsterdam: { name: "Amsterdam", country: "Netherlands", totalVenues: 0, totalEvents: 0, note: "Network city tracked on the world radar. Local dataset pending." },
+      milan: { name: "Milan", country: "Italy", totalVenues: 0, totalEvents: 0, note: "Network city tracked on the world radar. Local dataset pending." },
+      nyc: { name: "NYC", country: "United States", totalVenues: 0, totalEvents: 0, note: "Network city tracked on the world radar. Local dataset pending." },
+      tokyo: { name: "Tokyo", country: "Japan", totalVenues: 0, totalEvents: 0, note: "Network city tracked on the world radar. Local dataset pending." },
+      "sao-paulo": { name: "São Paulo", country: "Brazil", totalVenues: 0, totalEvents: 0, note: "Network city tracked on the world radar. Local dataset pending." },
+      lisbon: { name: "Lisbon", country: "Portugal", totalVenues: 0, totalEvents: 0, note: "Network city tracked on the world radar. Local dataset pending." },
+      miami: { name: "Miami", country: "United States", totalVenues: 0, totalEvents: 0, note: "Network city tracked on the world radar. Local dataset pending." },
+      "buenos-aires": { name: "Buenos Aires", country: "Argentina", totalVenues: 0, totalEvents: 0, note: "Network city tracked on the world radar. Local dataset pending." },
+      marrakech: { name: "Marrakech", country: "Morocco", totalVenues: 0, totalEvents: 0, note: "Network city tracked on the world radar. Local dataset pending." },
+      athens: { name: "Athens", country: "Greece", totalVenues: 0, totalEvents: 0, note: "Network city tracked on the world radar. Local dataset pending." },
+      tulum: { name: "Tulum", country: "Mexico", totalVenues: 0, totalEvents: 0, note: "Network city tracked on the world radar. Local dataset pending." },
+      dubai: { name: "Dubai", country: "United Arab Emirates", totalVenues: 0, totalEvents: 0, note: "Network city tracked on the world radar. Local dataset pending." }
+    };
+
+    const slug = decodeURIComponent(location.pathname.split("/").filter(Boolean).pop() || new URLSearchParams(location.search).get("city") || "annecy").toLowerCase();
+    const title = (value) => String(value || slug).replace(/-/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+    const eventList = document.getElementById("eventList");
+    const venueList = document.getElementById("venueList");
+    const cityStats = document.getElementById("cityStats");
+    const cityStatus = document.getElementById("cityStatus");
+
+    function escapeHtml(value) {
+      return String(value || "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[char]);
+    }
+
+    function row(title, meta, pill, href) {
+      const item = document.createElement(href ? "a" : "div");
+      item.className = "city-row";
+      if (href) {
+        item.href = href;
+        item.target = "_blank";
+        item.rel = "noreferrer";
+      }
+      item.innerHTML = `<div><strong>${escapeHtml(title || "Untitled")}</strong><span>${escapeHtml(meta || "Night Intel source")}</span></div><em class="city-pill">${escapeHtml(pill || "tracked")}</em>`;
+      return item;
+    }
+
+    function venueHref(venue) {
+      const direct = venue.url || venue.website || venue.instagramUrl || venue.facebookUrl || "";
+      if (direct) return direct;
+      const query = [venue.name, venue.address || slug].filter(Boolean).join(" ");
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    }
+
+    function stat(value, label) {
+      const div = document.createElement("div");
+      div.className = "city-stat";
+      div.innerHTML = `<b>${value}</b><span>${label}</span>`;
+      return div;
+    }
+
+    function requestJson(url) {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const separator = url.includes("?") ? "&" : "?";
+        xhr.open("GET", `${url}${separator}_=${Date.now()}`, true);
+        xhr.onreadystatechange = () => {
+          if (xhr.readyState !== 4) return;
+          if (xhr.status < 200 || xhr.status >= 300) {
+            reject(new Error(`HTTP ${xhr.status}`));
+            return;
+          }
+          try {
+            resolve(JSON.parse(xhr.responseText));
+          } catch (error) {
+            reject(error);
+          }
+        };
+        xhr.onerror = () => reject(new Error("network_error"));
+        xhr.send();
+      });
+    }
+
+    async function loadCity() {
+      document.getElementById("dashboardLink").href = `/${encodeURIComponent(slug)}`;
+      try {
+        const [city, events, venues, stats] = await Promise.all([
+          requestJson(`/api/cities/${slug}`),
+          requestJson(`/api/cities/${slug}/events`).catch(() => []),
+          requestJson(`/api/cities/${slug}/venues`).catch(() => []),
+          requestJson(`/api/cities/${slug}/stats`).catch(() => ({}))
+        ]);
+        document.getElementById("cityName").textContent = city.name || title(slug);
+        document.getElementById("citySub").textContent = `${city.country || "Night Intel"} · ${city.timezone || "live radar"} · ${city.high_season ? "high season" : "standard season"}`;
+        cityStats.replaceChildren(
+          stat(stats.totalVenues ?? venues.length, "venues"),
+          stat(stats.totalEvents ?? events.length, "events"),
+          stat(stats.totalRadars ?? 0, "radars"),
+          stat(city.radius_km ? `${city.radius_km}km` : "live", "scan radius")
+        );
+        eventList.replaceChildren(...(events.length
+          ? events.slice(0, 12).map((event) => row(
+              event.name,
+              `${event.date || "soon"}${event.time ? ` · ${event.time}` : ""} · ${event.venue || city.name}`,
+              event.verified ? "verified" : "signal",
+              event.sourceUrl || event.presaleUrl || ""
+            ))
+          : [row("No upcoming events", "Sources are active; the next scan has not returned a future date.", "scanning")]));
+        venueList.replaceChildren(...(venues.slice(0, 8).map((venue) => row(venue.name, venue.address || city.name, venue.type || "venue", venueHref(venue)))));
+        cityStatus.textContent = "Local city dataset loaded from Night Intel city config.";
+      } catch (error) {
+        const city = FALLBACK_CITIES[slug] || { name: title(slug), country: "Network city", totalVenues: 0, totalEvents: 0, note: "Network city tracked on the world radar. Local dataset pending." };
+        document.getElementById("cityName").textContent = city.name;
+        document.getElementById("citySub").textContent = `${city.country} · ${city.note}`;
+        cityStats.replaceChildren(stat("live", "network status"), stat("0", "local venues"), stat("0", "local events"), stat("todo", "dataset"));
+        eventList.replaceChildren(row("No local events yet", "Add scanner sources to activate this city.", "pending"));
+        venueList.replaceChildren(row("No local venues yet", "City exists on radar but not in the local DB.", "pending"));
+        cityStatus.textContent = "Fallback city file: route works, local city dataset not created yet.";
+      }
+    }
+    loadCity();
+  </script>
+</body>
+</html>

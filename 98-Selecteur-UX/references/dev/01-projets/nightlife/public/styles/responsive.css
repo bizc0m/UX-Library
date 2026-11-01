@@ -1,0 +1,685 @@
+/* =====================================================================
+   Night Intel — Responsive layout + Bottom action bar
+   Mobile-first additions on top of app.css (desktop baseline)
+   iPhone priority for narrow viewports.
+   ===================================================================== */
+
+/* ===== Unified bottom bar — Safety | Footer credits | Jumeau =====
+   Single fixed bar at bottom. Replaces both floating buttons AND the
+   inline footer so they can never visually misalign.
+================================================================================ */
+.bottom-rail {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  padding-left: calc(12px + env(safe-area-inset-left));
+  padding-right: calc(12px + env(safe-area-inset-right));
+  background: rgba(15,15,21,0.92);
+  border-top: 1px solid var(--ink-4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.bottom-rail .br-side { flex-shrink: 0; display: inline-flex; align-items: center; gap: 8px; }
+.bottom-rail .br-center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* When the rail is on, the page needs bottom padding equal to the rail height
+   so its content doesn't get hidden under it. Wired via --rail-height by App. */
+.main { padding-bottom: calc(var(--rail-height, 56px) + 16px); }
+
+/* ===== Rail buttons (Safety + Trauma + Connexion + Jumeau) ===== */
+.bb-btn {
+  position: static;
+  width: 96px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 220ms var(--ease-enter);
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1;
+  padding: 0;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.bb-btn.safety {
+  background: rgba(255,45,111,0.14);
+  border: 1px solid var(--neon-pink);
+  color: var(--neon-pink-glow);
+  box-shadow: inset 0 0 0 1px rgba(255,45,111,0.10);
+}
+.bb-btn.safety:hover {
+  background: var(--neon-pink);
+  color: var(--ink-0);
+  box-shadow: 0 0 18px -4px var(--shadow-glow-px);
+}
+.bb-btn.trauma {
+  width: max-content;
+  min-width: 116px;
+  padding: 0 14px;
+  white-space: nowrap;
+  background: rgba(255,77,77,0.16);
+  border: 1px solid var(--blood);
+  color: var(--blood);
+  text-shadow: 0 0 8px rgba(255,77,77,0.55);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,77,77,0.12),
+    0 0 12px -2px rgba(255,77,77,0.4);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.bb-btn.safety {
+  width: 78px;
+  padding: 0 8px;
+  font-size: 11px;
+  letter-spacing: 0;
+}
+.bb-btn.trauma:hover {
+  background: var(--blood);
+  color: #FFF;
+  text-shadow: none;
+  box-shadow: 0 0 22px -2px rgba(255,77,77,0.7);
+}
+
+.bb-btn.connexion {
+  background: rgba(194,255,61,0.16);
+  border: 1px solid var(--acid);
+  color: var(--acid);
+  box-shadow:
+    inset 0 0 0 1px rgba(194,255,61,0.12),
+    0 0 12px -2px rgba(194,255,61,0.35);
+  text-shadow: 0 0 8px rgba(194,255,61,0.55);
+}
+.bb-btn.connexion:hover {
+  background: var(--acid);
+  color: var(--ink-0);
+  text-shadow: none;
+  box-shadow:
+    0 0 22px -2px rgba(194,255,61,0.7),
+    inset 0 0 0 1px rgba(7,7,11,0.2);
+}
+
+.bottom-rail .br-side {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.bb-btn.jumeau {
+  background: rgba(91,207,255,0.14);
+  border: 1px solid var(--electric);
+  color: var(--electric);
+  box-shadow: inset 0 0 0 1px rgba(91,207,255,0.10);
+}
+.bb-btn.jumeau:hover {
+  background: var(--electric);
+  color: var(--ink-0);
+  box-shadow: 0 0 18px -4px rgba(91,207,255,0.55);
+}
+
+/* Skin overrides */
+[data-skin="paper"] .bb-btn.safety {
+  background: var(--neon-pink);
+  color: #FFF;
+  border-color: var(--neon-pink-deep);
+}
+[data-skin="paper"] .bb-btn.safety:hover {
+  background: var(--neon-pink-deep);
+}
+[data-skin="paper"] .bb-btn.jumeau {
+  background: var(--electric);
+  color: #FFF;
+  border-color: var(--electric);
+}
+[data-skin="paper"] .bb-btn.jumeau:hover {
+  background: #15568A;
+  border-color: #15568A;
+}
+[data-skin="girly"] .bb-btn.safety {
+  background: var(--neon-pink);
+  color: #FFF;
+  border-color: var(--neon-pink-deep);
+  border-radius: 999px;
+}
+[data-skin="girly"] .bb-btn.jumeau {
+  background: var(--electric);
+  color: #FFF;
+  border-color: var(--electric);
+  border-radius: 999px;
+}
+
+/* Sidebar bottom gutter (clears bottom-bar area, computed from --footer-height) */
+.sidebar { padding-bottom: 16px; }
+
+/* Footer height is measured into --footer-height by App's effect so the
+   fixed bottom-bar can sit cleanly above it without ever overlapping. */
+.footer {
+  --footer-min-h: 56px;
+  min-height: var(--footer-min-h);
+}
+
+/* ===== Tablet (1023px and below) ===== */
+@media (max-width: 1023px) {
+  .topbar-title { display: none; }
+  .meta-cell { display: none; }
+  .sort-pill { display: none; }
+  .events-grid { grid-template-columns: repeat(2, 1fr); }
+  .home-actions { width: min(720px, 100%); }
+  .home-result-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ===== Phone (iPhone priority — up to 768px) ===== */
+@media (max-width: 768px) {
+  html, body, #root {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    font-size: 14px;
+  }
+
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    grid-template-areas: "main";
+  }
+  .home-app {
+    grid-template-rows: 1fr;
+    grid-template-areas: "main";
+  }
+  .home-main {
+    width: 100%;
+    max-width: 100vw;
+    min-width: 0;
+    overflow-x: hidden;
+    padding: 64px 10px 28px;
+  }
+  .home-hero {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .home-dashboard,
+  .home-entry-actions,
+  .home-actions,
+  .home-trauma,
+  .home-spots-list,
+  .home-sources-list,
+  .home-chip-cloud,
+  .home-myplaces,
+  .home-results,
+  .home-detail-panel,
+  .home-focus-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+  .home-boost {
+    width: 100%;
+    justify-content: center;
+    padding: 8px 12px;
+  }
+  .home-boost em { display: none; }
+  .home-dashboard {
+    min-height: 48px;
+    width: 100%;
+    border-radius: 10px;
+    padding: 0 12px;
+    font-size: 14px;
+    overflow: hidden;
+  }
+  .home-dashboard span {
+    display: block;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .home-entry-actions {
+    width: 100%;
+    gap: 10px;
+    grid-template-columns: 1fr;
+  }
+  .home-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .home-big-card {
+    width: 100%;
+    min-height: 118px;
+    border-radius: 18px;
+    padding: 22px 16px;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .home-big-card.nightintel,
+  .home-big-card.party {
+    aspect-ratio: auto;
+    gap: 8px;
+    min-height: 0;
+    padding: 16px 10px;
+  }
+  .home-big-card.nightintel .home-card-icon,
+  .home-big-card.party .home-card-icon {
+    font-size: clamp(30px, 8vw, 42px);
+  }
+  .home-big-card.nightintel strong,
+  .home-big-card.party strong {
+    max-width: 100%;
+    font-size: clamp(15px, 4.5vw, 19px);
+    line-height: 1.02;
+  }
+  .home-big-card.nightintel em,
+  .home-big-card.party em,
+  .home-big-card.nightintel small,
+  .home-big-card.party small {
+    font-size: clamp(10px, 3.2vw, 12px);
+    line-height: 1.25;
+  }
+  .home-big-card strong {
+    display: block;
+    width: min(100%, 210px);
+    min-width: 0;
+    max-width: 210px;
+    font-size: clamp(18px, 6.4vw, 24px);
+    line-height: 1.05;
+    white-space: normal;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+  .home-big-card em,
+  .home-big-card small {
+    display: block;
+    max-width: 100%;
+    font-size: 13px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .home-card-icon {
+    font-size: clamp(34px, 10vw, 56px);
+  }
+  .home-big-card.utility {
+    min-height: 104px;
+  }
+  .home-trauma {
+    min-height: 58px;
+    border-radius: 14px;
+    gap: 8px;
+    font-size: 12px;
+  }
+  .home-result-grid { grid-template-columns: 1fr; }
+  .home-results-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .home-chip-cloud {
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 3px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .home-chip-cloud::-webkit-scrollbar { display: none; }
+  .home-chip-cloud button { flex: 0 0 auto; }
+
+  /* Smartphone: keep only the central content column visible. */
+  .topbar,
+  .sidebar,
+  .footer,
+  .bottom-rail {
+    display: none !important;
+  }
+
+  /* ===== Topbar — compact, 2 rows tight ===== */
+  .topbar {
+    padding-top: env(safe-area-inset-top);
+  }
+  .topbar-row {
+    padding: 6px 10px;
+    gap: 6px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .topbar-row::-webkit-scrollbar { display: none; }
+
+  .topbar-row .size-seg { display: none; }
+  .topbar-row .skin-seg { flex-shrink: 0; }
+  .topbar-row .skin-seg button { padding: 0 8px; font-size: 9px; }
+  .topbar-row .city-pill { flex-shrink: 0; }
+  .topbar-row .btn-primary { flex-shrink: 0; padding: 0 12px; font-size: 11px; }
+  .topbar-row .search { flex: 1 1 auto; max-width: none; min-width: 120px; }
+  .topbar-row .mode-btn { flex-shrink: 0; }
+  .topbar-row .ico-btn { flex-shrink: 0; }
+  .topbar-row .live-strip { flex-shrink: 0; font-size: 9px; }
+
+  /* ===== Sidebar becomes a horizontal filter strip ===== */
+  .sidebar {
+    grid-area: sidebar;
+    border-right: none;
+    border-bottom: 1px solid var(--ink-4);
+    padding: 6px 10px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0;
+    padding-bottom: 6px;
+    background: var(--ink-1);
+  }
+  .sidebar::-webkit-scrollbar { display: none; }
+  .sidebar > div { flex-shrink: 0; }
+  .sidebar h4 { display: none; }
+  .sidebar > .radar-card {
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    width: auto;
+  }
+  .sidebar > .radar-card .radar-head { margin: 0; gap: 6px; }
+  .sidebar > .radar-card .radar-bar { display: none; }
+  .sidebar > .radar-card .radar-meta { display: none; }
+  /* Hide ambiance dial section on mobile (low value) */
+  .sidebar > div:nth-of-type(2) { display: none; }
+  /* Signaux become horizontal chips */
+  .sidebar .flist {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+  .sidebar .frow {
+    flex-shrink: 0;
+    padding: 4px 10px;
+    border: 1px solid var(--ink-4);
+    border-radius: 999px;
+    background: var(--ink-2);
+    width: auto;
+  }
+  /* Districts: hide on mobile (or could show, keep for now) */
+  .sidebar > div:nth-of-type(4) { display: none; }
+  /* Filtres (toggles): hide on mobile */
+  .sidebar > div:nth-of-type(5) { display: none; }
+
+  /* ===== Main content ===== */
+  .main {
+    width: 100%;
+    max-width: 100vw;
+    min-width: 0;
+    overflow-x: hidden;
+    padding: 10px 10px 24px;
+    grid-area: main;
+  }
+  .main-inner { gap: 10px; }
+
+  /* Hero stays roughly same but tighter */
+  .hero { padding: 12px; }
+  .hero-head { flex-wrap: nowrap; gap: 8px; }
+  .hero-title { font-size: 12px; gap: 6px; }
+  .hero-title .bolt { width: 20px; height: 20px; }
+
+  /* Scanner-inline: wrap on mobile */
+  .scanner-inline {
+    flex-wrap: wrap;
+    padding: 8px 10px;
+    gap: 6px;
+  }
+  .scanner-inline-eyebrow {
+    flex-basis: 100%;
+  }
+  .scanner-inline-meta {
+    flex-basis: 100%;
+    justify-content: space-between;
+  }
+  .scanner-inline .si-gps,
+  .scanner-inline .btn-scan {
+    flex: 1 1 0;
+  }
+
+  /* CTAs stack */
+  .cta-grid { grid-template-columns: 1fr; gap: 6px; }
+  .cta { padding: 10px 12px; }
+  .cta-eyebrow { min-width: 60px; }
+  .cta h4 { font-size: 12px; white-space: normal; }
+
+  /* Events grid: 1 col on phone */
+  .events-grid { grid-template-columns: 1fr; gap: 6px; }
+
+  /* Compact event cards: enlarge touch target */
+  .ev { padding: 12px; gap: 6px; }
+  .ev-name { font-size: 14px; }
+  .ev-venue { font-size: 12px; }
+
+  /* ===== Event row on mobile — show only:
+     [Category] [Days-left] [Title (clickable)] [Share buttons]
+     Everything else hidden. */
+  .ev-full {
+    padding: 8px 10px;
+    gap: 6px;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+  .ev-row-1 {
+    flex: 1;
+    min-width: 0;
+    gap: 6px;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+  .ev-row-1 .checkbox,
+  .ev-row-1 .ev-age,
+  .ev-row-1 .ev-when-date,
+  .ev-row-1 .ev-when-time,
+  .ev-row-1 .ev-colon {
+    display: none;
+  }
+  .ev-row-1 .ev-when {
+    background: none;
+    border: none;
+    padding: 0;
+    gap: 0;
+    min-width: 0;
+    flex-shrink: 0;
+  }
+  .ev-row-1 .ev-when-dleft {
+    margin: 0;
+  }
+  .ev-row-1 .ev-title {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Row 2: hide everything except the share buttons */
+  .ev-row-2 {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    flex-shrink: 0;
+    width: auto;
+    gap: 0;
+  }
+  .ev-row-2 > *:not(.ev-share-group) {
+    display: none;
+  }
+
+  /* Section heads */
+  .sec-head h2 { font-size: 11px; }
+  .sec-actions a { display: none; }
+
+  /* Bottom rail — slightly taller tap targets on phone */
+  .bottom-rail {
+    padding: 6px 8px;
+    padding-bottom: calc(6px + env(safe-area-inset-bottom));
+    gap: 8px;
+  }
+  .bb-btn {
+    height: 44px;
+    font-size: 13px;
+    width: 96px;
+  }
+  /* On phone the credits/badges shrink but stay visible */
+  .bottom-rail .br-center { gap: 6px; }
+  .bottom-rail .foot-credits { font-size: 9px; white-space: normal; text-align: center; }
+  .bottom-rail .boost { font-size: 9px; padding: 2px 8px; height: 20px; }
+  .bottom-rail .badge-slot { width: 22px; height: 22px; }
+  .bottom-rail .badges { gap: 2px; flex-wrap: wrap; justify-content: center; }
+}
+
+@media (max-width: 480px) {
+  .home-entry-actions {
+    grid-template-columns: 1fr;
+  }
+  .home-world-map,
+  .home-globe-entry,
+  .home-entry-scan {
+    width: 100%;
+    min-height: 110px;
+    padding: 13px 10px;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .home-entry-scan {
+    min-height: 76px;
+  }
+  .home-world-map span,
+  .home-globe-entry span,
+  .home-entry-scan span {
+    display: block;
+    max-width: 100%;
+    font-size: 12px;
+    line-height: 1.15;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .home-world-map strong,
+  .home-globe-entry strong,
+  .home-entry-scan strong {
+    max-width: 100%;
+    font-size: 12px;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  .home-world-map em,
+  .home-globe-entry em,
+  .home-entry-scan em {
+    max-width: 100%;
+    font-size: 10px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  .home-spots-head {
+    flex-direction: column;
+    align-items: center;
+  }
+  .home-spots-grid {
+    grid-template-columns: 1fr;
+  }
+  .home-sources-list summary {
+    flex-direction: column;
+    align-items: center;
+  }
+  .home-sources-grid { grid-template-columns: 1fr; }
+  /* Below ~iPhone width, drop the credits + boost; keep only badges visible */
+  .bottom-rail .foot-credits,
+  .bottom-rail .boost { display: none; }
+  .bottom-rail .badges { flex-wrap: nowrap; }
+  .bottom-rail .badge-slot:nth-of-type(n+6) { display: none; }
+  .bb-btn { width: 88px; font-size: 11px; }
+}
+
+/* ===== Small phone (iPhone SE, 375px) ===== */
+@media (max-width: 380px) {
+  .home-main {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .home-dashboard {
+    font-size: 12px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .home-big-card {
+    min-height: 108px;
+    padding: 14px 10px;
+  }
+  .home-big-card strong {
+    width: min(100%, 210px);
+    max-width: 210px;
+    font-size: clamp(15px, 5.5vw, 19px);
+  }
+  .home-big-card em {
+    font-size: 12px;
+  }
+  .home-big-card small {
+    font-size: 10px;
+  }
+  .topbar-row .skin-seg button { padding: 0 6px; }
+  .topbar-row .skin-seg .swatch { display: none; }
+  .topbar-row .btn-primary { padding: 0 10px; }
+  .main { padding: 8px 8px calc(var(--rail-height, 64px) + 12px); }
+  .bb-btn { width: 88px; font-size: 11px; }
+}
+
+/* ===== Hide the floating Jumeau (old FAB) since BottomBar replaces it ===== */
+/* Scoped to avoid hiding the new .bb-btn.jumeau */
+button.jumeau:not(.bb-btn) { display: none !important; }
+
+/* Accueil : les quatre actions utilisent désormais le même gabarit compact. */
+.home-big-card.nightintel,
+.home-big-card.party,
+.home-big-card.utility {
+  height: 112px;
+  min-height: 112px;
+  padding: 12px;
+  border-radius: 18px;
+  gap: 6px;
+  box-sizing: border-box;
+}
+.home-big-card.nightintel .home-card-icon,
+.home-big-card.party .home-card-icon,
+.home-big-card.utility .home-card-icon {
+  font-size: clamp(24px, 3vw, 34px);
+}
+.home-big-card.nightintel strong,
+.home-big-card.party strong,
+.home-big-card.utility strong {
+  font-size: clamp(15px, 2vw, 20px);
+}

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sources Annecy — Night Intel</title>
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #f7f2ff; background: #09070e; font-family: Inter, system-ui, sans-serif; }
+    main { width: min(1080px, calc(100% - 28px)); margin: 0 auto; padding: 28px 0 60px; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 24px; }
+    h1 { margin: 4px 0 0; font-size: clamp(26px, 5vw, 48px); text-transform: uppercase; }
+    .eyebrow { color: #5bcfff; font: 700 11px/1.2 ui-monospace, monospace; letter-spacing: .16em; text-transform: uppercase; }
+    .back { color: #09070e; background: #5bcfff; padding: 10px 14px; border-radius: 10px; text-decoration: none; font-weight: 900; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+    .stat { padding: 18px; border: 1px solid #302b3d; border-radius: 14px; background: #121019; }
+    .stat strong { display: block; font-size: 30px; }
+    .stat span { color: #aaa3b8; font-size: 12px; text-transform: uppercase; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .source { min-height: 126px; display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; padding: 16px; border: 1px solid #302b3d; border-radius: 14px; background: #121019; color: #f7f2ff; text-decoration: none; }
+    .source:hover { border-color: #5bcfff; transform: translateY(-1px); }
+    .source .num { grid-row: 1 / 4; color: #5bcfff; font: 700 12px/1 ui-monospace, monospace; }
+    .source strong { line-height: 1.2; }
+    .source small { color: #aaa3b8; text-transform: uppercase; }
+    .source em { align-self: end; color: #ffb13d; font: 700 10px/1.2 ui-monospace, monospace; font-style: normal; }
+    .source.active em { color: #c2ff3d; }
+    .error { color: #ff6f87; }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } .stats { grid-template-columns: 1fr; } header { align-items: flex-start; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div><span class="eyebrow">Night Intel · Annecy</span><h1>Sources</h1></div>
+      <a class="back" href="/">← Accueil</a>
+    </header>
+    <section class="stats" aria-label="Statistiques des sources">
+      <div class="stat"><strong id="detected">—</strong><span>Sources repérées</span></div>
+      <div class="stat"><strong id="active">—</strong><span>Sources actives</span></div>
+      <div class="stat"><strong id="events">—</strong><span>Événements collectés</span></div>
+    </section>
+    <p id="status" class="eyebrow">Chargement des sources…</p>
+    <section id="sources" class="grid" aria-label="Liste des sources Annecy"></section>
+  </main>
+  <script src="/src/data.js?v=annecy-293-20260712"></script>
+  <script src="/src/sources-page.js?v=20260712"></script>
+</body>
+</html>

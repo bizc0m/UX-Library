@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ScreenAgentLight - Layout Icons V2</title>
+  <style>
+    :root {
+      --bg: #1e2023;
+      --panel: #2a2d30;
+      --text: #f4f4f5;
+      --muted: #a9adb3;
+      --blue: #0a84ff;
+      --green: #32d74b;
+      --purple: #bf5af2;
+      --pink: #ff375f;
+      --s: 18px;
+      --m: 28px;
+      --xl: 40px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #111315;
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif;
+    }
+
+    main {
+      width: min(980px, calc(100vw - 48px));
+      padding: 26px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 14px;
+      background: var(--bg);
+      box-shadow: 0 20px 60px rgba(0,0,0,.42);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0;
+      font-weight: 700;
+    }
+
+    .sub {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .tile {
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      align-items: center;
+      gap: 12px;
+      min-height: 72px;
+      padding: 14px;
+      border-radius: 10px;
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,.10);
+    }
+
+    .tile strong {
+      display: block;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .tile span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .layout {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: transparent;
+    }
+
+    .window {
+      width: 40px;
+      height: 32px;
+      position: relative;
+      border: 1px solid rgba(255,255,255,.62);
+      border-radius: 4px;
+      background: transparent;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 2px;
+    }
+
+    .cell {
+      min-width: 0;
+      min-height: 0;
+      border-radius: 2px;
+      background: var(--blue);
+    }
+
+    .cell.on { background: rgba(255,255,255,.92); }
+    .half-v .window {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr;
+    }
+    .half-h .window {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr 1fr;
+    }
+    .full .cell.on { grid-column: 1 / 3; grid-row: 1 / 3; }
+    .left .cell.on { grid-column: 1; grid-row: 1; }
+    .right .cell.on { grid-column: 2; grid-row: 1; }
+    .top .cell.on { grid-column: 1; grid-row: 1; }
+    .bottom .cell.on { grid-column: 1; grid-row: 2; }
+    .tl .cell.on { grid-column: 1; grid-row: 1; }
+    .tr .cell.on { grid-column: 2; grid-row: 1; }
+    .bl .cell.on { grid-column: 1; grid-row: 2; }
+    .br .cell.on { grid-column: 2; grid-row: 2; }
+
+    .layout.grid3 .window {
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 2px;
+    }
+
+    .g-tl .cell:nth-child(1),
+    .g-t .cell:nth-child(2),
+    .g-tr .cell:nth-child(3),
+    .g-l .cell:nth-child(4),
+    .g-c .cell:nth-child(5),
+    .g-r .cell:nth-child(6),
+    .g-bl .cell:nth-child(7),
+    .g-b .cell:nth-child(8),
+    .g-br .cell:nth-child(9) {
+      background: rgba(255,255,255,.92);
+    }
+
+    .grid3 .window {
+      width: 40px;
+      height: 34px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 26px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,.12);
+    }
+
+    .badge {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font: 800 22px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      border-radius: 9px;
+      border: 2px solid rgba(255,255,255,.82);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.18);
+    }
+
+    .green { background: var(--green); }
+    .purple { background: var(--purple); }
+    .pink { background: var(--pink); }
+
+    .menu {
+      width: 420px;
+      margin-top: 24px;
+      padding: 8px;
+      border-radius: 12px;
+      background: rgba(20,22,24,.92);
+      border: 1px solid rgba(255,255,255,.18);
+    }
+
+    .menu-line {
+      height: 48px;
+      display: grid;
+      grid-template-columns: 52px 1fr 24px;
+      align-items: center;
+      padding: 0 10px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .menu-line.active { background: var(--blue); }
+    .chev { color: rgba(255,255,255,.78); font-size: 24px; text-align: right; }
+
+    .section-title {
+      margin: 30px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Agencements V2</h1>
+      <div class="sub">Nouveaux pictos proposes : bleu = ecran, blanc = fenetre placee. Badge couleur = moniteur physique.</div>
+
+    <section class="grid">
+      <div class="tile"><div class="layout full"><div class="window"><i class="cell on"></i></div></div><div><strong>Plein ecran</strong><span>Fenetre complete</span></div></div>
+      <div class="tile"><div class="layout left half-v"><div class="window"><i class="cell on"></i><i class="cell"></i></div></div><div><strong>Moitie gauche</strong><span>Zone gauche</span></div></div>
+      <div class="tile"><div class="layout right half-v"><div class="window"><i class="cell"></i><i class="cell on"></i></div></div><div><strong>Moitie droite</strong><span>Zone droite</span></div></div>
+      <div class="tile"><div class="layout top half-h"><div class="window"><i class="cell on"></i><i class="cell"></i></div></div><div><strong>Moitie haut</strong><span>Zone haute</span></div></div>
+      <div class="tile"><div class="layout bottom half-h"><div class="window"><i class="cell"></i><i class="cell on"></i></div></div><div><strong>Moitie bas</strong><span>Zone basse</span></div></div>
+      <div class="tile"><div class="layout tl"><div class="window"><i class="cell on"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i></div></div><div><strong>Quart haut gauche</strong><span>Coin haut gauche</span></div></div>
+      <div class="tile"><div class="layout tr"><div class="window"><i class="cell"></i><i class="cell on"></i><i class="cell"></i><i class="cell"></i></div></div><div><strong>Quart haut droit</strong><span>Coin haut droit</span></div></div>
+      <div class="tile"><div class="layout bl"><div class="window"><i class="cell"></i><i class="cell"></i><i class="cell on"></i><i class="cell"></i></div></div><div><strong>Quart bas gauche</strong><span>Coin bas gauche</span></div></div>
+      <div class="tile"><div class="layout br"><div class="window"><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell on"></i></div></div><div><strong>Quart bas droit</strong><span>Coin bas droit</span></div></div>
+    </section>
+
+    <div class="section-title">Grille 3x3</div>
+    <section class="grid">
+      <div class="tile"><div class="layout grid3 g-tl"><div class="window"><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i></div></div><div><strong>Haut gauche</strong><span>Case 1</span></div></div>
+      <div class="tile"><div class="layout grid3 g-t"><div class="window"><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i></div></div><div><strong>Haut</strong><span>Case 2</span></div></div>
+      <div class="tile"><div class="layout grid3 g-tr"><div class="window"><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i></div></div><div><strong>Haut droit</strong><span>Case 3</span></div></div>
+      <div class="tile"><div class="layout grid3 g-l"><div class="window"><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i></div></div><div><strong>Gauche</strong><span>Case 4</span></div></div>
+      <div class="tile"><div class="layout grid3 g-c"><div class="window"><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i></div></div><div><strong>Centre</strong><span>Case 5</span></div></div>
+      <div class="tile"><div class="layout grid3 g-r"><div class="window"><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i></div></div><div><strong>Droite</strong><span>Case 6</span></div></div>
+      <div class="tile"><div class="layout grid3 g-bl"><div class="window"><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i></div></div><div><strong>Bas gauche</strong><span>Case 7</span></div></div>
+      <div class="tile"><div class="layout grid3 g-b"><div class="window"><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i></div></div><div><strong>Bas</strong><span>Case 8</span></div></div>
+      <div class="tile"><div class="layout grid3 g-br"><div class="window"><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i></div></div><div><strong>Bas droit</strong><span>Case 9</span></div></div>
+    </section>
+
+    <div class="row">
+      <div class="badge green">4</div>
+      <div class="badge purple">3</div>
+      <div class="badge pink">5</div>
+      <div class="sub">Badges ecrans separes : la couleur sert aux moniteurs, pas aux layouts.</div>
+    </div>
+
+    <section class="menu">
+      <div class="menu-line active"><div class="layout left half-v"><div class="window"><i class="cell on"></i><i class="cell"></i></div></div><div>Moitie gauche</div><div class="chev">›</div></div>
+      <div class="menu-line"><div class="layout right half-v"><div class="window"><i class="cell"></i><i class="cell on"></i></div></div><div>Moitie droite</div><div class="chev">›</div></div>
+      <div class="menu-line"><div class="layout tl"><div class="window"><i class="cell on"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i></div></div><div>Quart haut gauche</div><div class="chev">›</div></div>
+      <div class="menu-line"><div class="layout grid3 g-c"><div class="window"><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i></div></div><div>Grille centre</div><div class="chev">›</div></div>
+    </section>
+  </main>
+</body>
+</html>

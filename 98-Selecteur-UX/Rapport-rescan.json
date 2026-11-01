@@ -1,0 +1,754 @@
+{
+  "date": "2026-11-01",
+  "scope": [
+    "Documents/Codex/outputs",
+    "Sources actives de #DEV/02-apps",
+    "Dossiers sélectionnés de #DEV/01-projets",
+    "KM Search",
+    "Nightlife, La Meute et ressources HTML de Tâches du jour"
+  ],
+  "existing_references": 13,
+  "added_families": 30,
+  "added_references": 198,
+  "total_families": 39,
+  "total_references": 211,
+  "copied_files": 194,
+  "missing_static_assets": [
+    "/Users/JOB/#DEV/02-apps/capital-elus/data.json",
+    "/Users/JOB/Documents/Codex/2026-09-01/mission-unique-reprise-dashboard-mirae-projet/outputs/KPOP_GRANDS_TYPES_INTERFACES 2/interfaces/00_INDEX_CONTROLE/AUDIT_LIENS_MIRAE_2026-08-31.csv",
+    "/Users/JOB/Documents/Codex/2026-09-01/mission-unique-reprise-dashboard-mirae-projet/outputs/KPOP_GRANDS_TYPES_INTERFACES 2/interfaces/00_INDEX_CONTROLE/AUDIT_LIENS_MIRAE_2026-08-31.json",
+    "/Users/JOB/Documents/Codex/2026-09-01/mission-unique-reprise-dashboard-mirae-projet/outputs/KPOP_GRANDS_TYPES_INTERFACES 2/interfaces/outputs/AUDIT_LIENS_MIRAE_2026-08-31.csv",
+    "/Users/JOB/Documents/Codex/2026-09-01/mission-unique-reprise-dashboard-mirae-projet/outputs/KPOP_GRANDS_TYPES_INTERFACES 2/interfaces/outputs/MANIFESTE_PROSPECTION_FOCUS.csv",
+    "/Users/JOB/Documents/Codex/2026-09-01/mission-unique-reprise-dashboard-mirae-projet/outputs/KPOP_GRANDS_TYPES_INTERFACES 2/interfaces/outputs/MIRAE_PROSPECTION_FOCUS_V1/00_INDEX_CONTROLE/AUDIT_LIENS_MIRAE_2026-08-31.csv",
+    "/Users/JOB/Documents/Codex/2026-09-01/mission-unique-reprise-dashboard-mirae-projet/outputs/KPOP_GRANDS_TYPES_INTERFACES 2/interfaces/outputs/MIRAE_PROSPECTION_FOCUS_V1/00_INDEX_CONTROLE/SEOUL_SALONS_PREMIUM_ZONES.csv",
+    "/Users/JOB/Documents/Codex/2026-09-01/mission-unique-reprise-dashboard-mirae-projet/outputs/KPOP_GRANDS_TYPES_INTERFACES 2/interfaces/outputs/MIRAE_REPERTOIRE_OPTIMISE_V2/00_INDEX_CONTROLE/AUDIT_LIENS_MIRAE_2026-08-31.csv"
+  ],
+  "families": [
+    {
+      "id": "fam-0",
+      "name": "KM Search",
+      "description": "Recherche et exploration des fiches KM. v2 en premier ; anciennes présentations regroupées ici.",
+      "kind": "interface",
+      "primary": "scan-80530e50562b",
+      "ids": [
+        "scan-80530e50562b",
+        "scan-fff607e47892",
+        "scan-cd3368613a33"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/06-km/KM/search-v2.html",
+        "/Users/JOB/#DEV/06-km/KM/search-v1.12.html",
+        "/Users/JOB/#DEV/06-km/KM/search.html"
+      ]
+    },
+    {
+      "id": "fam-1",
+      "name": "Miss NameTent",
+      "description": "Création de chevalets porte-nom et export PDF.",
+      "kind": "interface",
+      "primary": "scan-e674755429c6",
+      "ids": [
+        "scan-e674755429c6"
+      ],
+      "sources": [
+        "/Users/JOB/Documents/Codex/2026-10-30/publie-l-application-miss-nametent-v2/outputs/Miss-NameTent-V2.html"
+      ]
+    },
+    {
+      "id": "fam-2",
+      "name": "VANIT",
+      "description": "Une application, plusieurs directions visuelles : clair, luxe, terminal, dossier et comparaison.",
+      "kind": "interface",
+      "primary": "scan-18cd16e4bdd6",
+      "ids": [
+        "scan-18cd16e4bdd6",
+        "scan-e7a78732e0b4",
+        "scan-d1eada6caf70",
+        "scan-21de8a71821a",
+        "scan-0f621c9d768d",
+        "scan-2dcb93c0cae3",
+        "scan-ccacb15837ac",
+        "scan-2c8be7ee5cc0",
+        "scan-6d245eaac362",
+        "scan-c515a4d46cf4",
+        "scan-793d040311cf",
+        "scan-b29d5ba1348c",
+        "scan-9c1a8d2a24bb",
+        "scan-481ef352a940"
+      ],
+      "sources": [
+        "/Users/JOB/Documents/Codex/2026-10-31/re/outputs/VANIT/index.html",
+        "/Users/JOB/Documents/Codex/2026-09-02/prior-conversation-with-codex-conversation-role/outputs/vanit-index_alpine-light_v0.3.html",
+        "/Users/JOB/Documents/Codex/2026-09-02/prior-conversation-with-codex-conversation-role/outputs/vanit-index_casino-table_v0.4.html",
+        "/Users/JOB/Documents/Codex/2026-09-02/prior-conversation-with-codex-conversation-role/outputs/vanit-index_compact-compare_v0.6.html",
+        "/Users/JOB/Documents/Codex/2026-09-02/prior-conversation-with-codex-conversation-role/outputs/vanit-index_compact-compare_v0.7.html",
+        "/Users/JOB/Documents/Codex/2026-09-02/prior-conversation-with-codex-conversation-role/outputs/vanit-index_dataviz-lab_v0.5.html",
+        "/Users/JOB/Documents/Codex/2026-09-02/prior-conversation-with-codex-conversation-role/outputs/vanit-index_mobile-glass_v0.4.html",
+        "/Users/JOB/Documents/Codex/2026-09-02/prior-conversation-with-codex-conversation-role/outputs/vanit-index_monaco-card_v0.3.html",
+        "/Users/JOB/Documents/Codex/2026-09-02/prior-conversation-with-codex-conversation-role/outputs/vanit-index_museum-poster_v0.4.html",
+        "/Users/JOB/Documents/Codex/2026-09-02/prior-conversation-with-codex-conversation-role/outputs/vanit-index_passport-dossier_v0.4.html",
+        "/Users/JOB/Documents/Codex/2026-09-02/prior-conversation-with-codex-conversation-role/outputs/vanit-index_private-bank_v0.3.html",
+        "/Users/JOB/Documents/Codex/2026-09-02/prior-conversation-with-codex-conversation-role/outputs/vanit-index_terminal-vault_v0.3.html",
+        "/Users/JOB/Documents/Codex/2026-09-02/prior-conversation-with-codex-conversation-role/outputs/vanit-index_trading-floor_v0.4.html",
+        "/Users/JOB/Documents/Codex/2026-09-02/prior-conversation-with-codex-conversation-role/outputs/vanit-index_v0.2.html"
+      ]
+    },
+    {
+      "id": "fam-3",
+      "name": "HtmlSift / DesignMistress",
+      "description": "Visionneuse HTML. Les versions sont regroupées, sans les compter comme des applications différentes.",
+      "kind": "interface",
+      "primary": "scan-d4fe02b51be0",
+      "ids": [
+        "scan-d4fe02b51be0",
+        "scan-5cd35d89801e",
+        "scan-3090831d1f58",
+        "scan-52f8796134d5",
+        "scan-25fb967e8128",
+        "scan-e1c7b8a36f92",
+        "scan-62bd4806b014",
+        "scan-01c1c59eec8b",
+        "scan-d7f39f378795",
+        "scan-9adc726349c7",
+        "scan-214e01f9e621",
+        "scan-542892b7ab14",
+        "scan-4ca3a2d88fa7",
+        "scan-ae6818fb717b",
+        "scan-456479a47c35",
+        "scan-616aa06dfc91",
+        "scan-5137821e1bfe",
+        "scan-f36f86eac456",
+        "scan-e4b7d318a24b",
+        "scan-dc607a8d9ae5",
+        "scan-ef87bfb82b8a",
+        "scan-4ec957d7666d",
+        "scan-074ba24aaeac",
+        "scan-bb16f2fc5058",
+        "scan-1f0909df2c42",
+        "scan-d463811faff3",
+        "scan-1ad248e15d98",
+        "scan-da1c1f603969",
+        "scan-3fc63506c595",
+        "scan-dccb0189ecfe"
+      ],
+      "sources": [
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/01-DesignMistress-d4b4adf.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/02-DesignMistress-16d712f.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/03-HtmlSift-63109b0.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/04-HtmlSift-a45a0e4.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/05-HtmlSift-e13a22f.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/06-HtmlSift-1b62428.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/07-HtmlSift-143cbfc.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/08-HtmlSift-0d092c0.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/09-HtmlSift-b91b9c3.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/10-HtmlSift-d99a486.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/11-HtmlSift-a3b12fb.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/12-HtmlSift-83335fe.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/13-HtmlSift-6b579e5.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/14-HtmlSift-f8ab8dc.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/15-HtmlSift-0da4913.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/16-HtmlSift-01b1304.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/17-HtmlSift-b228d66.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/18-HtmlSift-1113066.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/19-HtmlSift-a3ca2e1.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/20-HtmlSift-40d2799.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/21-HtmlSift-f4a1b58.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/22-HtmlSift-8d5f270.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/23-HtmlSift-29778f8.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/24-HtmlSift-ef9dcbb.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/25-HtmlSift-80f54db.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/26-HtmlSift-978bb9c.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/27-HtmlSift-dd79110.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/28-HtmlSift-738f8c2.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/29-HtmlSift-78c2b35.html",
+        "/Users/JOB/Documents/Codex/2026-09-08/files-pasted-by-the-user-cr/outputs/30-versions-20260909-173000/30-HtmlSift-8017e91.html"
+      ]
+    },
+    {
+      "id": "fam-4",
+      "name": "MIRAE / KPOP",
+      "description": "Dashboards, pipeline commercial, command center et vues de prospection.",
+      "kind": "interface",
+      "primary": "scan-4287cf7c9100",
+      "ids": [
+        "scan-4287cf7c9100",
+        "scan-e5cd003bbbb8",
+        "scan-c2cb4b03bb81",
+        "scan-2ed8786ea7c9",
+        "scan-e8d39eed13dc",
+        "scan-3ab1de82a904",
+        "scan-1a970f4d5cb1",
+        "scan-dbf6c0131669",
+        "scan-3240a3ed0c1c",
+        "scan-66cfaccccc73"
+      ],
+      "sources": [
+        "/Users/JOB/Documents/Codex/2026-09-01/mission-unique-reprise-dashboard-mirae-projet/outputs/KPOP_GRANDS_TYPES_INTERFACES 2/interfaces/outputs/mirae_dashboard_v1.html",
+        "/Users/JOB/Documents/Codex/2026-09-01/mission-unique-reprise-dashboard-mirae-projet/outputs/KPOP_GRANDS_TYPES_INTERFACES 2/interfaces/outputs/mirae_index_cliquable_v1.html",
+        "/Users/JOB/Documents/Codex/2026-09-01/mission-unique-reprise-dashboard-mirae-projet/outputs/KPOP_GRANDS_TYPES_INTERFACES 2/interfaces/outputs/mirae_prospection_business_dashboard_v1.html",
+        "/Users/JOB/Documents/Codex/2026-09-01/mission-unique-reprise-dashboard-mirae-projet/outputs/KPOP_GRANDS_TYPES_INTERFACES 2/interfaces/outputs/mirae_prospection_business_dashboard_v2.html",
+        "/Users/JOB/Documents/Codex/2026-09-01/mission-unique-reprise-dashboard-mirae-projet/outputs/KPOP_GRANDS_TYPES_INTERFACES 2/interfaces/outputs/mirae_prospection_command_center_v7.html",
+        "/Users/JOB/Documents/Codex/2026-09-01/mission-unique-reprise-dashboard-mirae-projet/outputs/KPOP_GRANDS_TYPES_INTERFACES 2/interfaces/outputs/mirae_renseignement_business_dashboard_v4.html",
+        "/Users/JOB/Documents/Codex/2026-09-01/mission-unique-reprise-dashboard-mirae-projet/outputs/KPOP_GRANDS_TYPES_INTERFACES 2/interfaces/outputs/MIRAE_PROSPECTION_FOCUS_V1/00_INDEX_CONTROLE/INDEX_PROSPECTION_FOCUS.html",
+        "/Users/JOB/Documents/Codex/2026-09-01/mission-unique-reprise-dashboard-mirae-projet/outputs/KPOP_GRANDS_TYPES_INTERFACES 2/interfaces/outputs/MIRAE_PROSPECTION_FOCUS_V1/00_INDEX_CONTROLE/INDEX_PROSPECTION_FOCUS_V23.html",
+        "/Users/JOB/Documents/Codex/2026-09-19/tu-x20/outputs/MIRAE_FUSION_V3.4_COMPLET.html",
+        "/Users/JOB/Documents/Codex/2026-10-03/de/outputs/MIRAE_KHAIR_INTELLIGENCE_2026_V41.html"
+      ]
+    },
+    {
+      "id": "fam-5",
+      "name": "MSGlitch / TrueType Motion",
+      "description": "Montage, effets et suite multi-ateliers.",
+      "kind": "interface",
+      "primary": "scan-52abd7811687",
+      "ids": [
+        "scan-52abd7811687",
+        "scan-ed416955a300",
+        "scan-a831733ef886",
+        "scan-ffa910bf9ef1",
+        "scan-197e0065a9f9",
+        "scan-a1178dcb34a0",
+        "scan-91e4cce41334",
+        "scan-63ebc39a6ade",
+        "scan-2180f13b04ca",
+        "scan-f231eac95187",
+        "scan-8bcbc3043f5e",
+        "scan-fde1db8c8092",
+        "scan-93406cf370bd",
+        "scan-bb31b954b7a2",
+        "scan-350fa326fbec",
+        "scan-893dceb9ad1c",
+        "scan-9de0fe9ac735",
+        "scan-b9e6bb310a55"
+      ],
+      "sources": [
+        "/Users/JOB/Documents/Codex/2026-10-30/re/outputs/Glitch-DemoForge/01-Applications/MSGlitch-TrueType-v0.5.1/TrueType-Motion-Studio.html",
+        "/Users/JOB/Documents/Codex/2026-10-30/re/outputs/Glitch-DemoForge/01-Applications/MsGlitch-Unifie/Live.html",
+        "/Users/JOB/Documents/Codex/2026-10-30/re/outputs/Glitch-DemoForge/01-Applications/MsGlitch-Unifie/ANSI.html",
+        "/Users/JOB/Documents/Codex/2026-10-30/re/outputs/Glitch-DemoForge/01-Applications/MsGlitch-Unifie/Shader.html",
+        "/Users/JOB/Documents/Codex/2026-10-30/re/outputs/Glitch-DemoForge/01-Applications/MsGlitch/MsGlitch.html",
+        "/Users/JOB/#DEV/01-projets/MadameGlitch/index.html",
+        "/Users/JOB/#DEV/01-projets/MadameGlitch/demoforge_ansi_motion.html",
+        "/Users/JOB/#DEV/01-projets/MadameGlitch/demoforge_shader_editor.html",
+        "/Users/JOB/#DEV/01-projets/MadameGlitch/madameglitch_codersfx_clone.html",
+        "/Users/JOB/#DEV/01-projets/MadameGlitch/madameglitch_dashboard.html",
+        "/Users/JOB/#DEV/01-projets/MadameGlitch/madameglitch_pro.html",
+        "/Users/JOB/#DEV/01-projets/MadameGlitch/madameglitch_unified.html",
+        "/Users/JOB/#DEV/01-projets/MadameGlitch/madameglitch_v15_fusion.html",
+        "/Users/JOB/#DEV/01-projets/MadameGlitch/madameglitch_v15_ultimate.html",
+        "/Users/JOB/#DEV/01-projets/MadameGlitch/madameglitch_v1_base.html",
+        "/Users/JOB/#DEV/01-projets/MadameGlitch/madameglitch_v2_audio.html",
+        "/Users/JOB/#DEV/01-projets/MadameGlitch/madameglitch_v4_rack.html",
+        "/Users/JOB/#DEV/01-projets/MadameGlitch/mistresspixel_v3.html"
+      ]
+    },
+    {
+      "id": "fam-6",
+      "name": "#Reolink-VideoSurveillance",
+      "description": "Interfaces et variantes locales retrouvées dans le dossier #Reolink-VideoSurveillance.",
+      "kind": "interface",
+      "primary": "scan-378db7ebb5cd",
+      "ids": [
+        "scan-378db7ebb5cd",
+        "scan-6b6a7dfe1fab",
+        "scan-a46284550e86"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/02-apps/#Reolink-VideoSurveillance/reolink-downloader/frontend/index.html",
+        "/Users/JOB/#DEV/02-apps/#Reolink-VideoSurveillance/reolink-downloader/index.html",
+        "/Users/JOB/#DEV/02-apps/#Reolink-VideoSurveillance/reolinkfront/index.html"
+      ]
+    },
+    {
+      "id": "fam-7",
+      "name": "DropViz",
+      "description": "Interfaces et variantes locales retrouvées dans le dossier DropViz.",
+      "kind": "interface",
+      "primary": "scan-83732d9dd81b",
+      "ids": [
+        "scan-83732d9dd81b",
+        "scan-35902c7d41ec"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/02-apps/DropViz/notebooks/index.html",
+        "/Users/JOB/#DEV/02-apps/DropViz/notebooks/dashboard-khair.html"
+      ]
+    },
+    {
+      "id": "fam-8",
+      "name": "GroceryNanny",
+      "description": "Interfaces et variantes locales retrouvées dans le dossier GroceryNanny.",
+      "kind": "interface",
+      "primary": "scan-233653d5b90a",
+      "ids": [
+        "scan-233653d5b90a"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/02-apps/GroceryNanny/index.html"
+      ]
+    },
+    {
+      "id": "fam-9",
+      "name": "Hexatales",
+      "description": "Interfaces et variantes locales retrouvées dans le dossier Hexatales.",
+      "kind": "interface",
+      "primary": "scan-734d277c38e4",
+      "ids": [
+        "scan-734d277c38e4",
+        "scan-c8d1223a5b18"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/02-apps/Hexatales/hextales.html",
+        "/Users/JOB/#DEV/02-apps/Hexatales/hextales_v4.html"
+      ]
+    },
+    {
+      "id": "fam-10",
+      "name": "ISOMake",
+      "description": "Interfaces et variantes locales retrouvées dans le dossier ISOMake.",
+      "kind": "interface",
+      "primary": "scan-352f5fa88c96",
+      "ids": [
+        "scan-352f5fa88c96",
+        "scan-a2237002f9ce"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/01-projets/ISOMake/frontend-2.html",
+        "/Users/JOB/#DEV/01-projets/ISOMake/frontend.html"
+      ]
+    },
+    {
+      "id": "fam-13",
+      "name": "NCTx",
+      "description": "Interfaces et variantes locales retrouvées dans le dossier NCTx.",
+      "kind": "interface",
+      "primary": "scan-8b040254e783",
+      "ids": [
+        "scan-8b040254e783"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/02-apps/NCTx/NoteDroppy-claude-audit-build-20260830/docs/index.html"
+      ]
+    },
+    {
+      "id": "fam-14",
+      "name": "NeuroForge",
+      "description": "Interfaces et variantes locales retrouvées dans le dossier NeuroForge.",
+      "kind": "interface",
+      "primary": "scan-909c167560b9",
+      "ids": [
+        "scan-909c167560b9",
+        "scan-84626ccc7e56",
+        "scan-8a1c6230804c"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/01-projets/NeuroForge/docs/index.html",
+        "/Users/JOB/#DEV/01-projets/NeuroForge/docs/apps.html",
+        "/Users/JOB/#DEV/01-projets/NeuroForge/docs/logo.html"
+      ]
+    },
+    {
+      "id": "fam-15",
+      "name": "Nocortex - NotEC0rt3X",
+      "description": "Interfaces et variantes locales retrouvées dans le dossier Nocortex - NotEC0rt3X.",
+      "kind": "interface",
+      "primary": "scan-d9835f3cc96b",
+      "ids": [
+        "scan-d9835f3cc96b"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/02-apps/Nocortex - NotEC0rt3X/AI-STATION · M5 — Dev IA local.html"
+      ]
+    },
+    {
+      "id": "fam-16",
+      "name": "PromptMistress",
+      "description": "Interfaces et variantes locales retrouvées dans le dossier PromptMistress.",
+      "kind": "interface",
+      "primary": "scan-096ae17821ae",
+      "ids": [
+        "scan-096ae17821ae",
+        "scan-23730e53a22a",
+        "scan-fc48946f7ce0",
+        "scan-4ea79c30bf6e",
+        "scan-4b37ef528d08",
+        "scan-d5afde687862",
+        "scan-da69c5f85390",
+        "scan-400e97c8db40",
+        "scan-c6cc65cd7a90",
+        "scan-6077ed38859f"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/02-apps/PromptMistress/index.html",
+        "/Users/JOB/#DEV/02-apps/PromptMistress/capture.html",
+        "/Users/JOB/#DEV/02-apps/PromptMistress/fusion.html",
+        "/Users/JOB/#DEV/02-apps/PromptMistress/library.html",
+        "/Users/JOB/#DEV/02-apps/PromptMistress/projects/project-b-import/codex_history_public_import.html",
+        "/Users/JOB/#DEV/02-apps/PromptMistress/workspace.html",
+        "/Users/JOB/#DEV/02-apps/PromptMistress-v2/index.html",
+        "/Users/JOB/#DEV/02-apps/PromptMistress-v2/browser-extension/popup.html",
+        "/Users/JOB/#DEV/02-apps/PromptMistress-v2/capture.html",
+        "/Users/JOB/#DEV/02-apps/PromptMistress-v2/workspace.html"
+      ]
+    },
+    {
+      "id": "fam-18",
+      "name": "Quizz",
+      "description": "Interfaces et variantes locales retrouvées dans le dossier _Quizz.",
+      "kind": "interface",
+      "primary": "scan-6883424ccf43",
+      "ids": [
+        "scan-6883424ccf43",
+        "scan-b1863a8888eb"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/01-projets/_Quizz/IA_Archetype/index.html",
+        "/Users/JOB/#DEV/01-projets/_Quizz/_Vibes Assement/vibe_assessment_clone 1.html"
+      ]
+    },
+    {
+      "id": "fam-19",
+      "name": "ai-lens-observatory",
+      "description": "Interfaces et variantes locales retrouvées dans le dossier ai-lens-observatory.",
+      "kind": "interface",
+      "primary": "scan-41214c881be5",
+      "ids": [
+        "scan-41214c881be5",
+        "scan-c5413f6ae332",
+        "scan-de92f5303622",
+        "scan-0bf26553e098"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/02-apps/ai-lens-observatory/index.html",
+        "/Users/JOB/#DEV/02-apps/ai-lens-observatory/AI_Lens_Observatory_v2.html",
+        "/Users/JOB/#DEV/02-apps/ai-lens-observatory/archetypes/IAProfilerV9_Multilingual.html",
+        "/Users/JOB/#DEV/02-apps/ai-lens-observatory/releases.html"
+      ]
+    },
+    {
+      "id": "fam-20",
+      "name": "capital-elus",
+      "description": "Interfaces et variantes locales retrouvées dans le dossier capital-elus.",
+      "kind": "interface",
+      "primary": "scan-e0e25a1b0005",
+      "ids": [
+        "scan-e0e25a1b0005",
+        "scan-c061c4728b07",
+        "scan-fb33adde3582",
+        "scan-0c921cce3522"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/02-apps/capital-elus/index.html",
+        "/Users/JOB/#DEV/02-apps/capital-elus/dataviz.html",
+        "/Users/JOB/#DEV/02-apps/capital-elus/template.html",
+        "/Users/JOB/#DEV/02-apps/capital-elus/template_dataviz.html"
+      ]
+    },
+    {
+      "id": "fam-21",
+      "name": "local-cli-panel",
+      "description": "Interfaces et variantes locales retrouvées dans le dossier local-cli-panel.",
+      "kind": "interface",
+      "primary": "scan-086965982b64",
+      "ids": [
+        "scan-086965982b64"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/01-projets/local-cli-panel/frontend/index.html"
+      ]
+    },
+    {
+      "id": "fam-22",
+      "name": "motion-ui-kit",
+      "description": "Interfaces et variantes locales retrouvées dans le dossier motion-ui-kit.",
+      "kind": "interface",
+      "primary": "scan-d47214836482",
+      "ids": [
+        "scan-d47214836482"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/02-apps/motion-ui-kit/index.html"
+      ]
+    },
+    {
+      "id": "fam-23",
+      "name": "screenagentlight",
+      "description": "Interfaces et variantes locales retrouvées dans le dossier screenagentlight.",
+      "kind": "interface",
+      "primary": "scan-bc39567b93e6",
+      "ids": [
+        "scan-bc39567b93e6",
+        "scan-7383e2b97eca"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/02-apps/screenagentlight/outputs/control-deck-iconography.html",
+        "/Users/JOB/#DEV/02-apps/screenagentlight/outputs/layout-icons-v2-preview.html"
+      ]
+    },
+    {
+      "id": "fam-24",
+      "name": "DemoForge Studio",
+      "description": "Atelier de scènes, shaders et interfaces de montage.",
+      "kind": "interface",
+      "primary": "scan-066b768011fb",
+      "ids": [
+        "scan-066b768011fb",
+        "scan-ab2c5ef47470"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/02-apps/demoforge-studio/index.html",
+        "/Users/JOB/#DEV/02-apps/demoforge-studio/DemoForge_Studio_v30.21.html"
+      ]
+    },
+    {
+      "id": "group-llm-rox",
+      "name": "LLM-ROX",
+      "description": "Interfaces et variantes locales regroupées par outil.",
+      "kind": "interface",
+      "primary": "scan-02520977bdf3",
+      "ids": [
+        "scan-02520977bdf3",
+        "scan-5a007bdc8944",
+        "scan-2cbba8b7f578",
+        "scan-4f451c5f766e",
+        "scan-3fc103b79d04",
+        "scan-6a3099f38838"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/02-apps/LLM/Krok LLM/index.html",
+        "/Users/JOB/#DEV/02-apps/LLM/Krok LLM/krok-llm-claude-audit/index.html",
+        "/Users/JOB/#DEV/02-apps/LLM/LLM_roxor/index.html",
+        "/Users/JOB/#DEV/02-apps/LLM/LLM_roxor/llm-roxor-prototype/index.html",
+        "/Users/JOB/#DEV/02-apps/LLM/LLM_roxor/llm-roxor-rebuild/index.html",
+        "/Users/JOB/#DEV/02-apps/LLM/Krok LLM/krok-llm-claude-audit/marketplace.html"
+      ]
+    },
+    {
+      "id": "group-promptor",
+      "name": "PrompTOR",
+      "description": "Interfaces et variantes locales regroupées par outil.",
+      "kind": "interface",
+      "primary": "scan-813934228893",
+      "ids": [
+        "scan-813934228893",
+        "scan-7e2b654979ee"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/02-apps/LLM/PrompTOR/index.html",
+        "/Users/JOB/#DEV/02-apps/LLM/PrompTOR/PrompTOR.html"
+      ]
+    },
+    {
+      "id": "group-egrecore",
+      "name": "EGRECORE",
+      "description": "Interfaces et variantes locales regroupées par outil.",
+      "kind": "interface",
+      "primary": "scan-bbaf3ee627b2",
+      "ids": [
+        "scan-bbaf3ee627b2",
+        "scan-c2ebf2561151",
+        "scan-a04d1de8ea3b",
+        "scan-65a5708d5d6a"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/02-apps/LLM/#EgreC0re/flow-validation_v0.2.html",
+        "/Users/JOB/#DEV/02-apps/LLM/#EgreC0re/result-render-example_v0.2.html",
+        "/Users/JOB/#DEV/02-apps/LLM/#EgreC0re/result-render-example_v0.4.html",
+        "/Users/JOB/#DEV/02-apps/LLM/#EgreC0re/result-render-example_v0.6.html"
+      ]
+    },
+    {
+      "id": "group-annecy-nocturne",
+      "name": "Annecy / Nocturne",
+      "description": "Interfaces et variantes locales regroupées par outil.",
+      "kind": "interface",
+      "primary": "scan-4575a9cf519b",
+      "ids": [
+        "scan-4575a9cf519b",
+        "scan-28965768a764",
+        "scan-585c8a9d4b44"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/02-apps/LLM/#EgreC0re/tourisme-annecy_v0.2.html",
+        "/Users/JOB/#DEV/02-apps/LLM/LLM_roxor/annecy-bars-dashboard.html",
+        "/Users/JOB/#DEV/02-apps/LLM/LLM_roxor/nocturne_inoreader.html"
+      ]
+    },
+    {
+      "id": "group-dashboards-insee",
+      "name": "Dashboards INSEE",
+      "description": "Interfaces et variantes locales regroupées par outil.",
+      "kind": "interface",
+      "primary": "scan-f4a497254ba2",
+      "ids": [
+        "scan-f4a497254ba2",
+        "scan-207be2dfd847"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/02-apps/LLM/Krok LLM/dashboard-improved.html",
+        "/Users/JOB/#DEV/02-apps/LLM/Krok LLM/dashboard.html"
+      ]
+    },
+    {
+      "id": "more-27",
+      "name": "Nightlife / Night Intel",
+      "description": "Une application ; ses interfaces et variantes regroupées ici.",
+      "kind": "interface",
+      "primary": "scan-fa985665d266",
+      "ids": [
+        "scan-fa985665d266",
+        "scan-685ae4d44764",
+        "scan-d8a4e1675554",
+        "scan-af6fd6e626a1",
+        "scan-f81786c2ba7e",
+        "scan-23dc5e3fe0e8",
+        "scan-64eaa13a5311",
+        "scan-d2ae25884cfa",
+        "scan-578040cf432a",
+        "scan-aecea990424f",
+        "scan-642d7d1b681c",
+        "scan-e242ee36b847",
+        "scan-fbf364410df4"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/01-projets/nightlife/public/night-intel.html",
+        "/Users/JOB/#DEV/01-projets/nightlife/public/sources.html",
+        "/Users/JOB/#DEV/01-projets/nightlife/public/world-radar.html",
+        "/Users/JOB/#DEV/01-projets/nightlife/public/night-radar-fullscreen.html",
+        "/Users/JOB/#DEV/01-projets/nightlife/public/night-intel-2d-fast.html",
+        "/Users/JOB/#DEV/01-projets/nightlife/public/night-intel-entry.html",
+        "/Users/JOB/#DEV/01-projets/nightlife/public/city.html",
+        "/Users/JOB/#DEV/01-projets/nightlife/public/night-intel-v1-6.html",
+        "/Users/JOB/#DEV/01-projets/nightlife/public/lieux.html",
+        "/Users/JOB/#DEV/01-projets/nightlife/public/archi.html",
+        "/Users/JOB/#DEV/01-projets/nightlife/public/urgence-lol-standalone-charte.html",
+        "/Users/JOB/#DEV/01-projets/nightlife/public/recruitment.html",
+        "/Users/JOB/#DEV/01-projets/nightlife/public/scrapling-scan.html"
+      ]
+    },
+    {
+      "id": "more-28",
+      "name": "La Meute",
+      "description": "Une application ; ses interfaces et variantes regroupées ici.",
+      "kind": "interface",
+      "primary": "scan-e449d75910f2",
+      "ids": [
+        "scan-e449d75910f2",
+        "scan-5377a1198ea5",
+        "scan-6a27e1e95453",
+        "scan-0913c04d2db9",
+        "scan-d2e886649333",
+        "scan-c2ca73afc465",
+        "scan-817e6a994c25",
+        "scan-2c5b6dbbb13f",
+        "scan-5d66843a9572",
+        "scan-83077392d622",
+        "scan-b3993da3d6ce",
+        "scan-309ddf2e580b",
+        "scan-17c7e9bde9da"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/01-projets/la-meute/D7-CHAT/AI-Team (Template).html",
+        "/Users/JOB/#DEV/01-projets/la-meute/D7-CHAT/LA MEUTE-CJHAT-OK.html",
+        "/Users/JOB/#DEV/01-projets/la-meute/D7-CHAT/LA MEUTE-CHAT_0.3.html",
+        "/Users/JOB/#DEV/01-projets/la-meute/D7-CHAT/LA MEUTE — Distributed Sensemaking.html",
+        "/Users/JOB/#DEV/01-projets/la-meute/D7-CHAT/LA MEUTE — POC V4.1 · v0.2.html",
+        "/Users/JOB/#DEV/01-projets/la-meute/LA_MEUTE_DASHBOARD.html",
+        "/Users/JOB/#DEV/01-projets/la-meute/lens_v5.1.html",
+        "/Users/JOB/#DEV/01-projets/la-meute/LA_MEUTE/la-meute-irc.html",
+        "/Users/JOB/#DEV/01-projets/la-meute/ritual-interface.html",
+        "/Users/JOB/#DEV/01-projets/la-meute/AI-CHAT/LA MEUTE — POC V4 · v0.2.html",
+        "/Users/JOB/#DEV/01-projets/la-meute/AI-CHAT/aicouncil-V4.html",
+        "/Users/JOB/#DEV/01-projets/la-meute/AI-CHAT/LA MEUTE — POC V4 · v0.4.html",
+        "/Users/JOB/#DEV/01-projets/la-meute/AI-CHAT/LA MEUTE — POC V4 -Last- v0.2.html"
+      ]
+    },
+    {
+      "id": "more-29",
+      "name": "Tâches du jour",
+      "description": "Une application ; ses interfaces et variantes regroupées ici.",
+      "kind": "interface",
+      "primary": "scan-9c40c3ef8b24",
+      "ids": [
+        "scan-9c40c3ef8b24",
+        "scan-48f5ca8b4c39",
+        "scan-cdaffd732890",
+        "scan-30bdcc960854",
+        "scan-af65c846401e",
+        "scan-6d582f52576e",
+        "scan-c8edb6de1e4d",
+        "scan-17d4bcfc84a7",
+        "scan-90bdcc8f0db9",
+        "scan-5884ddf10e00",
+        "scan-e2b68cc2613f",
+        "scan-d8080bf85ccc",
+        "scan-8b67204056b0",
+        "scan-5b87dcf61745",
+        "scan-d4cbefec5c2d",
+        "scan-7b83527cf86f",
+        "scan-d63852cbb5ec",
+        "scan-457d2553e6d2",
+        "scan-3cdadf9ad30e",
+        "scan-45191ecc1b06",
+        "scan-81e8a42269ec",
+        "scan-70935e23d41b",
+        "scan-d5b3e87738bb",
+        "scan-82e2a6af5ae1",
+        "scan-12968d05fca4",
+        "scan-4cc59fbbc37b",
+        "scan-fb2f77b78641",
+        "scan-7b02c3cb80dd",
+        "scan-1b59063ff646",
+        "scan-6b161cf17905",
+        "scan-2648b91f76ba",
+        "scan-0a966aa6f7ca",
+        "scan-2c8b03c99c38",
+        "scan-a4081e76e5fa",
+        "scan-915988107348",
+        "scan-00d62fe37a13",
+        "scan-78c3a8c30c5d",
+        "scan-5d225621b639"
+      ],
+      "sources": [
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v3.6.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v2.2.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v5.0.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v8.4.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v4.4.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v4.8.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v6.8.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v1.6.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v6.4.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v7.0.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v2.8.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v3.0.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v2.4.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v5.6.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v8.2.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v4.2.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v1.0.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v6.2.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v7.6.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v5.8.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v4.0.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v8.0.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v5.4.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v2.6.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v3.2.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v7.4.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v6.0.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v1.2.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v7.8.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v4.6.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v5.2.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v2.0.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v3.4.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v3.8.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v1.8.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v7.2.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v6.6.html",
+        "/Users/JOB/#DEV/01-projets/_applications/TachesDuJour/Resources/panel_v1.4.html"
+      ]
+    }
+  ]
+}

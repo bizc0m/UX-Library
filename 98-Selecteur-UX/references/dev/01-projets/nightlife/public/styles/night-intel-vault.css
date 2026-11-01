@@ -1,0 +1,296 @@
+/* =====================================================================
+   Night Intel Vault — hidden secret-society interior screen
+   Triggered by clicking "Night Intel" wordmark in the topbar,
+   or pressing Shift+N twice in <800ms. Escape or scrim click to close.
+   ===================================================================== */
+
+.ni-vault {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  font-family: var(--font-mono);
+  color: var(--bone-0);
+}
+
+.ni-vault-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,45,111,0.10), transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(91,207,255,0.06), transparent 50%),
+    rgba(0,0,0,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  cursor: pointer;
+}
+
+.ni-vault-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 2px,
+      rgba(255,255,255,0.012) 2px,
+      rgba(255,255,255,0.012) 3px
+    ),
+    linear-gradient(180deg, #0A0A0F 0%, #07070B 100%);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 4px;
+  padding: 20px 24px;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.6),
+    0 30px 100px -20px rgba(0,0,0,0.8),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  animation: ni-fade-in 280ms var(--ease-enter);
+}
+
+@keyframes ni-fade-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+.ni-vault-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed rgba(255,255,255,0.14);
+  margin-bottom: 18px;
+}
+.ni-vault-mark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.ni-vault-glyph {
+  font-size: 18px;
+  color: #FFFFFF;
+  text-shadow: 0 0 12px rgba(255,255,255,0.35);
+}
+.ni-vault-name {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.14em;
+  color: #FFFFFF;
+}
+.ni-vault-sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--bone-2);
+  letter-spacing: 0.06em;
+}
+.ni-vault-x {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.18);
+  color: var(--bone-1);
+  width: 24px;
+  height: 24px;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 120ms var(--ease-enter);
+}
+.ni-vault-x:hover { color: #FFF; border-color: #FFF; }
+
+.ni-vault-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.ni-vault-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.025);
+  border-left: 1px solid rgba(255,255,255,0.14);
+}
+.ni-vault-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone-2);
+}
+.ni-vault-val {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ni-vault-val.ni-clearance {
+  color: var(--blood);
+  text-shadow: 0 0 6px rgba(255,77,77,0.55);
+  letter-spacing: 0.06em;
+}
+
+/* Intrusion alert banner */
+.ni-vault-alert {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
+  background: rgba(255,77,77,0.08);
+  border-left: 2px solid var(--blood);
+  border-top: 1px solid rgba(255,77,77,0.18);
+  border-bottom: 1px solid rgba(255,77,77,0.18);
+  border-radius: 0 2px 2px 0;
+  animation: ni-alert-blink 2.4s ease-in-out infinite;
+}
+@keyframes ni-alert-blink {
+  0%, 100% { background: rgba(255,77,77,0.06); }
+  50%      { background: rgba(255,77,77,0.14); }
+}
+.ni-vault-alert-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--blood);
+  text-shadow: 0 0 6px rgba(255,77,77,0.55);
+}
+.ni-vault-alert-msg {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--bone-1);
+}
+.ni-vault-alert-msg code {
+  background: rgba(0,0,0,0.5);
+  color: var(--bone-0);
+  padding: 0 4px;
+  border-radius: 2px;
+}
+.ni-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 999px;
+  background: var(--acid);
+  box-shadow: 0 0 8px var(--acid);
+  animation: noct-pulse 2s ease-in-out infinite;
+}
+
+.ni-vault-manifest {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.78);
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+.ni-vault-code {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(255,255,255,0.18);
+  border-radius: 2px;
+  margin-bottom: 16px;
+}
+.ni-vault-input {
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #FFFFFF;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.4em;
+  text-align: center;
+  padding: 6px 10px;
+  border-radius: 2px;
+  outline: none;
+  width: 100%;
+}
+.ni-vault-input:focus { border-color: #FFF; }
+.ni-vault-submit {
+  background: #FFFFFF;
+  border: none;
+  color: #07070B;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 120ms var(--ease-enter);
+}
+.ni-vault-submit:hover {
+  background: var(--bone-0);
+  box-shadow: 0 0 16px -4px rgba(255,255,255,0.6);
+}
+.ni-vault-hint {
+  grid-column: 1 / -1;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--bone-3);
+  font-style: italic;
+}
+
+.ni-vault-unlocked {
+  padding: 14px 16px;
+  background: rgba(194,255,61,0.04);
+  border-left: 2px solid var(--acid);
+  border-radius: 2px;
+  margin-bottom: 16px;
+}
+.ni-vault-unlocked p {
+  margin: 8px 0 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--bone-0);
+  line-height: 1.6;
+}
+.ni-vault-unlocked code {
+  background: rgba(255,255,255,0.08);
+  padding: 1px 6px;
+  border-radius: 2px;
+  color: var(--acid);
+}
+
+.ni-vault-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(255,255,255,0.14);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--bone-3);
+  letter-spacing: 0.06em;
+}
+
+@media (max-width: 480px) {
+  .ni-vault { padding: 12px; }
+  .ni-vault-card { padding: 16px; }
+  .ni-vault-grid { grid-template-columns: 1fr; }
+  .ni-vault-code { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .ni-vault-grid { grid-template-columns: 1fr 1fr; }
+}

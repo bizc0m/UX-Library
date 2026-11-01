@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HexTales — Le Jeu des Histoires Vivantes</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+  --gold: #d4a843;
+  --gold-light: #f0cc7a;
+  --gold-dark: #8a6a1c;
+  --deep: #0d0a1a;
+  --mid: #1a1530;
+  --surface: #231e3d;
+  --surface2: #2e2850;
+  --text: #e8e0f0;
+  --text-muted: #9890b8;
+  --accent-teal: #4fd1c5;
+  --accent-rose: #f687b3;
+  --accent-amber: #fbd38d;
+  --card-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 2px 8px rgba(212,168,67,0.15);
+  --glow: 0 0 24px rgba(212,168,67,0.3);
+
+  /* Rarity colors */
+  --common: #a0aec0;
+  --uncommon: #68d391;
+  --rare: #63b3ed;
+  --epic: #b794f4;
+  --legendary: #fbd38d;
+  --mythic: #fc8181;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--deep);
+  color: var(--text);
+  font-family: 'Lato', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(ellipse at 20% 20%, rgba(79,209,197,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(212,168,67,0.06) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='60' height='104' viewBox='0 0 60 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 2L58 17v30L30 62 2 47V17z' fill='none' stroke='%23ffffff08' stroke-width='1'/%3E%3C/svg%3E");
+}
+
+/* ═══════════════════════════════════════════ HEADER */
+header {
+  text-align: center;
+  padding: 48px 24px 32px;
+  position: relative;
+}
+header::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:3px;
+  background: linear-gradient(90deg, transparent, var(--gold), var(--accent-teal), var(--gold), transparent);
+}
+.logo {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--accent-teal));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.08em;
+  filter: drop-shadow(0 0 20px rgba(212,168,67,0.4));
+}
+.tagline {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  margin-top: 8px;
+  letter-spacing: 0.05em;
+}
+
+/* ═══════════════════════════════════════════ NAV TABS */
+.nav-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 24px 32px;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  background: var(--surface);
+  border: 1px solid rgba(212,168,67,0.2);
+  color: var(--text-muted);
+  font-family: 'Lato', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tab-btn:hover { border-color: var(--gold); color: var(--gold); }
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+  border-color: var(--gold);
+  color: var(--deep);
+}
+
+/* ═══════════════════════════════════════════ PANELS */
+.panel { display:none; padding: 0 24px 60px; max-width: 1400px; margin: 0 auto; }
+.panel.active { display:block; }
+
+/* ═══════════════════════════════════════════ HEXAGONS */
+.hex-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.hex-card-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+.hex-card-wrap:hover { transform: translateY(-6px); }
+
+.hex-outer {
+  position: relative;
+  width: 160px;
+  height: 185px;
+  filter: drop-shadow(var(--card-shadow));
+  transition: filter 0.3s;
+}
+.hex-card-wrap:hover .hex-outer { filter: drop-shadow(var(--glow)); }
+
+.hex-shape {
+  width: 160px;
+  height: 185px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Rarity borders via glow overlay */
+.hex-border {
+  position: absolute; inset: 0;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.hex-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%; height: 100%;
+  padding: 20px 12px;
+  text-align: center;
+}
+
+.card-icon { font-size: 2.4rem; margin-bottom: 6px; line-height: 1; }
+.card-name {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+}
+.card-type-label {
+  font-size: 0.5rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
+/* Side action dots */
+.side-actions {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+}
+.side-dot {
+  position: absolute;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.8);
+  background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px;
+  transition: all 0.2s;
+}
+.hex-card-wrap:hover .side-dot { transform: scale(1.2); }
+/* 6 sides of hexagon - positions */
+.side-dot.s0 { top: 0; left: 50%; transform: translateX(-50%) translateY(-6px); }
+.side-dot.s1 { top: 25%; right: -6px; }
+.side-dot.s2 { bottom: 25%; right: -6px; }
+.side-dot.s3 { bottom: 0; left: 50%; transform: translateX(-50%) translateY(6px); }
+.side-dot.s4 { bottom: 25%; left: -6px; }
+.side-dot.s5 { top: 25%; left: -6px; }
+
+/* Rarity badge */
+.rarity-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 10px;
+  border: 1px solid currentColor;
+}
+
+/* ═══════════════════════════════════════════ CARD TYPES */
+.type-lieu      { background: linear-gradient(160deg, #1a3a5c, #2d6a9f); }
+.type-personnage{ background: linear-gradient(160deg, #3d1a5c, #7b3fa8); }
+.type-objet     { background: linear-gradient(160deg, #5c3a1a, #b87333); }
+.type-emotion   { background: linear-gradient(160deg, #5c1a3a, #c2566a); }
+.type-action    { background: linear-gradient(160deg, #1a5c3a, #2ecc71); }
+.type-creature  { background: linear-gradient(160deg, #3a5c1a, #7cb342); }
+.type-magie     { background: linear-gradient(160deg, #4a1a5c, #ab47bc); }
+.type-temps     { background: linear-gradient(160deg, #1a4a5c, #0097a7); }
+.type-valeur    { background: linear-gradient(160deg, #5c4a1a, #ffa726); }
+.type-mystere   { background: linear-gradient(160deg, #1a1a5c, #3949ab); }
+
+/* ═══════════════════════════════════════════ CARD DETAIL MODAL */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(8px);
+}
+.modal-overlay.open { display:flex; }
+.modal-box {
+  background: var(--surface);
+  border: 1px solid rgba(212,168,67,0.3);
+  border-radius: 8px;
+  max-width: 520px;
+  width: 100%;
+  padding: 32px;
+  position: relative;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.8), 0 0 40px rgba(212,168,67,0.1);
+  animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes modalIn {
+  from { opacity:0; transform: scale(0.85) translateY(20px); }
+  to { opacity:1; transform: scale(1) translateY(0); }
+}
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  background: none; border: none; color: var(--text-muted);
+  font-size: 1.4rem; cursor: pointer;
+  transition: color 0.2s;
+}
+.modal-close:hover { color: var(--gold); }
+.modal-hex-preview {
+  display: flex; justify-content: center;
+  margin-bottom: 20px;
+}
+.modal-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.2rem;
+  color: var(--gold-light);
+  text-align: center;
+  margin-bottom: 4px;
+}
+.modal-type {
+  text-align: center;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+.modal-desc {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--deep);
+  border-radius: 4px;
+  border-left: 3px solid var(--gold-dark);
+}
+.modal-sides {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.modal-side-item {
+  background: var(--deep);
+  border-radius: 4px;
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  display: flex; gap: 8px; align-items: flex-start;
+}
+.side-num {
+  color: var(--gold);
+  font-weight: 700;
+  font-size: 0.7rem;
+  margin-top: 2px;
+  min-width: 16px;
+}
+.modal-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+.meta-pill {
+  font-size: 0.72rem;
+  padding: 4px 12px;
+  border-radius: 12px;
+  background: var(--deep);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-muted);
+}
+.qr-mock {
+  width: 48px; height: 48px;
+  background: white;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.55rem;
+  color: #333;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-align: center;
+  padding: 4px;
+  line-height: 1.2;
+}
+
+/* ═══════════════════════════════════════════ STORY BUILDER */
+.story-area {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+@media(max-width:900px){ .story-area { grid-template-columns: 1fr; } }
+
+.hand-zone {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 24px;
+  border: 1px solid rgba(212,168,67,0.1);
+}
+.hand-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 0.9rem;
+  color: var(--gold);
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.hand-title::after { content:''; flex:1; height:1px; background: rgba(212,168,67,0.2); }
+
+.hand-cards {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-height: 140px;
+}
+
+.mini-hex {
+  width: 90px; height: 104px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1.5rem;
+  text-align: center;
+  padding: 10px 8px;
+  position: relative;
+}
+.mini-hex:hover { transform: scale(1.08); }
+.mini-hex.selected { outline: 3px solid var(--gold); outline-offset: 3px; }
+.mini-hex-name {
+  font-size: 0.42rem;
+  font-family: 'Cinzel Decorative', serif;
+  color: #fff;
+  margin-top: 4px;
+  line-height: 1.2;
+}
+
+.story-panel {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 24px;
+  border: 1px solid rgba(212,168,67,0.1);
+}
+.story-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--text);
+  min-height: 200px;
+  white-space: pre-wrap;
+}
+.story-text.placeholder { color: var(--text-muted); font-style: italic; }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+  color: var(--deep);
+  border: none;
+  font-family: 'Lato', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 12px 24px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.1);
+  font-family: 'Lato', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 12px 24px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+.action-row { display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; }
+
+/* ═══════════════════════════════════════════ PACKS */
+.packs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+.pack-card {
+  background: var(--surface);
+  border: 1px solid rgba(212,168,67,0.15);
+  border-radius: 8px;
+  padding: 24px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.pack-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:3px;
+}
+.pack-card:hover { border-color: rgba(212,168,67,0.4); transform: translateY(-3px); }
+.pack-era { font-size: 0.65rem; letter-spacing: 0.2em; text-transform:uppercase; color: var(--text-muted); margin-bottom:8px; }
+.pack-name {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1rem;
+  color: var(--gold-light);
+  margin-bottom: 10px;
+}
+.pack-desc { font-size:0.85rem; color: var(--text-muted); line-height:1.6; margin-bottom:16px; }
+.pack-price {
+  font-weight:700;
+  font-size:0.9rem;
+}
+.badge-premium { color: var(--accent-teal); border-color: var(--accent-teal); }
+.badge-vip { color: var(--gold); border-color: var(--gold); }
+
+/* ═══════════════════════════════════════════ MEMBERSHIP */
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 24px;
+}
+.plan-card {
+  background: var(--surface);
+  border: 1px solid rgba(212,168,67,0.15);
+  border-radius: 8px;
+  padding: 32px 24px;
+  text-align: center;
+  position: relative;
+  transition: all 0.3s;
+}
+.plan-card.featured {
+  border-color: var(--gold);
+  box-shadow: var(--glow);
+}
+.plan-card:hover { transform: translateY(-4px); }
+.plan-badge {
+  position:absolute; top:-12px; left:50%; transform:translateX(-50%);
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+  color: var(--deep);
+  font-size:0.65rem; font-weight:700; letter-spacing:0.15em; text-transform:uppercase;
+  padding:4px 16px; border-radius:10px;
+}
+.plan-name {
+  font-family:'Cinzel Decorative', serif;
+  font-size:1.3rem;
+  color: var(--gold-light);
+  margin-bottom:8px;
+}
+.plan-price { font-size:2rem; font-weight:700; margin-bottom:4px; }
+.plan-period { font-size:0.8rem; color:var(--text-muted); margin-bottom:24px; }
+.plan-features { list-style:none; text-align:left; }
+.plan-features li {
+  font-size:0.85rem;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display:flex; gap:10px; align-items:flex-start;
+  color: var(--text-muted);
+}
+.plan-features li .check { color: var(--accent-teal); flex-shrink:0; }
+
+/* ═══════════════════════════════════════════ ADMIN */
+.admin-grid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+@media(max-width:768px){ .admin-grid { grid-template-columns:1fr; } }
+.admin-nav { display:flex; flex-direction:column; gap:4px; }
+.admin-nav-btn {
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--text-muted);
+  font-family:'Lato', sans-serif;
+  font-size:0.8rem;
+  font-weight:700;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  padding:12px 16px;
+  text-align:left;
+  cursor:pointer;
+  border-radius:4px;
+  transition:all 0.2s;
+}
+.admin-nav-btn:hover { color:var(--gold); border-color:rgba(212,168,67,0.3); }
+.admin-nav-btn.active { background:var(--surface2); color:var(--gold); border-color:rgba(212,168,67,0.4); }
+
+.admin-content {
+  background: var(--surface);
+  border-radius:8px;
+  padding:24px;
+  border:1px solid rgba(212,168,67,0.1);
+}
+.admin-section { display:none; }
+.admin-section.active { display:block; }
+
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap:12px;
+  margin-bottom:24px;
+}
+.stat-card {
+  background:var(--deep);
+  border-radius:6px;
+  padding:16px;
+  text-align:center;
+}
+.stat-num { font-size:1.8rem; font-weight:700; color:var(--gold); }
+.stat-label { font-size:0.7rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-muted); margin-top:4px; }
+
+.contrib-list { display:flex; flex-direction:column; gap:10px; margin-top:16px; }
+.contrib-item {
+  background:var(--deep);
+  border-radius:6px;
+  padding:14px 16px;
+  display:flex; align-items:center; gap:12px;
+  font-size:0.85rem;
+}
+.contrib-avatar {
+  width:36px; height:36px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.1rem;
+  flex-shrink:0;
+}
+.contrib-info { flex:1; }
+.contrib-name { font-weight:700; font-size:0.85rem; }
+.contrib-role { font-size:0.72rem; color:var(--text-muted); }
+.contrib-action { font-size:0.75rem; }
+
+/* ═══════════════════════════════════════════ SECTION HEADERS */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.section-title {
+  font-family:'Cinzel Decorative', serif;
+  font-size:1.2rem;
+  color: var(--gold-light);
+}
+.section-line { flex:1; height:1px; background: linear-gradient(90deg, rgba(212,168,67,0.3), transparent); }
+
+/* ═══════════════════════════════════════════ FILTERS */
+.filter-bar {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:24px;
+  padding:16px;
+  background:var(--surface);
+  border-radius:6px;
+  border:1px solid rgba(255,255,255,0.06);
+}
+.filter-btn {
+  background:var(--deep);
+  border:1px solid rgba(255,255,255,0.08);
+  color:var(--text-muted);
+  font-size:0.72rem;
+  font-weight:700;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  padding:6px 14px;
+  border-radius:2px;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.filter-btn:hover { color:var(--text); border-color:rgba(255,255,255,0.2); }
+.filter-btn.active { background:var(--surface2); color:var(--gold); border-color:rgba(212,168,67,0.4); }
+
+/* ═══════════════════════════════════════════ STORY GENERATED */
+.story-output {
+  background: var(--deep);
+  border-radius:6px;
+  padding:24px;
+  border-left: 3px solid var(--gold);
+  font-family:'Playfair Display', serif;
+  font-size:1rem;
+  line-height:1.9;
+  color:var(--text);
+  white-space:pre-wrap;
+}
+
+.loading {
+  display:flex; align-items:center; gap:10px;
+  color:var(--text-muted); font-style:italic;
+  font-family:'Playfair Display', serif;
+}
+.dot-pulse { display:flex; gap:4px; }
+.dot-pulse span {
+  width:6px; height:6px; border-radius:50%;
+  background:var(--gold);
+  animation: pulse 1.4s infinite ease-in-out;
+}
+.dot-pulse span:nth-child(2) { animation-delay:0.2s; }
+.dot-pulse span:nth-child(3) { animation-delay:0.4s; }
+@keyframes pulse {
+  0%,80%,100% { opacity:0.2; transform:scale(0.8); }
+  40% { opacity:1; transform:scale(1); }
+}
+
+/* ═══════════════════════════════════════════ SELECTED STRIP */
+.selected-strip {
+  background:var(--surface);
+  border-radius:6px;
+  padding:16px;
+  margin-bottom:16px;
+  border:1px solid rgba(212,168,67,0.15);
+}
+.selected-strip-title {
+  font-size:0.7rem; letter-spacing:0.15em; text-transform:uppercase;
+  color:var(--text-muted); margin-bottom:10px;
+}
+.selected-cards-list {
+  display:flex; gap:8px; flex-wrap:wrap;
+}
+.sel-pill {
+  background:var(--deep);
+  border:1px solid rgba(212,168,67,0.3);
+  border-radius:12px;
+  padding:4px 12px;
+  font-size:0.78rem;
+  color:var(--gold-light);
+  display:flex; align-items:center; gap:6px;
+  cursor:pointer;
+}
+.sel-pill .remove { color:var(--text-muted); font-size:0.9rem; }
+.sel-pill:hover .remove { color: var(--accent-rose); }
+
+/* ═══════════════════════════════════════════ SHARING */
+.share-box {
+  background:var(--deep);
+  border-radius:6px;
+  padding:16px;
+  margin-top:16px;
+  border:1px solid rgba(79,209,197,0.2);
+}
+.share-title { font-size:0.7rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--accent-teal); margin-bottom:10px; }
+.share-code {
+  font-family:monospace;
+  font-size:0.85rem;
+  color:var(--accent-teal);
+  background:rgba(79,209,197,0.05);
+  padding:10px 14px;
+  border-radius:4px;
+  letter-spacing:0.2em;
+  text-align:center;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">✦ HexTales ✦</div>
+  <div class="tagline">Le jeu de cartes hexagonales pour tisser des histoires bienveillantes</div>
+</header>
+
+<nav class="nav-tabs">
+  <button class="tab-btn active" onclick="showPanel('cards')">🃏 Cartes</button>
+  <button class="tab-btn" onclick="showPanel('builder')">📖 Créer une Histoire</button>
+  <button class="tab-btn" onclick="showPanel('packs')">📦 Packs</button>
+  <button class="tab-btn" onclick="showPanel('membership')">⭐ Abonnements</button>
+  <button class="tab-btn" onclick="showPanel('admin')">⚙️ Admin</button>
+</nav>
+
+<!-- ═══════════════ PANEL: CARDS COLLECTION ═══════════════ -->
+<div id="panel-cards" class="panel active">
+  <div class="section-header">
+    <span class="section-title">Collection de Cartes</span>
+    <span class="section-line"></span>
+    <span style="font-size:0.75rem;color:var(--text-muted)">60 cartes • 10 types</span>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterCards('all',this)">Tous</button>
+    <button class="filter-btn" onclick="filterCards('lieu',this)">🏔 Lieu</button>
+    <button class="filter-btn" onclick="filterCards('personnage',this)">🧙 Personnage</button>
+    <button class="filter-btn" onclick="filterCards('objet',this)">🗝 Objet</button>
+    <button class="filter-btn" onclick="filterCards('emotion',this)">💫 Émotion</button>
+    <button class="filter-btn" onclick="filterCards('action',this)">⚡ Action</button>
+    <button class="filter-btn" onclick="filterCards('creature',this)">🦋 Créature</button>
+    <button class="filter-btn" onclick="filterCards('magie',this)">✨ Magie</button>
+    <button class="filter-btn" onclick="filterCards('temps',this)">⏳ Temps</button>
+    <button class="filter-btn" onclick="filterCards('valeur',this)">❤️ Valeur</button>
+    <button class="filter-btn" onclick="filterCards('mystere',this)">🌙 Mystère</button>
+  </div>
+
+  <div class="hex-grid" id="cardsGrid"></div>
+</div>
+
+<!-- ═══════════════ PANEL: STORY BUILDER ═══════════════ -->
+<div id="panel-builder" class="panel">
+  <div class="section-header">
+    <span class="section-title">Atelier des Histoires</span>
+    <span class="section-line"></span>
+  </div>
+
+  <div class="story-area">
+    <div>
+      <!-- Hand -->
+      <div class="hand-zone" style="margin-bottom:16px">
+        <div class="hand-title">Ma Main <span style="font-size:0.7rem;color:var(--text-muted);font-family:Lato">(tire jusqu'à 6 cartes)</span></div>
+        <div class="hand-cards" id="handCards"></div>
+        <div class="action-row">
+          <button class="btn-primary" onclick="drawCards()">🎴 Tirer 3 Cartes</button>
+          <button class="btn-secondary" onclick="clearHand()">↺ Vider la Main</button>
+        </div>
+      </div>
+
+      <!-- Selected -->
+      <div class="selected-strip" id="selectedStrip" style="display:none">
+        <div class="selected-strip-title">Cartes sélectionnées pour l'histoire</div>
+        <div class="selected-cards-list" id="selectedList"></div>
+      </div>
+
+      <!-- Generate -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+        <button class="btn-primary" onclick="generateStory()">✨ Générer l'Histoire</button>
+        <button class="btn-secondary" onclick="shareStory()">📤 Partager</button>
+        <button class="btn-secondary" onclick="sendByEmail()">📧 Envoyer par Mail</button>
+      </div>
+
+      <!-- Share box -->
+      <div class="share-box" id="shareBox" style="display:none">
+        <div class="share-title">🔗 Lien de partage (Membres Premium)</div>
+        <div class="share-code" id="shareCode">HTALE-XXXX-XXXX</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">Partagez ce code pour que d'autres puissent lire cette histoire et la jouer avec leurs cartes</div>
+      </div>
+    </div>
+
+    <!-- Story output -->
+    <div class="story-panel">
+      <div class="hand-title" style="margin-bottom:16px">Histoire Générée</div>
+      <div id="storyOutput">
+        <div class="story-text placeholder">Tire des cartes, sélectionne-les, puis génère une histoire bienveillante à raconter ensemble…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Combinaisons suggérées -->
+  <div style="margin-top:32px">
+    <div class="section-header">
+      <span class="section-title">Combinaisons Suggérées</span>
+      <span class="section-line"></span>
+    </div>
+    <div id="combosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ PANEL: PACKS ═══════════════ -->
+<div id="panel-packs" class="panel">
+  <div class="section-header">
+    <span class="section-title">Packs d'Histoires</span>
+    <span class="section-line"></span>
+  </div>
+  <p style="color:var(--text-muted);margin-bottom:8px;font-size:0.9rem">Explore des époques et cultures du monde entier. Chaque pack ajoute de nouvelles cartes et déclenche des histoires inédites.</p>
+  <div class="packs-grid" id="packsGrid"></div>
+</div>
+
+<!-- ═══════════════ PANEL: MEMBERSHIP ═══════════════ -->
+<div id="panel-membership" class="panel">
+  <div class="section-header">
+    <span class="section-title">Abonnements</span>
+    <span class="section-line"></span>
+  </div>
+  <div class="plans-grid" id="plansGrid"></div>
+
+  <div style="margin-top:40px">
+    <div class="section-header">
+      <span class="section-title">Fonctionnalités QR & Partage</span>
+      <span class="section-line"></span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+      <div style="background:var(--surface);border-radius:8px;padding:20px;border:1px solid rgba(79,209,197,0.2)">
+        <div style="font-size:1.5rem;margin-bottom:10px">📱</div>
+        <div style="font-family:'Cinzel Decorative',serif;font-size:0.9rem;color:var(--accent-teal);margin-bottom:8px">QR Code par Carte</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.6">Chaque carte physique contient un QR unique. Scanner déclenche l'histoire liée, active les effets digitaux et identifie votre exemplaire.</div>
+      </div>
+      <div style="background:var(--surface);border-radius:8px;padding:20px;border:1px solid rgba(212,168,67,0.2)">
+        <div style="font-size:1.5rem;margin-bottom:10px">🔗</div>
+        <div style="font-family:'Cinzel Decorative',serif;font-size:0.9rem;color:var(--gold-light);margin-bottom:8px">Partage Premium</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.6">Les membres Premium peuvent partager leurs histoires générées avec un lien unique. L'histoire reste visible 30 jours.</div>
+      </div>
+      <div style="background:var(--surface);border-radius:8px;padding:20px;border:1px solid rgba(246,135,179,0.2)">
+        <div style="font-size:1.5rem;margin-bottom:10px">♾️</div>
+        <div style="font-family:'Cinzel Decorative',serif;font-size:0.9rem;color:var(--accent-rose);margin-bottom:8px">Duplication VIP</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.6">Les membres VIP peuvent dupliquer 1× chaque carte pour la donner. Le nombre de duplications dépend du nombre de joueurs, pour maintenir la rareté.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PANEL: ADMIN ═══════════════ -->
+<div id="panel-admin" class="panel">
+  <div class="section-header">
+    <span class="section-title">⚙️ Administration Open Source</span>
+    <span class="section-line"></span>
+    <span style="font-size:0.72rem;background:rgba(79,209,197,0.1);color:var(--accent-teal);padding:4px 12px;border-radius:10px;border:1px solid rgba(79,209,197,0.3)">Mode Contributeur Actif</span>
+  </div>
+
+  <div class="admin-grid">
+    <div class="admin-nav">
+      <button class="admin-nav-btn active" onclick="adminSection('stats',this)">📊 Statistiques</button>
+      <button class="admin-nav-btn" onclick="adminSection('cards-mgmt',this)">🃏 Gestion Cartes</button>
+      <button class="admin-nav-btn" onclick="adminSection('contributors',this)">👥 Contributeurs</button>
+      <button class="admin-nav-btn" onclick="adminSection('themes',this)">🎨 Thèmes & Packs</button>
+      <button class="admin-nav-btn" onclick="adminSection('moderation',this)">🛡️ Modération</button>
+      <button class="admin-nav-btn" onclick="adminSection('autism',this)">♾️ Mode Autisme</button>
+    </div>
+
+    <div class="admin-content">
+      <!-- Stats -->
+      <div class="admin-section active" id="admin-stats">
+        <div class="stat-cards">
+          <div class="stat-card"><div class="stat-num">2,847</div><div class="stat-label">Histoires créées</div></div>
+          <div class="stat-card"><div class="stat-num">312</div><div class="stat-label">Membres actifs</div></div>
+          <div class="stat-card"><div class="stat-num">18</div><div class="stat-label">Contributeurs</div></div>
+          <div class="stat-card"><div class="stat-num">60</div><div class="stat-label">Cartes actives</div></div>
+          <div class="stat-card"><div class="stat-num">8</div><div class="stat-label">Packs publiés</div></div>
+          <div class="stat-card"><div class="stat-num">4.9★</div><div class="stat-label">Note bienveillance</div></div>
+        </div>
+        <div style="background:var(--deep);border-radius:6px;padding:16px;font-size:0.82rem;color:var(--text-muted)">
+          <div style="color:var(--accent-teal);font-weight:700;margin-bottom:8px;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase">Valeurs les plus jouées cette semaine</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:10px"><span>❤️ Amour & Bienveillance</span><div style="flex:1;height:4px;background:var(--surface2);border-radius:2px"><div style="width:78%;height:100%;background:var(--accent-rose);border-radius:2px"></div></div><span>78%</span></div>
+            <div style="display:flex;align-items:center;gap:10px"><span>🤝 Partage & Entraide</span><div style="flex:1;height:4px;background:var(--surface2);border-radius:2px"><div style="width:61%;height:100%;background:var(--accent-teal);border-radius:2px"></div></div><span>61%</span></div>
+            <div style="display:flex;align-items:center;gap:10px"><span>🌟 Courage</span><div style="flex:1;height:4px;background:var(--surface2);border-radius:2px"><div style="width:49%;height:100%;background:var(--gold);border-radius:2px"></div></div><span>49%</span></div>
+            <div style="display:flex;align-items:center;gap:10px"><span>🕊️ Paix & Pardon</span><div style="flex:1;height:4px;background:var(--surface2);border-radius:2px"><div style="width:38%;height:100%;background:#a78bfa;border-radius:2px"></div></div><span>38%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cards Mgmt -->
+      <div class="admin-section" id="admin-cards-mgmt">
+        <div style="color:var(--gold);font-family:'Cinzel Decorative',serif;font-size:0.9rem;margin-bottom:16px">Gestion des Cartes</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+          <button class="btn-primary" style="font-size:0.72rem;padding:8px 16px">+ Nouvelle Carte</button>
+          <button class="btn-secondary" style="font-size:0.72rem;padding:8px 16px">📥 Importer JSON</button>
+          <button class="btn-secondary" style="font-size:0.72rem;padding:8px 16px">📤 Exporter</button>
+        </div>
+        <div style="background:var(--deep);border-radius:6px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 80px;gap:0;padding:10px 16px;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,0.05)">
+            <span>Nom</span><span>Type</span><span>Rareté</span><span>Statut</span>
+          </div>
+          <div id="cardsMgmtList" style="max-height:300px;overflow-y:auto"></div>
+        </div>
+      </div>
+
+      <!-- Contributors -->
+      <div class="admin-section" id="admin-contributors">
+        <div style="color:var(--gold);font-family:'Cinzel Decorative',serif;font-size:0.9rem;margin-bottom:8px">Contributeurs Open Source</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:16px;line-height:1.6">À la manière d'un projet open source, les contributeurs peuvent proposer de nouvelles cartes, thèmes, histoires et traductions. Chaque contribution est revue avant publication.</div>
+        <div class="contrib-list" id="contribList"></div>
+        <button class="btn-secondary" style="margin-top:16px;font-size:0.72rem;padding:8px 16px">+ Inviter un Contributeur</button>
+      </div>
+
+      <!-- Themes -->
+      <div class="admin-section" id="admin-themes">
+        <div style="color:var(--gold);font-family:'Cinzel Decorative',serif;font-size:0.9rem;margin-bottom:16px">Thèmes & Packs Contributeurs</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:16px">Les contributeurs peuvent soumettre des packs thématiques. Une fois approuvés, ils sont disponibles en achat et le contributeur reçoit une part des revenus.</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="background:var(--deep);border-radius:6px;padding:12px 16px;display:flex;align-items:center;gap:12px;font-size:0.82rem">
+            <span style="font-size:1.2rem">🏺</span>
+            <div style="flex:1"><div style="font-weight:700">Égypte Ancienne</div><div style="font-size:0.72rem;color:var(--text-muted)">par @nefertiti_tales • 24 cartes</div></div>
+            <span style="color:var(--accent-teal);font-size:0.7rem;font-weight:700">APPROUVÉ</span>
+          </div>
+          <div style="background:var(--deep);border-radius:6px;padding:12px 16px;display:flex;align-items:center;gap:12px;font-size:0.82rem">
+            <span style="font-size:1.2rem">🌸</span>
+            <div style="flex:1"><div style="font-weight:700">Japon Féodal</div><div style="font-size:0.72rem;color:var(--text-muted)">par @sakura_stories • 18 cartes</div></div>
+            <span style="color:var(--gold);font-size:0.7rem;font-weight:700">EN REVUE</span>
+          </div>
+          <div style="background:var(--deep);border-radius:6px;padding:12px 16px;display:flex;align-items:center;gap:12px;font-size:0.82rem">
+            <span style="font-size:1.2rem">🦅</span>
+            <div style="flex:1"><div style="font-weight:700">Peuples des Premières Nations</div><div style="font-size:0.72rem;color:var(--text-muted)">par @eagle_wing • 30 cartes</div></div>
+            <span style="color:var(--text-muted);font-size:0.7rem;font-weight:700">BROUILLON</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Moderation -->
+      <div class="admin-section" id="admin-moderation">
+        <div style="color:var(--gold);font-family:'Cinzel Decorative',serif;font-size:0.9rem;margin-bottom:12px">Politique de Bienveillance</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="background:var(--deep);border-radius:6px;padding:14px 16px;font-size:0.82rem">
+            <div style="color:var(--accent-teal);font-weight:700;margin-bottom:6px">✅ Valeurs encouragées</div>
+            <div style="color:var(--text-muted);line-height:1.6">Amour, bienveillance, entraide, courage, pardon, curiosité, créativité, respect de la nature, solidarité, émerveillement, joie partagée</div>
+          </div>
+          <div style="background:var(--deep);border-radius:6px;padding:14px 16px;font-size:0.82rem">
+            <div style="color:var(--accent-rose);font-weight:700;margin-bottom:6px">🚫 Strictement interdit</div>
+            <div style="color:var(--text-muted);line-height:1.6">Méchants liés à une race, religion, ethnie ou nationalité. Violence gratuite. Humiliation. Contenu anxiogène non résolu. Stéréotypes négatifs de tout groupe humain.</div>
+          </div>
+          <div style="background:var(--deep);border-radius:6px;padding:14px 16px;font-size:0.82rem">
+            <div style="color:var(--gold-light);font-weight:700;margin-bottom:6px">⚖️ Méchants autorisés</div>
+            <div style="color:var(--text-muted);line-height:1.6">Les antagonistes existent mais sont motivés par la peur, la tristesse, ou la solitude — jamais par leur appartenance à un groupe. Ils peuvent toujours se racheter.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Autism Mode -->
+      <div class="admin-section" id="admin-autism">
+        <div style="color:var(--gold);font-family:'Cinzel Decorative',serif;font-size:0.9rem;margin-bottom:12px">♾️ Mode Autisme — Configuration</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;line-height:1.6">
+          Le mode Autisme propose une expérience adaptée : histoires séquentielles et prévisibles, vocabulaire simplifié, stimuli visuels doux, et un QR code unique par histoire pour que l'enfant puisse la réécouter autant de fois qu'il le souhaite.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer;background:var(--deep);padding:14px;border-radius:6px">
+            <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--gold)">
+            <div>
+              <div style="font-size:0.85rem;font-weight:700">Histoires séquentielles (début → milieu → fin clairs)</div>
+              <div style="font-size:0.72rem;color:var(--text-muted)">Structure narrative prévisible et rassurante</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer;background:var(--deep);padding:14px;border-radius:6px">
+            <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--gold)">
+            <div>
+              <div style="font-size:0.85rem;font-weight:700">Envoi par mail du code QR de l'histoire</div>
+              <div style="font-size:0.72rem;color:var(--text-muted)">Permet de réécouter l'histoire à tout moment via l'app</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer;background:var(--deep);padding:14px;border-radius:6px">
+            <input type="checkbox" style="width:18px;height:18px;accent-color:var(--gold)">
+            <div>
+              <div style="font-size:0.85rem;font-weight:700">Mode lecture lente (voix synthétique)</div>
+              <div style="font-size:0.72rem;color:var(--text-muted)">Lecture audio de l'histoire à rythme ajustable</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer;background:var(--deep);padding:14px;border-radius:6px">
+            <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--gold)">
+            <div>
+              <div style="font-size:0.85rem;font-weight:700">Pictogrammes de soutien sur chaque carte</div>
+              <div style="font-size:0.72rem;color:var(--text-muted)">Icônes ARASAAC associées aux actions de chaque côté</div>
+            </div>
+          </label>
+        </div>
+        <div style="margin-top:16px;padding:16px;background:rgba(79,209,197,0.06);border:1px solid rgba(79,209,197,0.2);border-radius:6px;font-size:0.8rem;color:var(--text-muted)">
+          💌 Le code QR est envoyé automatiquement à l'adresse mail du parent après chaque session. L'enfant peut scanner le QR sur sa carte et retrouver son histoire personnalisée.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ MODAL ═══════════════ -->
+<div class="modal-overlay" id="cardModal" onclick="closeModal(event)">
+  <div class="modal-box" id="modalBox">
+    <button class="modal-close" onclick="document.getElementById('cardModal').classList.remove('open')">✕</button>
+    <div class="modal-hex-preview" id="modalHexPreview"></div>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-type" id="modalType"></div>
+    <div class="modal-desc" id="modalDesc"></div>
+    <div class="modal-sides" id="modalSides"></div>
+    <div class="modal-meta" id="modalMeta"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════
+
+const CARD_TYPES = {
+  lieu:       { label:'Lieu',        color:'type-lieu',       icon:'🏔', desc:'Définit le cadre de l\'histoire' },
+  personnage: { label:'Personnage',  color:'type-personnage', icon:'🧙', desc:'Donne vie aux acteurs du récit' },
+  objet:      { label:'Objet',       color:'type-objet',      icon:'🗝', desc:'Un artefact clé de l\'aventure' },
+  emotion:    { label:'Émotion',     color:'type-emotion',    icon:'💫', desc:'La couleur émotionnelle de la scène' },
+  action:     { label:'Action',      color:'type-action',     icon:'⚡', desc:'Ce qui se passe dans l\'histoire' },
+  creature:   { label:'Créature',    color:'type-creature',   icon:'🦋', desc:'Êtres vivants alliés ou allégoriques' },
+  magie:      { label:'Magie',       color:'type-magie',      icon:'✨', desc:'L\'extraordinaire qui transforme' },
+  temps:      { label:'Temps',       color:'type-temps',      icon:'⏳', desc:'Moment, durée, cycle naturel' },
+  valeur:     { label:'Valeur',      color:'type-valeur',     icon:'❤️', desc:'Une vertu humaniste incarnée' },
+  mystere:    { label:'Mystère',     color:'type-mystere',    icon:'🌙', desc:'L\'inconnu qui invite à l\'exploration' },
+};
+
+const RARITIES = {
+  common:    { label:'Commun',    color:'var(--common)',    stars:'★☆☆☆☆' },
+  uncommon:  { label:'Peu commun',color:'var(--uncommon)', stars:'★★☆☆☆' },
+  rare:      { label:'Rare',      color:'var(--rare)',      stars:'★★★☆☆' },
+  epic:      { label:'Épique',    color:'var(--epic)',      stars:'★★★★☆' },
+  legendary: { label:'Légendaire',color:'var(--legendary)', stars:'★★★★★' },
+  mythic:    { label:'Mythique',  color:'var(--mythic)',    stars:'◆◆◆◆◆' },
+};
+
+// Side actions format: [N, NE, SE, S, SW, NW]
+// Les actions plus vertueuses → rareté plus haute
+
+const CARDS = [
+  // LIEUX
+  { id:'L1', name:'La Forêt Enchantée', type:'lieu', rarity:'uncommon', icon:'🌲',
+    desc:'Une forêt ancienne où les arbres murmurent des sagesses oubliées. Chaque sentier mène vers une découverte bienveillante.',
+    sides:['Entrer avec curiosité','Écouter les arbres','Partager le chemin','Ressortir transformé·e','Trouver un refuge','Laisser une trace belle'],
+    combinesWith:['C1','O2','M1'],
+    qr:'HXT-L001' },
+  { id:'L2', name:'Le Village Céleste', type:'lieu', rarity:'rare', icon:'☁️',
+    desc:'Un village perché dans les nuages où tous les habitants pratiquent l\'art d\'offrir sans compter.',
+    sides:['Accueillir l\'étranger','Bâtir ensemble','Partager le repas','Contempler l\'horizon','Chanter en chœur','Enseigner une compétence'],
+    combinesWith:['P3','V1','A2'],
+    qr:'HXT-L002' },
+  { id:'L3', name:'La Bibliothèque Vivante', type:'lieu', rarity:'epic', icon:'📚',
+    desc:'Chaque livre ici respire. Les histoires sortent des pages pour accompagner les lecteurs dans leur quotidien.',
+    sides:['Ouvrir un livre inconnu','Écouter une histoire','Écrire une page nouvelle','Partager un savoir','Illustrer un rêve','Garder un secret'],
+    combinesWith:['T1','M2','E1'],
+    qr:'HXT-L003' },
+
+  // PERSONNAGES
+  { id:'P1', name:'L\'Enfant Curieux', type:'personnage', rarity:'common', icon:'🧒',
+    desc:'Un enfant dont les yeux s\'émerveillent à chaque instant. Sa curiosité transforme l\'ordinaire en magie.',
+    sides:['Poser une question','Tendre la main','Rire ensemble','Pleurer sans honte','Protéger un ami','Rêver à voix haute'],
+    combinesWith:['L1','E1','A1'],
+    qr:'HXT-P001' },
+  { id:'P2', name:'La Gardienne des Contes', type:'personnage', rarity:'rare', icon:'👵',
+    desc:'Une conteuse sage qui porte en elle les histoires de mille générations. Sa voix guérit les cœurs blessés.',
+    sides:['Raconter une légende','Écouter sans juger','Consoler la tristesse','Transmettre la sagesse','Rire des erreurs','Bénir le voyage'],
+    combinesWith:['T1','L3','V2'],
+    qr:'HXT-P002' },
+  { id:'P3', name:'L\'Inventeur Rêveur', type:'personnage', rarity:'uncommon', icon:'🔬',
+    desc:'Un inventeur dont toutes les créations servent à aider les autres. Rien ne l\'arrête sauf la nuit.',
+    sides:['Imaginer une solution','Demander de l\'aide','Partager la découverte','Accepter l\'échec','Recommencer avec joie','Célébrer le succès'],
+    combinesWith:['O3','M3','A3'],
+    qr:'HXT-P003' },
+  { id:'P4', name:'L\'Ombre Solitaire', type:'personnage', rarity:'epic', icon:'🌫️',
+    desc:'Un être isolé par la peur de ne pas être aimé. Derrière ses actes difficiles se cache un cœur qui cherche la chaleur.',
+    sides:['Montrer sa peur','Accepter l\'aide','Faire un pas vers l\'autre','Trouver sa lumière','Pardonner sa propre tristesse','Rejoindre le groupe'],
+    combinesWith:['E2','V3','A2'],
+    qr:'HXT-P004' },
+
+  // OBJETS
+  { id:'O1', name:'La Lanterne de l\'Espoir', type:'objet', rarity:'uncommon', icon:'🏮',
+    desc:'Une lanterne qui s\'allume quand quelqu\'un a besoin d\'être guidé. Sa lumière est douce et ne blesse jamais.',
+    sides:['Allumer dans l\'obscurité','Guider sans dominer','Offrir la lumière','Protéger la flamme','Partager la chaleur','Éteindre avec douceur'],
+    combinesWith:['L2','E1','V1'],
+    qr:'HXT-O001' },
+  { id:'O2', name:'Le Grimoire des Possibles', type:'objet', rarity:'rare', icon:'📖',
+    desc:'Un livre qui ne contient que des pages vierges — jusqu\'à ce que les lecteurs y inscrivent leurs rêves.',
+    sides:['Écrire un souhait','Lire à voix haute','Offrir une page','Effacer avec tendresse','Inventer une fin','Signer de son nom'],
+    combinesWith:['P2','T1','L3'],
+    qr:'HXT-O002' },
+  { id:'O3', name:'La Boussole du Cœur', type:'objet', rarity:'legendary', icon:'🧭',
+    desc:'Cette boussole ne pointe pas vers le nord mais vers ce qui compte vraiment pour celui qui la tient.',
+    sides:['Trouver sa direction','Partager le cap','Attendre quelqu\'un','Corriger sa route','S\'émerveiller du chemin','Arriver ensemble'],
+    combinesWith:['P3','L1','V2'],
+    qr:'HXT-O003' },
+
+  // ÉMOTIONS
+  { id:'E1', name:'La Joie Partagée', type:'emotion', rarity:'common', icon:'☀️',
+    desc:'La joie qui grandit en étant partagée. Impossible de la garder pour soi — elle déborde naturellement.',
+    sides:['Sourire à un inconnu','Danser sans raison','Offrir sa joie','Recevoir avec gratitude','Rire ensemble','Célébrer la vie'],
+    combinesWith:['V1','A1','P1'],
+    qr:'HXT-E001' },
+  { id:'E2', name:'La Tristesse Honorée', type:'emotion', rarity:'uncommon', icon:'🌧️',
+    desc:'Une tristesse accueillie avec douceur. Pleurer est un acte de courage. Cette carte invite à accompagner sans minimiser.',
+    sides:['Pleurer librement','Accueillir la peine','Rester présent·e','Consoler sans mots','Laisser du temps','Trouver la paix'],
+    combinesWith:['P4','V3','A2'],
+    qr:'HXT-E002' },
+  { id:'E3', name:'Le Courage Doux', type:'emotion', rarity:'rare', icon:'🦁',
+    desc:'Le courage qui n\'a pas besoin de crier. Celui qui avance malgré la peur, avec tendresse pour soi-même.',
+    sides:['Oser malgré tout','Reconnaître sa peur','Avancer un pas','Encourager l\'autre','Accepter l\'aide','Célébrer la bravoure'],
+    combinesWith:['P1','A3','V1'],
+    qr:'HXT-E003' },
+
+  // ACTIONS
+  { id:'A1', name:'L\'Acte de Partager', type:'action', rarity:'common', icon:'🤲',
+    desc:'Partager sans calcul. Un geste simple qui crée des liens invisibles et durables entre les êtres.',
+    sides:['Donner sans attendre','Recevoir avec joie','Diviser en parts égales','Offrir le meilleur morceau','Partager un secret','Construire ensemble'],
+    combinesWith:['V1','E1','P1'],
+    qr:'HXT-A001' },
+  { id:'A2', name:'L\'Art de Réconcilier', type:'action', rarity:'uncommon', icon:'🕊️',
+    desc:'La réconciliation demande du courage et de l\'humilité. Cette action transforme les conflits en opportunités.',
+    sides:['Tendre la main en premier','Écouter l\'autre côté','Dire je suis désolé·e','Accepter les excuses','Trouver un terrain commun','Recommencer à zéro'],
+    combinesWith:['P4','E2','V3'],
+    qr:'HXT-A002' },
+  { id:'A3', name:'La Grande Invention', type:'action', rarity:'epic', icon:'⚙️',
+    desc:'Inventer quelque chose qui rend la vie meilleure pour tous. L\'ingéniosité au service de la communauté.',
+    sides:['Observer un problème','Imaginer une solution','Tester et rater','Améliorer encore','Partager gratuitement','Enseigner à d\'autres'],
+    combinesWith:['P3','O3','T2'],
+    qr:'HXT-A003' },
+
+  // CRÉATURES
+  { id:'C1', name:'Le Renard Sage', type:'creature', rarity:'uncommon', icon:'🦊',
+    desc:'Un renard qui ne trompe jamais. Il utilise son intelligence pour aider les perdus à retrouver leur chemin.',
+    sides:['Guider subtilement','Poser la bonne question','Déjouer le piège','Partager sa connaissance','Accompagner en silence','Partir quand c\'est l\'heure'],
+    combinesWith:['L1','M1','P2'],
+    qr:'HXT-C001' },
+  { id:'C2', name:'La Baleine Chanteuse', type:'creature', rarity:'legendary', icon:'🐋',
+    desc:'Sa chanson traverse tous les océans et rappelle aux humains l\'immensité de ce qui nous unit.',
+    sides:['Chanter pour tous','Porter un message','Traverser ensemble','Plonger dans le profond','Remonter à la surface','Chanter la joie'],
+    combinesWith:['T2','V2','M2'],
+    qr:'HXT-C002' },
+
+  // MAGIE
+  { id:'M1', name:'Le Sort de Compréhension', type:'magie', rarity:'rare', icon:'🔮',
+    desc:'Ce sort ne fait pas de la magie spectaculaire — il permet simplement de comprendre le point de vue de l\'autre.',
+    sides:['Écouter vraiment','Voir avec ses yeux','Ressentir son vécu','Trouver le commun','Parler avec douceur','Grandir ensemble'],
+    combinesWith:['P4','E2','A2'],
+    qr:'HXT-M001' },
+  { id:'M2', name:'La Potion d\'Émerveillement', type:'magie', rarity:'epic', icon:'🧪',
+    desc:'Une potion qui rend le quotidien extraordinaire. Sous son effet, même une fleur dans le béton devient miraculeuse.',
+    sides:['Regarder différemment','Trouver la beauté','Partager l\'émerveillement','Inviter à voir','Créer de la magie','Garder la mémoire'],
+    combinesWith:['L3','E1','C1'],
+    qr:'HXT-M002' },
+  { id:'M3', name:'Le Vœu de la Lune', type:'magie', rarity:'mythic', icon:'🌙',
+    desc:'Un vœu accordé une seule fois, uniquement si il est formulé pour le bien de tous et non d\'un seul.',
+    sides:['Formuler avec soin','Penser aux autres','Offrir le vœu','Attendre avec patience','Accueillir le cadeau','Remercier l\'univers'],
+    combinesWith:['T2','V2','L2'],
+    qr:'HXT-M003' },
+
+  // TEMPS
+  { id:'T1', name:'L\'Instant Présent', type:'temps', rarity:'common', icon:'⏰',
+    desc:'Cet instant — maintenant — est le seul où l\'on peut agir, aimer, et créer. Cette carte ralentit le monde.',
+    sides:['S\'arrêter un moment','Respirer ensemble','Observer ce qui est','Savourer la présence','Rien faire avec joie','Recommencer demain'],
+    combinesWith:['E1','V1','P2'],
+    qr:'HXT-T001' },
+  { id:'T2', name:'Le Cycle des Saisons', type:'temps', rarity:'uncommon', icon:'🌀',
+    desc:'Tout change, tout revient. Cette carte rappelle que rien n\'est permanent — ni la tristesse, ni la joie.',
+    sides:['Planter en printemps','Cultiver en été','Récolter en automne','Se reposer en hiver','Commencer un nouveau cycle','Accueillir le changement'],
+    combinesWith:['L1','C2','M3'],
+    qr:'HXT-T002' },
+
+  // VALEURS
+  { id:'V1', name:'La Bienveillance Radicale', type:'valeur', rarity:'uncommon', icon:'💚',
+    desc:'Être bon même quand c\'est difficile. Même avec ceux qui ont commis des erreurs. C\'est la valeur la plus rare.',
+    sides:['Choisir la gentillesse','Agir sans raison','Inclure l\'exclu·e','Nourrir la relation','Pardonner vraiment','Transmettre la bonté'],
+    combinesWith:['A2','E3','P4'],
+    qr:'HXT-V001' },
+  { id:'V2', name:'Le Respect de la Différence', type:'valeur', rarity:'rare', icon:'🌈',
+    desc:'Voir dans la différence une richesse plutôt qu\'une menace. Une valeur qui élargit le monde.',
+    sides:['Écouter une autre façon','Goûter un autre monde','Apprendre une langue','Partager sa culture','Trouver le commun','Célébrer la diversité'],
+    combinesWith:['L2','P3','A1'],
+    qr:'HXT-V002' },
+  { id:'V3', name:'Le Pardon Libérateur', type:'valeur', rarity:'epic', icon:'🌸',
+    desc:'Pardonner n\'est pas oublier — c\'est choisir de ne plus porter le poids du passé. Un acte de liberté.',
+    sides:['Reconnaître la blessure','Nommer sa douleur','Choisir de lâcher','Offrir le pardon','Se libérer aussi','Tourner la page'],
+    combinesWith:['P4','E2','A2'],
+    qr:'HXT-V003' },
+
+  // MYSTÈRES
+  { id:'Mys1', name:'La Porte des Possibles', type:'mystere', rarity:'rare', icon:'🚪',
+    desc:'Une porte qui n\'existe sur aucune carte connue. Elle s\'ouvre seulement quand on ose frapper avec espoir.',
+    sides:['Frapper avec douceur','Attendre sans peur','Franchir le seuil','Découvrir l\'inattendu','Inviter quelqu\'un','Laisser la porte ouverte'],
+    combinesWith:['L3','M3','E3'],
+    qr:'HXT-Mys001' },
+  { id:'Mys2', name:'L\'Étoile Inconnue', type:'mystere', rarity:'legendary', icon:'⭐',
+    desc:'Une étoile qui ne figure sur aucun atlas. Elle guide ceux qui voyagent vers le bien, même sans savoir où ils vont.',
+    sides:['Lever les yeux','Choisir une direction','Marcher dans la nuit','Trouver un compagnon','Arriver quelque part','Nommer l\'étoile'],
+    combinesWith:['T2','C2','M3'],
+    qr:'HXT-Mys002' },
+];
+
+// Les 6 combinaisons systématiques
+const SYSTEMATIC_COMBOS = [
+  { name:'L\'Aventure Bienveillante', cards:['L1','P1','A1'], desc:'Un héros part en voyage et partage ses provisions avec les inconnus rencontrés.' },
+  { name:'La Réconciliation Magique', cards:['P4','M1','A2'], desc:'Un être solitaire découvre grâce à la magie qu\'il peut être compris et accepté.' },
+  { name:'Le Trésor du Cœur', cards:['O3','V1','E1'], desc:'La boussole mène non vers l\'or, mais vers un acte de bonté qui transforme tout.' },
+  { name:'La Légende de la Sagesse', cards:['P2','T1','L3'], desc:'Une conteuse et un enfant s\'arrêtent et découvrent que le présent est le vrai trésor.' },
+  { name:'Le Cycle de la Nature', cards:['C2','T2','M3'], desc:'La baleine chante un vœu pour que les saisons reviennent et que la terre soit soignée.' },
+  { name:'Le Village de Toutes les Cultures', cards:['L2','V2','P3'], desc:'Un inventeur construit un espace où chaque culture apporte ses savoirs en cadeau.' },
+];
+
+// Packs
+const PACKS = [
+  { era:'Préhistoire', name:'L\'Aube du Monde', icon:'🦕', desc:'Les premiers humains découvrent la solidarité, le feu partagé, et les premiers gestes d\'amour.', cards:12, price:'Gratuit', tier:'free', color:'#8B4513' },
+  { era:'Antiquité', name:'Les Cités Lumières', icon:'🏛️', desc:'Athènes, Carthage, Nubie, Babylone… Des enfants de toutes origines inventent ensemble la philosophie et l\'amitié.', cards:24, price:'4,99€', tier:'premium', color:'#d4a843' },
+  { era:'Moyen Âge Mondial', name:'Les Routes de la Soie', icon:'🐪', desc:'Marchands, artistes et savants traversent les déserts. Chaque étape est une rencontre transformatrice.', cards:24, price:'4,99€', tier:'premium', color:'#8B6914' },
+  { era:'Renaissance', name:'L\'Âge de l\'Émerveillement', icon:'🎨', desc:'Des artistes, des scientifiques et des explorateurs qui partagent leurs découvertes avec le monde.', cards:18, price:'3,99€', tier:'free', color:'#2d6a9f' },
+  { era:'Cultures du Monde', name:'Fêtes de la Terre', icon:'🌍', desc:'Diwali, Inti Raymi, Nowruz, Carnaval… Des fêtes universelles qui célèbrent la vie ensemble.', cards:30, price:'5,99€', tier:'vip', color:'#7b3fa8' },
+  { era:'Futur Bienveillant', name:'La Terre de Demain', icon:'🌱', desc:'Un futur où les humains ont appris à soigner la planète et vivre en harmonie. Des héros bâtisseurs.', cards:24, price:'4,99€', tier:'premium', color:'#2ecc71' },
+  { era:'Mythologies Universelles', name:'Les Dieux et les Mortels', icon:'⚡', desc:'Odin, Anubis, Amaterasu, Tlaloc… Des mythes du monde entier qui parlent de sagesse et d\'humanité.', cards:36, price:'7,99€', tier:'vip', color:'#ab47bc' },
+  { era:'Contes Africains', name:'Ubuntu — Je Suis Car Nous Sommes', icon:'🌅', desc:'Les contes de sagesse africains : le lion et la souris, l\'arbre de la communauté, les étoiles-ancêtres.', cards:24, price:'4,99€', tier:'premium', color:'#e67e22' },
+];
+
+// Membership plans
+const PLANS = [
+  { name:'Découverte', price:'Gratuit', period:'pour toujours', icon:'🌱', featured:false,
+    features:['15 cartes de base','3 histoires par semaine','Mode lecture simple','QR basique (scan uniquement)','Pack Préhistoire inclus'] },
+  { name:'Premium', price:'4,99€', period:'par mois', icon:'⭐', featured:true,
+    features:['Toutes les cartes de base (60)','Histoires illimitées','Mode Autisme inclus','Partage d\'histoires (lien 30j)','Accès à tous les packs payants','Envoi mail des codes QR','Contributions communautaires'] },
+  { name:'VIP', price:'9,99€', period:'par mois', icon:'💎', featured:false,
+    features:['Tout le plan Premium','Duplication de cartes (1× par carte)','Nombre de dups selon nb. joueurs','Packs en avant-première','Badge Contributeur VIP','API partenaire disponible','Accès mode Administrateur lite'] },
+];
+
+// Contributors
+const CONTRIBUTORS = [
+  { name:'Leïla M.', role:'Contributrice Cartes', avatar:'🎨', action:'A soumis 12 nouvelles cartes "Monde Arabe"', status:'Approuvé' },
+  { name:'Jonas K.', role:'Traducteur', avatar:'🌍', action:'Traduction complète Allemand & Suédois', status:'Approuvé' },
+  { name:'Yuki T.', role:'Illustrateur', avatar:'🖌️', action:'Pack Japon Féodal — 18 illustrations', status:'En revue' },
+  { name:'Amara D.', role:'Modérateur', avatar:'🛡️', action:'200 histoires vérifiées ce mois', status:'Actif' },
+];
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let currentFilter = 'all';
+let hand = [];
+let selectedCards = [];
+let generatedStory = '';
+
+// ═══════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════
+
+function rarityStyle(r) {
+  return RARITIES[r] ? `color:${RARITIES[r].color}` : '';
+}
+
+function renderHexCard(card, size='large') {
+  const type = CARD_TYPES[card.type];
+  const rarity = RARITIES[card.rarity];
+  if(size==='mini') {
+    return `<div class="mini-hex ${type.color}" onclick="selectCard('${card.id}')" title="${card.name}">
+      <div>${type.icon}</div>
+      <div class="mini-hex-name">${card.name.substring(0,14)}</div>
+    </div>`;
+  }
+  return `
+    <div class="hex-card-wrap" onclick="openCard('${card.id}')">
+      <div class="hex-outer">
+        <div class="hex-shape ${type.color}">
+          <div class="hex-content">
+            <div class="card-icon">${card.icon}</div>
+            <div class="card-name">${card.name}</div>
+            <div class="card-type-label" style="${rarityStyle(card.rarity)}">${type.label}</div>
+          </div>
+          <!-- Side dots -->
+          <div class="side-actions">
+            ${card.sides.map((s,i)=>`<div class="side-dot s${i}" title="${s}">${i+1}</div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="rarity-badge" style="${rarityStyle(card.rarity)}">${rarity.stars} ${rarity.label}</div>
+    </div>`;
+}
+
+function renderCards() {
+  const grid = document.getElementById('cardsGrid');
+  const filtered = currentFilter==='all' ? CARDS : CARDS.filter(c=>c.type===currentFilter);
+  grid.innerHTML = filtered.map(c=>renderHexCard(c,'large')).join('');
+}
+
+function filterCards(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards();
+}
+
+function openCard(id) {
+  const card = CARDS.find(c=>c.id===id);
+  if(!card) return;
+  const type = CARD_TYPES[card.type];
+  const rarity = RARITIES[card.rarity];
+  document.getElementById('modalHexPreview').innerHTML = `
+    <div style="transform:scale(0.9)">${renderHexCard(card,'large')}</div>`;
+  document.getElementById('modalTitle').textContent = card.name;
+  document.getElementById('modalType').textContent = type.label.toUpperCase() + ' · ' + rarity.label.toUpperCase();
+  document.getElementById('modalDesc').textContent = card.desc;
+  document.getElementById('modalSides').innerHTML = card.sides.map((s,i)=>`
+    <div class="modal-side-item">
+      <span class="side-num">Côté ${i+1}</span>
+      <span>${s}</span>
+    </div>`).join('');
+  document.getElementById('modalMeta').innerHTML = `
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <span class="meta-pill">Se combine avec: ${card.combinesWith.join(', ')}</span>
+      <span class="meta-pill" style="${rarityStyle(card.rarity)}">${rarity.stars}</span>
+    </div>
+    <div class="qr-mock">${card.qr.split('-').join('\n')}</div>`;
+  document.getElementById('cardModal').classList.add('open');
+}
+
+function closeModal(e) {
+  if(e.target===document.getElementById('cardModal'))
+    document.getElementById('cardModal').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════════════
+// STORY BUILDER
+// ═══════════════════════════════════════════════════════════
+
+function drawCards() {
+  if(hand.length >= 9) { alert('Main pleine ! Vide ta main d\'abord.'); return; }
+  const available = CARDS.filter(c=>!hand.find(h=>h.id===c.id));
+  for(let i=0;i<3;i++) {
+    if(available.length===0) break;
+    const idx = Math.floor(Math.random()*available.length);
+    hand.push(available.splice(idx,1)[0]);
+  }
+  renderHand();
+}
+
+function clearHand() {
+  hand = [];
+  selectedCards = [];
+  renderHand();
+  renderSelected();
+  document.getElementById('storyOutput').innerHTML = '<div class="story-text placeholder">Tire des cartes, sélectionne-les, puis génère une histoire bienveillante à raconter ensemble…</div>';
+  document.getElementById('shareBox').style.display='none';
+}
+
+function renderHand() {
+  const el = document.getElementById('handCards');
+  if(hand.length===0) {
+    el.innerHTML = '<div style="color:var(--text-muted);font-style:italic;font-size:0.85rem;align-self:center">Appuie sur "Tirer 3 Cartes" pour commencer…</div>';
+    return;
+  }
+  el.innerHTML = hand.map(c=>{
+    const type = CARD_TYPES[c.type];
+    const sel = selectedCards.find(s=>s.id===c.id) ? 'selected' : '';
+    return `<div class="mini-hex ${type.color} ${sel}" onclick="selectCard('${c.id}')" title="${c.name}">
+      <div style="font-size:1.6rem">${c.icon}</div>
+      <div class="mini-hex-name">${c.name.substring(0,16)}</div>
+    </div>`;
+  }).join('');
+}
+
+function selectCard(id) {
+  const card = CARDS.find(c=>c.id===id);
+  if(!card) return;
+  if(selectedCards.find(c=>c.id===id)) {
+    selectedCards = selectedCards.filter(c=>c.id!==id);
+  } else {
+    if(selectedCards.length>=6) { return; }
+    selectedCards.push(card);
+  }
+  renderHand();
+  renderSelected();
+}
+
+function removeSelected(id) {
+  selectedCards = selectedCards.filter(c=>c.id!==id);
+  renderHand();
+  renderSelected();
+}
+
+function renderSelected() {
+  const strip = document.getElementById('selectedStrip');
+  const list = document.getElementById('selectedList');
+  if(selectedCards.length===0) { strip.style.display='none'; return; }
+  strip.style.display='block';
+  list.innerHTML = selectedCards.map(c=>`
+    <div class="sel-pill" onclick="removeSelected('${c.id}')">
+      ${c.icon} ${c.name} <span class="remove">✕</span>
+    </div>`).join('');
+}
+
+async function generateStory() {
+  if(selectedCards.length===0) { alert('Sélectionne au moins une carte !'); return; }
+
+  document.getElementById('storyOutput').innerHTML = `
+    <div class="loading">
+      <div class="dot-pulse"><span></span><span></span><span></span></div>
+      <span>L'histoire prend vie…</span>
+    </div>`;
+
+  const cardDescriptions = selectedCards.map(c=>`
+- ${c.name} (${CARD_TYPES[c.type].label}) : ${c.desc}
+  Actions disponibles: ${c.sides.join(', ')}`).join('\n');
+
+  const prompt = `Tu es un conteur bienveillant qui crée des histoires pour les enfants et leurs parents.
+
+À partir de ces cartes HexTales :
+${cardDescriptions}
+
+Crée une histoire courte (8-12 phrases) qui :
+- Est bienveillante, douce et pleine de valeurs humanistes (amour, partage, courage, curiosité, pardon)
+- Utilise les actions inscrites sur les côtés des cartes comme moments clés du récit
+- A un début, un développement et une fin heureuse et ouverte
+- Si un antagoniste existe, il est motivé par la peur ou la tristesse, jamais par sa race ou religion
+- N'associe jamais le mal à un groupe humain identifiable
+- Est racontable par un parent à voix haute, de façon vivante
+
+Commence directement l'histoire, sans introduction. Utilise un style oral, chaleureux, comme si tu la racontais à un enfant.`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        model:"claude-sonnet-4-20250514",
+        max_tokens:1000,
+        messages:[{role:"user", content:prompt}]
+      })
+    });
+    const data = await response.json();
+    generatedStory = data.content.map(b=>b.text||'').join('');
+    document.getElementById('storyOutput').innerHTML = `<div class="story-output">${generatedStory}</div>`;
+  } catch(err) {
+    document.getElementById('storyOutput').innerHTML = `<div class="story-output" style="color:var(--accent-rose)">Une erreur est survenue. Vérifiez votre connexion.</div>`;
+  }
+}
+
+function shareStory() {
+  if(!generatedStory) { alert('Génère d\'abord une histoire !'); return; }
+  const code = 'HTALE-' + Math.random().toString(36).substr(2,4).toUpperCase() + '-' + Math.random().toString(36).substr(2,4).toUpperCase();
+  document.getElementById('shareCode').textContent = code;
+  document.getElementById('shareBox').style.display='block';
+}
+
+function sendByEmail() {
+  if(!generatedStory) { alert('Génère d\'abord une histoire !'); return; }
+  alert('📧 L\'histoire et le QR code ont été envoyés par mail ! (Fonctionnalité Premium)');
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER COMBOS
+// ═══════════════════════════════════════════════════════════
+
+function renderCombos() {
+  const el = document.getElementById('combosGrid');
+  el.innerHTML = SYSTEMATIC_COMBOS.map(combo=>{
+    const cards = combo.cards.map(id=>CARDS.find(c=>c.id===id)).filter(Boolean);
+    return `<div style="background:var(--surface);border-radius:8px;padding:16px;border:1px solid rgba(212,168,67,0.1);cursor:pointer;transition:all 0.2s"
+      onmouseover="this.style.borderColor='rgba(212,168,67,0.4)'" onmouseout="this.style.borderColor='rgba(212,168,67,0.1)'">
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        ${cards.map(c=>`<span style="font-size:1.4rem" title="${c.name}">${c.icon}</span>`).join('')}
+      </div>
+      <div style="font-family:'Cinzel Decorative',serif;font-size:0.75rem;color:var(--gold-light);margin-bottom:6px">${combo.name}</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;font-style:italic">${combo.desc}</div>
+      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+        ${cards.map(c=>`<span style="font-size:0.65rem;background:var(--deep);padding:2px 8px;border-radius:8px;color:var(--text-muted)">${c.name}</span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER PACKS
+// ═══════════════════════════════════════════════════════════
+
+function renderPacks() {
+  const el = document.getElementById('packsGrid');
+  el.innerHTML = PACKS.map(pack=>{
+    const tierBadge = pack.tier==='vip'
+      ? '<span class="rarity-badge badge-vip">💎 VIP</span>'
+      : pack.tier==='premium'
+      ? '<span class="rarity-badge badge-premium">⭐ Premium</span>'
+      : '<span class="rarity-badge" style="color:var(--common);border-color:var(--common)">🌱 Gratuit</span>';
+    return `<div class="pack-card" style="--border-top-color:${pack.color}">
+      <style>.pack-card:nth-child(${PACKS.indexOf(pack)+1})::before{background:${pack.color}}</style>
+      <div class="pack-era">${pack.era}</div>
+      <div style="font-size:2rem;margin-bottom:8px">${pack.icon}</div>
+      <div class="pack-name">${pack.name}</div>
+      <div class="pack-desc">${pack.desc}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        ${tierBadge}
+        <div class="pack-price">${pack.price}</div>
+      </div>
+      <div style="font-size:0.72rem;color:var(--text-muted);margin-top:8px">${pack.cards} nouvelles cartes</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER PLANS
+// ═══════════════════════════════════════════════════════════
+
+function renderPlans() {
+  const el = document.getElementById('plansGrid');
+  el.innerHTML = PLANS.map(plan=>`
+    <div class="plan-card ${plan.featured?'featured':''}">
+      ${plan.featured?'<div class="plan-badge">Le plus populaire</div>':''}
+      <div style="font-size:2rem;margin-bottom:8px">${plan.icon}</div>
+      <div class="plan-name">${plan.name}</div>
+      <div class="plan-price">${plan.price}</div>
+      <div class="plan-period">${plan.period}</div>
+      <ul class="plan-features">
+        ${plan.features.map(f=>`<li><span class="check">✓</span><span>${f}</span></li>`).join('')}
+      </ul>
+      <button class="btn-primary" style="width:100%;justify-content:center;margin-top:20px">
+        Choisir ${plan.name}
+      </button>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER ADMIN
+// ═══════════════════════════════════════════════════════════
+
+function renderAdmin() {
+  // Cards mgmt list
+  const list = document.getElementById('cardsMgmtList');
+  if(list) {
+    list.innerHTML = CARDS.slice(0,10).map(c=>{
+      const rarity = RARITIES[c.rarity];
+      return `<div style="display:grid;grid-template-columns:1fr 1fr 1fr 80px;gap:0;padding:10px 16px;font-size:0.8rem;border-bottom:1px solid rgba(255,255,255,0.03);align-items:center">
+        <span>${c.icon} ${c.name}</span>
+        <span style="color:var(--text-muted)">${CARD_TYPES[c.type].label}</span>
+        <span style="${rarityStyle(c.rarity)}">${rarity.label}</span>
+        <span style="color:var(--accent-teal);font-size:0.7rem;font-weight:700">ACTIF</span>
+      </div>`;
+    }).join('') + `<div style="padding:10px 16px;font-size:0.72rem;color:var(--text-muted)">…et ${CARDS.length-10} autres cartes</div>`;
+  }
+
+  // Contribs
+  const cl = document.getElementById('contribList');
+  if(cl) {
+    cl.innerHTML = CONTRIBUTORS.map(c=>`
+      <div class="contrib-item">
+        <div class="contrib-avatar">${c.avatar}</div>
+        <div class="contrib-info">
+          <div class="contrib-name">${c.name}</div>
+          <div class="contrib-role">${c.role}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">${c.action}</div>
+        </div>
+        <span class="contrib-action" style="color:${c.status==='Approuvé'?'var(--accent-teal)':c.status==='Actif'?'var(--gold)':'var(--text-muted)'};font-size:0.72rem;font-weight:700">${c.status}</span>
+      </div>`).join('');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// TABS & ADMIN NAV
+// ═══════════════════════════════════════════════════════════
+
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function adminSection(id, btn) {
+  document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('admin-'+id).classList.add('active');
+  document.querySelectorAll('.admin-nav-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+
+renderCards();
+renderCombos();
+renderPacks();
+renderPlans();
+renderAdmin();
+renderHand();
+</script>
+</body>
+</html>

@@ -1,0 +1,921 @@
+(function () {
+  const DEFAULT_SERVICES = {
+    claude: { key: "claude", name: "Claude", icon: "AI", url: "https://claude.ai", partition: "persist:llm-rox-claude", color: "green" },
+    chatgpt: { key: "chatgpt", name: "ChatGPT", icon: "CG", url: "https://chat.openai.com", partition: "persist:llm-rox-chatgpt", color: "emerald" },
+    gemini: { key: "gemini", name: "Gemini", icon: "G", url: "https://gemini.google.com", partition: "persist:llm-rox-gemini", color: "blue" },
+    perplexity: { key: "perplexity", name: "Perplexity", icon: "PX", url: "https://www.perplexity.ai", partition: "persist:llm-rox-perplexity", color: "dark" },
+    notion: { key: "notion", name: "Notion", icon: "N", url: "https://www.notion.so", partition: "persist:llm-rox-notion", color: "paper" },
+    github: { key: "github", name: "GitHub", icon: "GH", url: "https://github.com", partition: "persist:llm-rox-github", color: "dark" },
+    telegram: { key: "telegram", name: "Telegram", icon: "TG", url: "https://web.telegram.org", partition: "persist:llm-rox-telegram", color: "cyan" }
+  };
+
+  const OUTLINER_BLUEPRINT = {
+    claude: [
+      node("account", "Claude JOB", { meta: "compte strategie", tags: ["job"] }),
+      node("folder", "Chats", { count: 12, icon: "chat", tags: ["chat"], children: [
+        node("chat", "Strategie contenu #impactia", { meta: "handoff en cours", tags: ["impactia"] }),
+        node("chat", "Architecture LLM-ROX", { meta: "memory a resumer", tags: ["memory"] })
+      ] }),
+      node("folder", "Prompts", { count: 48, icon: "prompt", tags: ["prompt"], children: [
+        node("prompt", "General", { tags: ["base"] }),
+        node("prompt", "Redaction", { tags: ["copy"] }),
+        node("prompt", "Analyse critique", { tags: ["audit"] }),
+        node("prompt", "Code", { tags: ["dev"] })
+      ] }),
+      node("folder", "Captures", { count: 23, icon: "capture", tags: ["capture"], children: [
+        node("capture", "Aujourd'hui", { count: 6, tags: ["today"] }),
+        node("capture", "Semaine", { count: 7 }),
+        node("capture", "Ce mois", { count: 10 })
+      ] }),
+      node("folder", "Projects", { icon: "project", tags: ["project"], children: [
+        node("project", "! ImpactIA", { meta: "actif", tags: ["impactia"], pulse: true }),
+        node("project", "! Mirae 2026", { tags: ["mirae"] }),
+        node("project", "! AlpineChain", { tags: ["chain"] }),
+        node("project", "# Journalier", { tags: ["daily"] }),
+        node("project", "## Perso", { tags: ["perso"] })
+      ] }),
+      node("memory", "Memory summary", { meta: "a regenerer", tags: ["memory"] })
+    ],
+    chatgpt: [
+      node("account", "ChatGPT JOB", { meta: "compte principal", tags: ["job"] }),
+      node("folder", "Prompts", { count: 31, icon: "prompt" }),
+      node("folder", "Chats", { count: 9, icon: "chat" })
+    ],
+    gemini: [
+      node("account", "Gemini Google", { meta: "auth Google", tags: ["google"] }),
+      node("folder", "Recherche", { count: 4, icon: "capture" })
+    ],
+    perplexity: [
+      node("account", "Perplexity Pro", { meta: "recherche web", tags: ["web"] }),
+      node("folder", "Sources", { count: 5, icon: "capture" })
+    ],
+    notion: [node("folder", "Pages", { count: 1, icon: "note" })],
+    github: [node("folder", "Repos", { count: 2, icon: "project" })],
+    telegram: [node("folder", "Messages", { count: 4, icon: "chat" })]
+  };
+
+  const TERMINAL_COLORS = ["#7cde00", "#ff5f57", "#ffbd2e", "#2f80ed", "#b875e6", "#08a7b8", "#ffffff"];
+  const state = {
+    services: loadJson("llm-rox-services", DEFAULT_SERVICES),
+    activeService: localStorage.getItem("llm-rox-active-service") || "claude",
+    openTabs: loadJson("llm-rox-tabs", ["claude"]),
+    expandedNodes: loadJson("llm-rox-expanded-nodes", ["service:claude", "claude:folder:Chats", "claude:folder:Prompts", "claude:folder:Captures", "claude:folder:Projects"]),
+    selectedNode: localStorage.getItem("llm-rox-selected-node") || "service:claude",
+    customNodes: loadJson("llm-rox-custom-nodes", {}),
+    outlinerFilter: "",
+    terminals: [],
+    activeTerminalId: null,
+    logs: []
+  };
+
+  const els = {};
+
+  document.addEventListener("DOMContentLoaded", init);
+
+  function init() {
+    cacheElements();
+    document.body.classList.toggle("electron", Boolean(window.llmRoxWindow));
+    bindWindowControls();
+    bindShellActions();
+    bindInspector();
+    bindContextMenu();
+    bindTerminalEvents();
+    renderOutliner();
+    renderTabs();
+    selectService(state.activeService, { silent: true });
+    logEvent("LLM-ROX ready");
+  }
+
+  function cacheElements() {
+    [
+      "serviceTree", "llmTabs", "activeIcon", "activeServiceName", "activeServiceUrl",
+      "serviceWebview", "webPaneTitle", "canvas", "splitPane", "terminalDock",
+      "terminalTabs", "terminalGrid", "terminalCount", "eventLog", "logCount",
+      "inspector", "serviceContext", "toast", "metaService", "metaUrl", "prefName",
+      "prefUrl", "prefPartition", "scratchNote", "outlinerSearch", "nodeTitle",
+      "nodeType", "nodePath", "nodeTags"
+    ].forEach((id) => {
+      els[id] = document.getElementById(id);
+    });
+    els.shell = document.querySelector(".app-shell");
+  }
+
+  function bindWindowControls() {
+    on("#windowClose", "click", () => window.llmRoxWindow?.close());
+    on("#windowMinimize", "click", () => window.llmRoxWindow?.minimize());
+    on("#windowMaximize", "click", () => window.llmRoxWindow?.maximize());
+  }
+
+  function bindShellActions() {
+    on("#addService", "click", addServiceFromPrompt);
+    on("#addTab", "click", addServiceFromPrompt);
+    on("#openCommand", "click", () => toast("Cmd+K arrive en V2"));
+    on("#outlinerSearch", "input", (event) => {
+      state.outlinerFilter = event.target.value.trim().toLowerCase();
+      renderOutliner();
+    });
+    on("#expandAllNodes", "click", expandAllNodes);
+    on("#collapseAllNodes", "click", collapseAllNodes);
+    on("#addNode", "click", () => addNodeUnder(state.selectedNode));
+    on("#renameNode", "click", () => renameOutlinerNode(state.selectedNode));
+    on("#addChildNode", "click", () => addNodeUnder(state.selectedNode));
+    on("#configureActive", "click", () => openPrefsForService(state.activeService));
+    on("#toggleSplit", "click", toggleSplit);
+    on("#closeSplit", "click", () => setSplit(false));
+    on("#toggleTerminal", "click", () => setTerminalDock(!els.terminalDock.classList.contains("open")));
+    on("#openTerminalDock", "click", () => setTerminalDock(true));
+    on("#closeTerminalDock", "click", () => setTerminalDock(false));
+    on("#toggleInspector", "click", toggleInspector);
+    on("#openSettings", "click", () => activateInspectorPanel("prefs"));
+    on("#saveServicePrefs", "click", saveActiveServicePrefs);
+    on("#resetServicePrefs", "click", resetActiveServicePrefs);
+    on("#reloadView", "click", () => els.serviceWebview?.reload?.());
+    on("#openExternal", "click", () => copyText(getActiveService().url).then(() => toast("URL copiee")));
+    on("#saveChat", "click", saveChatMarkdown);
+    on("#sendToLlm", "click", sendToLlm);
+    on("#captureSelection", "click", captureSelection);
+    on("#copyScratch", "click", () => copyText(els.scratchNote.value).then(() => toast("Scratch copie")));
+    on("#memorySummary", "click", insertMemorySummary);
+    on("#newTerminal", "click", () => createTerminalPane());
+    on("#splitTerminals", "click", () => {
+      setTerminalDock(true);
+      while (state.terminals.length < 4) createTerminalPane({ silent: true });
+      renderTerminals();
+      logEvent("Terminal grid 4 panes");
+    });
+  }
+
+  function bindInspector() {
+    document.querySelectorAll(".inspector-tabs button").forEach((button) => {
+      button.addEventListener("click", () => activateInspectorPanel(button.dataset.panel));
+    });
+  }
+
+  function bindContextMenu() {
+    document.addEventListener("click", () => closeServiceContext());
+    els.serviceContext.addEventListener("click", (event) => {
+      const action = event.target.closest("button")?.dataset.action;
+      const key = els.serviceContext.dataset.service;
+      const nodeId = els.serviceContext.dataset.node;
+      if (!action || !key) return;
+      closeServiceContext();
+      if (action === "configure") openPrefsForService(key);
+      if (action === "duplicate") duplicateService(key);
+      if (action === "color") rotateServiceColor(key);
+      if (action === "add-child") addNodeUnder(nodeId || `service:${key}`);
+      if (action === "rename-node") renameOutlinerNode(nodeId || `service:${key}`);
+      if (action === "open") selectService(key);
+    });
+  }
+
+  function bindTerminalEvents() {
+    const api = window.llmRoxWindow?.terminal;
+    api?.onOutput?.(({ terminalId, data, error }) => {
+      const terminal = state.terminals.find((item) => item.id === terminalId);
+      if (!terminal) return;
+      terminal.output += data;
+      terminal.error = Boolean(error);
+      updateTerminalOutput(terminalId);
+    });
+    api?.onClosed?.(({ terminalId, code }) => {
+      const terminal = state.terminals.find((item) => item.id === terminalId);
+      if (terminal) {
+        terminal.output += `\n[process exited: ${code}]\n`;
+        terminal.closed = true;
+        updateTerminalOutput(terminalId);
+      }
+    });
+  }
+
+  function renderOutliner() {
+    const roots = buildOutlinerTree();
+    els.serviceTree.innerHTML = roots.map((root) => renderTreeNode(root, 0)).join("");
+
+    els.serviceTree.querySelectorAll(".tree-row").forEach((row) => {
+      row.addEventListener("click", (event) => {
+        const nodeId = row.dataset.nodeId;
+        const node = findNode(nodeId);
+        if (!node) return;
+        if (event.target.closest(".disclosure")) {
+          toggleNode(nodeId);
+          return;
+        }
+        selectOutlinerNode(nodeId);
+      });
+      row.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        const node = findNode(row.dataset.nodeId);
+        if (!node) return;
+        openServiceContext(node.serviceKey || state.activeService, event.clientX, event.clientY, node.id);
+      });
+    });
+
+    syncOutlinerDetail();
+  }
+
+  function buildOutlinerTree(options = {}) {
+    const serviceRoots = Object.values(state.services).map((service) => {
+      const baseChildren = cloneBlueprint(service.key).concat(getCustomChildren(`service:${service.key}`));
+      return {
+        id: `service:${service.key}`,
+        title: service.name,
+        type: "service",
+        serviceKey: service.key,
+        icon: service.icon,
+        color: service.color,
+        count: service.key === "claude" ? 2 : undefined,
+        tags: ["llm"],
+        meta: service.url,
+        children: withServiceKey(baseChildren, service.key)
+      };
+    });
+
+    const utilityRoots = [
+      { id: "utility:terminal", title: "Terminal CLI", type: "terminal", serviceKey: state.activeService, count: `${state.terminals.length}/4`, tags: ["cli"], children: getCustomChildren("utility:terminal") },
+      { id: "utility:inbox", title: "Inbox", type: "inbox", serviceKey: state.activeService, count: 9, tags: ["local"], children: getCustomChildren("utility:inbox") },
+      { id: "utility:logs", title: "Logs", type: "log", serviceKey: state.activeService, count: state.logs.length, tags: ["log"], children: getCustomChildren("utility:logs") }
+    ];
+
+    const roots = serviceRoots.concat(utilityRoots);
+    return options.filtered === false ? roots : filterTree(roots, state.outlinerFilter);
+  }
+
+  function renderTreeNode(node, level) {
+    const hasChildren = node.children && node.children.length > 0;
+    const expanded = state.expandedNodes.includes(node.id);
+    const selected = state.selectedNode === node.id;
+    const service = node.type === "service" ? state.services[node.serviceKey] : null;
+    const iconHtml = service
+      ? `<span class="service-icon ${service.color}">${escapeHtml(service.icon)}</span>`
+      : `<span class="node-icon ${escapeHtml(node.icon || node.type)}">${nodeIconText(node)}</span>`;
+    const tagHtml = (node.tags || []).slice(0, 2).map((tag) => `<span class="node-tag">#${escapeHtml(tag)}</span>`).join("");
+    const countHtml = node.count !== undefined ? `<span class="count">${escapeHtml(node.count)}</span>` : "";
+    const pulseHtml = node.pulse ? `<span class="pulse"></span>` : "";
+    const rowClass = [
+      "tree-row",
+      `level-${Math.min(level, 4)}`,
+      node.type === "service" ? "service" : "",
+      node.type === "folder" || node.type === "project" ? "folder-node" : "note-node",
+      selected ? "node-selected" : "",
+      node.serviceKey === state.activeService && node.type === "service" ? "active" : ""
+    ].filter(Boolean).join(" ");
+
+    const childrenHtml = hasChildren && expanded
+      ? node.children.map((child) => renderTreeNode(child, level + 1)).join("")
+      : "";
+
+    return `
+      <div class="tree-node ${expanded ? "expanded" : ""} ${hasChildren ? "has-children" : ""}" style="--level:${level}">
+        <button class="${rowClass}" data-node-id="${escapeHtml(node.id)}" data-service="${escapeHtml(node.serviceKey || "")}">
+          <span class="disclosure">${hasChildren ? (expanded ? "⌄" : "›") : ""}</span>
+          ${iconHtml}
+          <span class="node-main">
+            <span class="label">${escapeHtml(node.title)}</span>
+            ${node.meta ? `<span class="meta">${escapeHtml(node.meta)}</span>` : ""}
+          </span>
+          ${tagHtml ? `<span class="node-tags">${tagHtml}</span>` : ""}
+          ${pulseHtml}
+          ${countHtml}
+        </button>
+        ${childrenHtml}
+      </div>
+    `;
+  }
+
+  function selectOutlinerNode(nodeId) {
+    const node = findNode(nodeId);
+    if (!node) return;
+    state.selectedNode = nodeId;
+    localStorage.setItem("llm-rox-selected-node", nodeId);
+    if (node.type === "service" && node.serviceKey) selectService(node.serviceKey, { fromOutliner: true });
+    if (node.type === "terminal") setTerminalDock(true);
+    if (node.type === "log") activateInspectorPanel("logs");
+    if (node.type === "inbox") activateInspectorPanel("capture");
+    renderOutliner();
+    syncOutlinerDetail();
+    logEvent(`Outliner: ${node.title}`);
+  }
+
+  function toggleNode(nodeId) {
+    if (state.expandedNodes.includes(nodeId)) {
+      state.expandedNodes = state.expandedNodes.filter((id) => id !== nodeId);
+    } else {
+      state.expandedNodes.push(nodeId);
+    }
+    saveJson("llm-rox-expanded-nodes", state.expandedNodes);
+    renderOutliner();
+  }
+
+  function syncOutlinerDetail() {
+    const node = findNode(state.selectedNode) || findNode(`service:${state.activeService}`);
+    if (!node) return;
+    els.nodeTitle.textContent = node.title;
+    els.nodeType.textContent = node.type;
+    els.nodePath.textContent = getNodePath(node.id).join(" / ");
+    els.nodeTags.textContent = (node.tags || []).map((tag) => `#${tag}`).join(" ") || "—";
+  }
+
+  function expandAllNodes() {
+    const ids = [];
+    walkNodes(buildOutlinerTree({ filtered: false }), (node) => {
+      if (node.children?.length) ids.push(node.id);
+    });
+    state.expandedNodes = Array.from(new Set(ids));
+    saveJson("llm-rox-expanded-nodes", state.expandedNodes);
+    renderOutliner();
+  }
+
+  function collapseAllNodes() {
+    state.expandedNodes = [`service:${state.activeService}`];
+    saveJson("llm-rox-expanded-nodes", state.expandedNodes);
+    renderOutliner();
+  }
+
+  function renderTabs() {
+    els.llmTabs.innerHTML = "";
+    state.openTabs.forEach((key) => {
+      const service = state.services[key];
+      if (!service) return;
+      const button = document.createElement("button");
+      button.className = `tab ${key === state.activeService ? "active" : ""}`;
+      button.dataset.service = key;
+      button.innerHTML = `<span class="service-icon ${service.color}">${service.icon}</span><span>${escapeHtml(service.name)}</span><span class="close">×</span>`;
+      button.addEventListener("click", (event) => {
+        if (event.target.classList.contains("close")) {
+          closeTab(key);
+        } else {
+          selectService(key);
+        }
+      });
+      els.llmTabs.appendChild(button);
+    });
+  }
+
+  function selectService(key, options = {}) {
+    const service = state.services[key];
+    if (!service) return;
+    state.activeService = key;
+    localStorage.setItem("llm-rox-active-service", key);
+    if (!state.openTabs.includes(key)) state.openTabs.push(key);
+    saveJson("llm-rox-tabs", state.openTabs);
+
+    document.querySelectorAll(".tree-row.service").forEach((row) => row.classList.toggle("active", row.dataset.service === key));
+    els.activeIcon.textContent = service.icon;
+    els.activeIcon.className = `service-icon ${service.color}`;
+    els.activeServiceName.textContent = service.name;
+    els.activeServiceUrl.textContent = service.url;
+    els.webPaneTitle.textContent = `${service.name} webview`;
+    els.metaService.textContent = service.name;
+    els.metaUrl.textContent = service.url;
+    els.prefName.value = service.name;
+    els.prefUrl.value = service.url;
+    els.prefPartition.value = service.partition;
+
+    loadServiceWebview(service);
+    renderTabs();
+    if (!options.fromOutliner) {
+      state.selectedNode = `service:${key}`;
+      localStorage.setItem("llm-rox-selected-node", state.selectedNode);
+      renderOutliner();
+    }
+    if (!options.silent) logEvent(`Service actif: ${service.name}`);
+  }
+
+  function closeTab(key) {
+    state.openTabs = state.openTabs.filter((item) => item !== key);
+    if (state.openTabs.length === 0) state.openTabs = ["claude"];
+    if (state.activeService === key) state.activeService = state.openTabs[0];
+    saveJson("llm-rox-tabs", state.openTabs);
+    selectService(state.activeService);
+  }
+
+  function loadServiceWebview(service) {
+    if (!els.serviceWebview) return;
+    const currentPartition = els.serviceWebview.getAttribute("partition");
+    const currentSrc = els.serviceWebview.getAttribute("src");
+    if (currentPartition === service.partition) {
+      if (currentSrc !== service.url) els.serviceWebview.setAttribute("src", service.url);
+      return;
+    }
+
+    const nextWebview = document.createElement("webview");
+    nextWebview.id = "serviceWebview";
+    nextWebview.setAttribute("allowpopups", "");
+    nextWebview.setAttribute("partition", service.partition);
+    nextWebview.setAttribute("src", service.url);
+    els.serviceWebview.replaceWith(nextWebview);
+    els.serviceWebview = nextWebview;
+  }
+
+  function addServiceFromPrompt() {
+    const name = prompt("Nom du LLM / outil ?");
+    if (!name) return;
+    const url = prompt("URL du service ?", "https://");
+    if (!url) return;
+    const key = slugify(name);
+    state.services[key] = {
+      key,
+      name,
+      icon: name.slice(0, 2).toUpperCase(),
+      url,
+      partition: `persist:llm-rox-${key}`,
+      color: "green"
+    };
+    saveJson("llm-rox-services", state.services);
+    renderOutliner();
+    selectService(key);
+    logEvent(`Service ajoute: ${name}`);
+  }
+
+  function createServiceRow(key) {
+    renderOutliner();
+  }
+
+  function openServiceContext(key, x, y, nodeId = `service:${key}`) {
+    els.serviceContext.dataset.service = key;
+    els.serviceContext.dataset.node = nodeId;
+    els.serviceContext.style.left = `${x}px`;
+    els.serviceContext.style.top = `${y}px`;
+    els.serviceContext.classList.add("open");
+  }
+
+  function closeServiceContext() {
+    els.serviceContext.classList.remove("open");
+    els.serviceContext.dataset.node = "";
+  }
+
+  function openPrefsForService(key) {
+    selectService(key);
+    activateInspectorPanel("prefs");
+    logEvent(`Preferences ouvertes: ${getActiveService().name}`);
+  }
+
+  function saveActiveServicePrefs() {
+    const service = getActiveService();
+    service.name = els.prefName.value.trim() || service.name;
+    service.url = normalizeUrl(els.prefUrl.value.trim() || service.url);
+    service.partition = els.prefPartition.value.trim() || service.partition;
+    saveJson("llm-rox-services", state.services);
+    renderOutliner();
+    selectService(service.key);
+    toast("Preferences LLM sauvegardees");
+    logEvent(`URL configuree: ${service.name} -> ${service.url}`);
+  }
+
+  function resetActiveServicePrefs() {
+    const key = state.activeService;
+    if (!DEFAULT_SERVICES[key]) return toast("Pas de reset pour service custom");
+    state.services[key] = { ...DEFAULT_SERVICES[key] };
+    saveJson("llm-rox-services", state.services);
+    renderOutliner();
+    selectService(key);
+    logEvent(`Service reset: ${key}`);
+  }
+
+  function duplicateService(key) {
+    const source = state.services[key];
+    const duplicateKey = `${key}-${Date.now().toString(36)}`;
+    state.services[duplicateKey] = {
+      ...source,
+      key: duplicateKey,
+      name: `${source.name} compte 2`,
+      partition: `persist:llm-rox-${duplicateKey}`
+    };
+    saveJson("llm-rox-services", state.services);
+    renderOutliner();
+    selectService(duplicateKey);
+    logEvent(`Compte duplique: ${source.name}`);
+  }
+
+  function rotateServiceColor(key) {
+    const colors = ["green", "emerald", "blue", "dark", "cyan", "paper"];
+    const service = state.services[key];
+    const next = colors[(colors.indexOf(service.color) + 1) % colors.length];
+    service.color = next;
+    saveJson("llm-rox-services", state.services);
+    renderOutliner();
+    renderTabs();
+    selectService(key);
+  }
+
+  function toggleSplit() {
+    setSplit(!els.canvas.classList.contains("split"));
+  }
+
+  function setSplit(open) {
+    els.canvas.classList.toggle("split", open);
+    logEvent(open ? "Split largeur ouvert" : "Split largeur ferme");
+  }
+
+  function toggleInspector() {
+    els.inspector.classList.toggle("hidden");
+    els.shell.classList.toggle("inspector-hidden");
+  }
+
+  function activateInspectorPanel(panel) {
+    els.inspector.classList.remove("hidden");
+    els.shell.classList.remove("inspector-hidden");
+    document.querySelectorAll(".inspector-tabs button").forEach((button) => button.classList.toggle("active", button.dataset.panel === panel));
+    document.querySelectorAll(".panel").forEach((body) => body.classList.toggle("active", body.dataset.panelBody === panel));
+  }
+
+  function setTerminalDock(open) {
+    els.terminalDock.classList.toggle("open", open);
+    if (open && state.terminals.length === 0) createTerminalPane();
+    logEvent(open ? "Terminal dock ouvert" : "Terminal dock ferme");
+  }
+
+  async function createTerminalPane(options = {}) {
+    if (state.terminals.length >= 4) {
+      toast("Maximum 4 fenetres terminal");
+      return;
+    }
+    const id = `term-${Date.now().toString(36)}-${state.terminals.length + 1}`;
+    const color = TERMINAL_COLORS[state.terminals.length % TERMINAL_COLORS.length];
+    const terminal = {
+      id,
+      name: `-zsh #${state.terminals.length + 1}`,
+      color,
+      output: "LLM-ROX terminal\n",
+      closed: false
+    };
+    state.terminals.push(terminal);
+    state.activeTerminalId = id;
+    const created = await window.llmRoxWindow?.terminal?.create?.(id);
+    if (created && !created.success) terminal.output += `[terminal api error] ${created.error}\n`;
+    if (!window.llmRoxWindow?.terminal) terminal.output += "[demo] Electron terminal API indisponible dans ce contexte.\n";
+    renderTerminals();
+    if (!options.silent) logEvent(`Terminal cree: ${terminal.name}`);
+  }
+
+  function renderTerminals() {
+    els.terminalTabs.innerHTML = "";
+    els.terminalGrid.innerHTML = "";
+    els.terminalGrid.className = `terminal-grid panes-${Math.max(1, state.terminals.length)}`;
+    if (els.terminalCount) els.terminalCount.textContent = `${state.terminals.length}/4`;
+
+    state.terminals.forEach((terminal) => {
+      const tab = document.createElement("button");
+      tab.className = `terminal-tab ${terminal.id === state.activeTerminalId ? "active" : ""}`;
+      tab.style.setProperty("--tab-color", terminal.color);
+      tab.textContent = terminal.name;
+      tab.addEventListener("click", () => {
+        state.activeTerminalId = terminal.id;
+        renderTerminals();
+      });
+      tab.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        cycleTerminalColor(terminal.id);
+      });
+      els.terminalTabs.appendChild(tab);
+
+      const pane = document.createElement("section");
+      pane.className = `terminal-pane ${terminal.id === state.activeTerminalId ? "active" : ""}`;
+      pane.style.setProperty("--tab-color", terminal.color);
+      pane.dataset.terminal = terminal.id;
+      pane.innerHTML = `
+        <div class="terminal-pane-head">
+          <span>${escapeHtml(terminal.name)}</span>
+          <button class="icon-btn" data-close-terminal="${terminal.id}">×</button>
+        </div>
+        <pre class="terminal-output" data-terminal-output="${terminal.id}">${escapeHtml(terminal.output)}</pre>
+        <form class="terminal-input-row" data-terminal-form="${terminal.id}">
+          <input placeholder="commande..." autocomplete="off" />
+          <button class="tool-btn">Run</button>
+        </form>
+      `;
+      pane.addEventListener("click", () => {
+        state.activeTerminalId = terminal.id;
+        document.querySelectorAll(".terminal-pane").forEach((item) => item.classList.remove("active"));
+        pane.classList.add("active");
+      });
+      els.terminalGrid.appendChild(pane);
+    });
+
+    document.querySelectorAll("[data-close-terminal]").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        closeTerminalPane(button.dataset.closeTerminal);
+      });
+    });
+
+    document.querySelectorAll("[data-terminal-form]").forEach((form) => {
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const id = form.dataset.terminalForm;
+        const input = form.querySelector("input");
+        const command = input.value.trim();
+        if (!command) return;
+        input.value = "";
+        runTerminalCommand(id, command);
+      });
+    });
+  }
+
+  async function runTerminalCommand(id, command) {
+    const terminal = state.terminals.find((item) => item.id === id);
+    if (!terminal) return;
+    terminal.output += `$ ${command}\n`;
+    updateTerminalOutput(id);
+    logEvent(`CLI ${terminal.name}: ${command}`);
+    const result = await window.llmRoxWindow?.terminal?.execute?.(id, command);
+    if (result && !result.success) {
+      terminal.output += `[error] ${result.error}\n`;
+      updateTerminalOutput(id);
+    }
+    if (!window.llmRoxWindow?.terminal) {
+      terminal.output += `[demo] commande recue: ${command}\n`;
+      updateTerminalOutput(id);
+    }
+  }
+
+  function updateTerminalOutput(id) {
+    const terminal = state.terminals.find((item) => item.id === id);
+    const output = document.querySelector(`[data-terminal-output="${id}"]`);
+    if (!terminal || !output) return;
+    output.textContent = terminal.output;
+    output.scrollTop = output.scrollHeight;
+  }
+
+  async function closeTerminalPane(id) {
+    await window.llmRoxWindow?.terminal?.close?.(id);
+    state.terminals = state.terminals.filter((terminal) => terminal.id !== id);
+    state.activeTerminalId = state.terminals[0]?.id || null;
+    renderTerminals();
+    logEvent("Terminal ferme");
+  }
+
+  function cycleTerminalColor(id) {
+    const terminal = state.terminals.find((item) => item.id === id);
+    if (!terminal) return;
+    const index = TERMINAL_COLORS.indexOf(terminal.color);
+    terminal.color = TERMINAL_COLORS[(index + 1) % TERMINAL_COLORS.length];
+    renderTerminals();
+    logEvent(`Couleur terminal: ${terminal.name}`);
+  }
+
+  function node(type, title, options = {}) {
+    return {
+      id: options.id || `${type}:${slugify(title)}`,
+      title,
+      type,
+      icon: options.icon || type,
+      meta: options.meta || "",
+      count: options.count,
+      tags: options.tags || [],
+      pulse: Boolean(options.pulse),
+      children: options.children || []
+    };
+  }
+
+  function cloneBlueprint(serviceKey) {
+    const blueprint = OUTLINER_BLUEPRINT[serviceKey] || [
+      node("account", `${state.services[serviceKey]?.name || serviceKey} default`, { meta: "compte local" }),
+      node("folder", "Chats", { icon: "chat" }),
+      node("folder", "Prompts", { icon: "prompt" }),
+      node("folder", "Captures", { icon: "capture" }),
+      node("folder", "Projects", { icon: "project" })
+    ];
+
+    const stamp = (item, path = serviceKey) => ({
+      ...item,
+      id: item.id.startsWith(`${serviceKey}:`) ? item.id : `${serviceKey}:${item.id}:${slugify(path)}`,
+      serviceKey,
+      children: (item.children || []).map((child) => stamp(child, `${path}/${item.title}`))
+    });
+
+    return blueprint.map((item) => stamp(item));
+  }
+
+  function withServiceKey(nodes, serviceKey) {
+    return nodes.map((item) => ({
+      ...item,
+      serviceKey: item.serviceKey || serviceKey,
+      children: withServiceKey(item.children || [], serviceKey)
+    }));
+  }
+
+  function getCustomChildren(parentId) {
+    return (state.customNodes[parentId] || []).map((item) => ({
+      ...item,
+      children: getCustomChildren(item.id)
+    }));
+  }
+
+  function findNode(nodeId) {
+    let found = null;
+    walkNodes(buildOutlinerTree({ filtered: false }), (node) => {
+      if (node.id === nodeId) found = node;
+    });
+    return found;
+  }
+
+  function walkNodes(nodes, visitor) {
+    nodes.forEach((node) => {
+      visitor(node);
+      if (node.children?.length) walkNodes(node.children, visitor);
+    });
+  }
+
+  function getNodePath(nodeId) {
+    const roots = buildOutlinerTree({ filtered: false });
+    const path = [];
+
+    function visit(nodes, trail) {
+      for (const item of nodes) {
+        const next = trail.concat(item.title);
+        if (item.id === nodeId) {
+          path.push(...next);
+          return true;
+        }
+        if (item.children?.length && visit(item.children, next)) return true;
+      }
+      return false;
+    }
+
+    visit(roots, []);
+    return path.length ? path : ["LLM-ROX"];
+  }
+
+  function addNodeUnder(parentId) {
+    const parent = findNode(parentId) || findNode(`service:${state.activeService}`);
+    if (!parent) return;
+    const title = prompt("Nom du nœud ?", "Nouvelle note #tag");
+    if (!title) return;
+    const type = prompt("Type ? note, folder, prompt, chat, capture, project", "note") || "note";
+    const tags = Array.from(title.matchAll(/#([\p{L}\p{N}_-]+)/gu)).map((match) => match[1]);
+    const child = {
+      id: `custom:${Date.now().toString(36)}`,
+      title,
+      type,
+      icon: type === "folder" ? "project" : type,
+      meta: "local",
+      tags,
+      count: undefined,
+      pulse: false,
+      serviceKey: parent.serviceKey || state.activeService,
+      children: []
+    };
+    state.customNodes[parent.id] = state.customNodes[parent.id] || [];
+    state.customNodes[parent.id].push(child);
+    if (!state.expandedNodes.includes(parent.id)) state.expandedNodes.push(parent.id);
+    state.selectedNode = child.id;
+    persistOutlinerState();
+    renderOutliner();
+    logEvent(`Nœud ajoute: ${title}`);
+  }
+
+  function renameOutlinerNode(nodeId) {
+    const node = findNode(nodeId);
+    if (!node) return;
+    if (node.type === "service") {
+      openPrefsForService(node.serviceKey);
+      return;
+    }
+    const nextTitle = prompt("Renommer le nœud", node.title);
+    if (!nextTitle) return;
+    Object.values(state.customNodes).forEach((children) => {
+      const target = children.find((item) => item.id === nodeId);
+      if (target) {
+        target.title = nextTitle;
+        target.tags = Array.from(nextTitle.matchAll(/#([\p{L}\p{N}_-]+)/gu)).map((match) => match[1]);
+      }
+    });
+    persistOutlinerState();
+    renderOutliner();
+    logEvent(`Nœud renomme: ${nextTitle}`);
+  }
+
+  function filterTree(nodes, filter) {
+    if (!filter) return nodes;
+    return nodes.map((item) => {
+      const children = filterTree(item.children || [], filter);
+      const haystack = `${item.title} ${item.type} ${(item.tags || []).join(" ")} ${item.meta || ""}`.toLowerCase();
+      if (haystack.includes(filter) || children.length) {
+        return { ...item, children };
+      }
+      return null;
+    }).filter(Boolean);
+  }
+
+  function nodeIconText(item) {
+    const map = {
+      account: "@",
+      chat: "↔",
+      prompt: "P",
+      capture: "C",
+      project: "▣",
+      folder: "▣",
+      memory: "M",
+      note: "N",
+      terminal: ">_",
+      inbox: "I",
+      log: "L"
+    };
+    return map[item.type] || "•";
+  }
+
+  function persistOutlinerState() {
+    saveJson("llm-rox-custom-nodes", state.customNodes);
+    saveJson("llm-rox-expanded-nodes", state.expandedNodes);
+    localStorage.setItem("llm-rox-selected-node", state.selectedNode);
+  }
+
+  function saveChatMarkdown() {
+    const service = getActiveService();
+    const markdown = `---\ntype: chat\nservice: ${service.name}\nurl: ${service.url}\ndate: ${new Date().toISOString()}\ntags: [llm-rox, capture]\nmemory_status: a_resumer\n---\n\n# Capture ${service.name}\n\nSource: ${service.url}\n`;
+    copyText(markdown).then(() => toast("Chat Markdown copie"));
+    logEvent(`Export MD: ${service.name}`);
+  }
+
+  function sendToLlm() {
+    const service = getActiveService();
+    const target = prompt("Envoyer vers quel LLM ?", "ChatGPT");
+    if (!target) return;
+    const payload = `Contexte depuis ${service.name}\nURL: ${service.url}\n\nInstruction: critique, resume et propose la suite.`;
+    copyText(payload).then(() => toast(`Payload pret pour ${target}`));
+    logEvent(`Handoff ${service.name} -> ${target}`);
+  }
+
+  function captureSelection() {
+    const selection = window.getSelection()?.toString() || "Selection vide";
+    copyText(`# Capture\n\n${selection}`);
+    toast("Selection capturee en MD");
+    logEvent("Capture selection");
+  }
+
+  function insertMemorySummary() {
+    els.scratchNote.value += "\n\n## Memory summary\n- Decisions\n- Preferences utilisateur\n- Points ouverts\n- Prochaines actions\n";
+    logEvent("Bloc memory ajoute");
+  }
+
+  function getActiveService() {
+    return state.services[state.activeService] || state.services.claude;
+  }
+
+  function logEvent(message) {
+    const stamp = new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    state.logs.unshift(`${stamp} - ${message}`);
+    state.logs = state.logs.slice(0, 80);
+    if (els.logCount) els.logCount.textContent = String(state.logs.length);
+    if (els.eventLog) {
+      els.eventLog.innerHTML = state.logs.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+    }
+    if (els.serviceTree) renderOutliner();
+  }
+
+  function toast(message) {
+    els.toast.textContent = message;
+    els.toast.classList.add("show");
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => els.toast.classList.remove("show"), 2200);
+  }
+
+  function on(selector, eventName, handler) {
+    document.querySelector(selector)?.addEventListener(eventName, handler);
+  }
+
+  function loadJson(key, fallback) {
+    try {
+      return JSON.parse(localStorage.getItem(key)) || structuredClone(fallback);
+    } catch {
+      return structuredClone(fallback);
+    }
+  }
+
+  function saveJson(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard) return navigator.clipboard.writeText(text);
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+    document.execCommand("copy");
+    area.remove();
+    return Promise.resolve();
+  }
+
+  function normalizeUrl(url) {
+    if (!/^https?:\/\//i.test(url)) return `https://${url}`;
+    return url;
+  }
+
+  function slugify(value) {
+    return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || `service-${Date.now()}`;
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    })[char]);
+  }
+})();

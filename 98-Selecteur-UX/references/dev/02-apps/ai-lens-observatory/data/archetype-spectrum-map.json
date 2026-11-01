@@ -1,0 +1,182 @@
+{
+  "name": "AI Lens Archetype Spectrum Map",
+  "version": "2026-05-24",
+  "status": "working_data",
+  "source": [
+    "ai-lens-obs/archetypes/IAProfilerV9_Multilingual.html",
+    "https://github.com/bizc0m/Waitt.ch-Why-AI-Think-Tank/issues/22",
+    "https://github.com/bizc0m/Waitt.ch-Why-AI-Think-Tank/issues/15",
+    "https://github.com/bizc0m/Waitt.ch-Why-AI-Think-Tank/issues/19"
+  ],
+  "purpose": "Use IA Archetype as a human reading-spectrum layer for AI Lens.",
+  "axis_order": [
+    "souverainete",
+    "transparence",
+    "autonomie",
+    "ethique",
+    "data",
+    "intervention",
+    "evolution",
+    "responsabilite",
+    "acces",
+    "finalite"
+  ],
+  "axis_mapping_to_ai_lens": {
+    "souverainete": ["humain_automatisation", "liberte_controle"],
+    "transparence": ["transparence_opacite"],
+    "autonomie": ["humain_automatisation"],
+    "ethique": ["innovation_regulation", "optimisme_prudence"],
+    "data": ["centralisation_decentralisation", "transparence_opacite"],
+    "intervention": ["productivite_relationnel", "humain_automatisation"],
+    "evolution": ["acceleration_stabilite"],
+    "responsabilite": ["individu_systeme"],
+    "acces": ["local_global", "centralisation_decentralisation"],
+    "finalite": ["productivite_relationnel"]
+  },
+  "archetypes": [
+    {
+      "id": "souverain_numerique",
+      "short": "Souverain",
+      "name": "Le Souverain Numerique",
+      "subtitle": "L'Autorite Incontestable",
+      "description": "Percoit l'IA comme un outil sous controle total. La decision humaine prevaut toujours.",
+      "vector": [100, 60, 90, 70, 60, 50, 70, 90, 30, 70]
+    },
+    {
+      "id": "architecte_collaboratif",
+      "short": "Architecte",
+      "name": "L'Architecte Collaboratif",
+      "subtitle": "Le Partenaire Strategique",
+      "description": "Envisage un partenariat equilibre entre humain et IA pour la co-creation.",
+      "vector": [-40, -20, -50, -30, -30, -20, -50, -40, -10, -30]
+    },
+    {
+      "id": "gardien_ethique",
+      "short": "Ethique",
+      "name": "Le Gardien Ethique",
+      "subtitle": "Le Veilleur des Principes",
+      "description": "Exige que chaque avancee de l'IA soit alignee sur les valeurs humaines fondamentales.",
+      "vector": [50, 70, 60, 100, 70, 60, 60, 80, 50, 40]
+    },
+    {
+      "id": "pragmaticien_donnee",
+      "short": "Data",
+      "name": "Le Pragmaticien de la Donnee",
+      "subtitle": "L'Equilibriste de la Vie Privee",
+      "description": "Accepte le partage de donnees comme compromis necessaire sous garanties de securite.",
+      "vector": [-20, -40, -20, -40, -80, -30, -40, -30, -20, -20]
+    },
+    {
+      "id": "maitre_oeuvre_autonome",
+      "short": "Autonome",
+      "name": "Le Maitre d'Oeuvre Autonome",
+      "subtitle": "Le Delegue Strategique",
+      "description": "Confie a l'IA une large autonomie pour gerer des objectifs complexes.",
+      "vector": [-70, -30, -90, -30, -40, -60, -60, -50, -20, -40]
+    },
+    {
+      "id": "partenaire_evolutif",
+      "short": "Evolutif",
+      "name": "Le Partenaire Evolutif",
+      "subtitle": "L'Appreciateur du Changement",
+      "description": "Valorise l'adaptation continue et l'integration des dernieres innovations.",
+      "vector": [-30, -20, -30, -40, -30, -40, -100, -30, -30, -40]
+    },
+    {
+      "id": "auditeur_transparent",
+      "short": "Audit",
+      "name": "L'Auditeur Transparent",
+      "subtitle": "Le Scrutateur Algorithmique",
+      "description": "Exige une transparence algorithmique complete pour chaque decision.",
+      "vector": [40, 100, 50, 60, 50, 50, 40, 50, 60, 30]
+    },
+    {
+      "id": "democrate_ia",
+      "short": "Democrate",
+      "name": "Le Democrate de l'IA",
+      "subtitle": "L'Egalite Technologique",
+      "description": "Plaide pour que les benefices de l'IA soient accessibles a tous.",
+      "vector": [20, 50, 20, 50, 40, 30, 20, 40, 100, 40]
+    },
+    {
+      "id": "regulateur_prudent",
+      "short": "Regulateur",
+      "name": "Le Regulateur Prudent",
+      "subtitle": "Le Frein de la Stabilite",
+      "description": "Prefere une IA stable et previsible, fiabilite avant innovation.",
+      "vector": [60, 40, 70, 50, 50, 40, 100, 60, 30, 50]
+    },
+    {
+      "id": "explorateur_relationnel",
+      "short": "Relationnel",
+      "name": "L'Explorateur Relationnel",
+      "subtitle": "Le Chercheur de Connexion",
+      "description": "Valorise l'IA pour enrichir l'experience humaine socialement et emotionnellement.",
+      "vector": [-20, -10, -20, -20, -20, -20, -30, -20, 20, -90]
+    },
+    {
+      "id": "optimisateur_imperatif",
+      "short": "Optimiseur",
+      "name": "L'Optimisateur Imperatif",
+      "subtitle": "Le Demandeur de Performance",
+      "description": "L'IA est un instrument d'efficience et de productivite mesurable.",
+      "vector": [-30, -50, -40, -50, -40, -50, -40, -30, -40, 90]
+    },
+    {
+      "id": "contre_pouvoir_algorithmique",
+      "short": "Contre-Pouvoir",
+      "name": "Le Contre-Pouvoir Algorithmique",
+      "subtitle": "Le Mefiant des Geants Tech",
+      "description": "Controle exclusif sur les donnees personnelles, refuse tout partage non consenti.",
+      "vector": [60, 60, 50, 50, 100, 50, 50, 60, 60, 30]
+    },
+    {
+      "id": "stratege_discret",
+      "short": "Strategie",
+      "name": "Le Stratege Discret",
+      "subtitle": "Le Gestionnaire Passif-Actif",
+      "description": "L'IA opere de maniere autonome, intervention uniquement en cas de probleme majeur.",
+      "vector": [-30, -30, -40, -20, -30, -80, -40, -30, -20, -30]
+    },
+    {
+      "id": "mentor_virtuel",
+      "short": "Mentor",
+      "name": "Le Mentor Virtuel",
+      "subtitle": "L'Educateur Proactif",
+      "description": "Guide actif de l'IA, la faconnant et la calibrant constamment.",
+      "vector": [30, 30, 40, 30, 30, 100, 40, 40, 20, 30]
+    },
+    {
+      "id": "technocrate_assure",
+      "short": "Technocrate",
+      "name": "Le Technocrate Assure",
+      "subtitle": "Responsabilite Distribuee",
+      "description": "Reconnait la complexite de la responsabilite IA, distribution entre acteurs.",
+      "vector": [-20, -20, -20, -20, -20, -20, -20, -80, -20, -20]
+    },
+    {
+      "id": "usager_cautele",
+      "short": "Cautel",
+      "name": "L'Usager Cautele",
+      "subtitle": "Le Sceptique de l'IA",
+      "description": "Supervision humaine constante pour toute action significative de l'IA.",
+      "vector": [80, 50, 90, 60, 60, 50, 80, 70, 20, 40]
+    },
+    {
+      "id": "facilitateur_inclusif",
+      "short": "Inclusif",
+      "name": "Le Facilitateur Inclusif",
+      "subtitle": "L'Activiste du Droit d'Acces",
+      "description": "L'IA doit reduire les inegalites et assurer un acces universel.",
+      "vector": [10, 40, 10, 50, 30, 20, 10, 30, 90, 30]
+    },
+    {
+      "id": "visionnaire_synthetique",
+      "short": "Visionnaire",
+      "name": "Le Visionnaire Synthetique",
+      "subtitle": "Le Createur de Futurs Ethiques",
+      "description": "Ethique pragmatique et adaptative, faconner l'IA par l'experimentation.",
+      "vector": [-20, -10, -20, -70, -20, -20, -40, -30, -10, -30]
+    }
+  ]
+}

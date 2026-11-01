@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<!-- template.html — dashboard capital-elus v2 : KPIs + barres horizontales + table groupes + top patrimoine + fiche élu. Build : build_agregats_v1.4.py remplace /*__AGREGATS__*/ et /*__ELUS__*/ puis écrit index.html. -->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Capital élus — comparateur par parti</title>
+<style>
+:root{--acc:#0b5fff;--bg:#f6f8fb;--card:#fff;--mut:#677}
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;margin:0;background:var(--bg);color:#1c2333}
+header{background:#101828;color:#fff;padding:28px 20px}
+header h1{margin:0;font-size:1.6em}
+header p{margin:6px 0 0;color:#c4cede;font-size:.9em}
+main{max-width:1100px;margin:0 auto;padding:20px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:20px 0}
+.kpi{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 1px 4px #0001}
+.kpi b{display:block;font-size:1.5em;color:var(--acc);font-variant-numeric:tabular-nums}
+.kpi span{font-size:.8em;color:var(--mut)}
+section{background:var(--card);border-radius:12px;padding:18px;margin:0 0 20px;box-shadow:0 1px 4px #0001}
+h2{margin-top:0;font-size:1.2em}
+.seg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.seg button{border:1px solid #ccd;padding:6px 12px;border-radius:20px;background:#fff;cursor:pointer;font-size:.85em}
+.seg button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+canvas{width:100%;height:380px}
+table{border-collapse:collapse;width:100%;font-size:.83em}
+th,td{border-bottom:1px solid #eee;padding:7px 8px;text-align:right;font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+th{cursor:pointer;color:var(--acc);position:sticky;top:0;background:#fff}
+tbody tr:hover td{background:#f2f6ff}
+#search{width:100%;padding:10px;font-size:1em;border:1px solid #ccd;border-radius:8px}
+.card{border:1px solid #e3e8f2;border-radius:10px;padding:12px;margin:10px 0;background:#fbfcff}
+.card a{color:var(--acc)}
+#results{max-height:300px;overflow:auto}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}}
+small{color:var(--mut)}
+.pill{display:inline-block;background:#e8efff;color:var(--acc);border-radius:12px;padding:2px 10px;font-size:.78em;margin-right:6px}
+</style>
+</head>
+<body>
+<header>
+<h1>Capital élus — comparateur par parti</h1>
+<p>Open data HATVP croisé Assemblée · Sénat · Europarlement — 6 536 élus · <span id="maj"></span></p>
+</header>
+<main>
+<div class="kpis" id="kpis"></div>
+
+<section>
+<h2>Groupes politiques</h2>
+<div class="seg" id="segM">
+<button data-m="part_total" class="on">Participations totales</button>
+<button data-m="part_moy">Participations moyennes</button>
+<button data-m="rev_total">Revenus totaux</button>
+<button data-m="rev_moy">Revenus moyens</button>
+</div>
+<canvas id="c" width="1000" height="380"></canvas>
+<table id="t"><thead><tr>
+<th data-k="g">Groupe</th><th data-k="effectif">Élus</th>
+<th data-k="part_total">Particip. total €</th><th data-k="part_moy">Particip. moy. €</th>
+<th data-k="rev_total">Revenus total €</th><th data-k="rev_moy">Revenus moy. €</th>
+</tr></thead><tbody></tbody></table>
+</section>
+
+<div class="grid2">
+<section>
+<h2>Top patrimoine déclaré</h2>
+<p><small>44 patrimoines chiffrés en open data · 1 082 déclarations PDF.</small></p>
+<div id="toppat"></div>
+</section>
+<section>
+<h2>Fiche élu</h2>
+<input id="search" type="search" placeholder="Tape un nom… (ex : Barrot)">
+<div id="results"></div>
+<div id="fiche"></div>
+</section>
+</div>
+<p><small>Sources : HATVP liste.csv + declarations.xml · Assemblée (AMO) · data.senat.fr · Europarlement. Montants = sommes des déclarations publiées. Lois soutenues : non disponible (NosDéputés obsolète, NosSénateurs hors ligne).</small></p>
+</main>
+
+<script>
+const fmt=n=>n.toLocaleString('fr-FR');
+const A=/*__AGREGATS__*/{},EL=/*__ELUS__*/[];
+document.getElementById('maj').textContent='données HATVP du 27/08/2026';
+
+/* KPIs */
+(()=>{let e=0,pt=0,rt=0;Object.values(A).forEach(v=>{e+=v.effectif;pt+=v.part_total;rt+=v.rev_total;});
+const px=EL.filter(x=>x.pat>0);
+document.getElementById('kpis').innerHTML=
+`<div class="kpi"><b>${fmt(e)}</b><span>élus</span></div>
+<div class="kpi"><b>${Object.keys(A).length}</b><span>groupes</span></div>
+<div class="kpi"><b>${fmt(pt)} €</b><span>participations</span></div>
+<div class="kpi"><b>${fmt(rt)} €</b><span>revenus 5 ans</span></div>
+<div class="kpi"><b>${px.length}</b><span>patrimoines chiffrés</span></div>`;})();
+
+/* Table groupes */
+let SK='effectif',SD=-1;
+document.querySelectorAll('#t th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;SD=(SK===k)?-SD:-1;SK=k;renderT();});
+function renderT(){
+ const rows=Object.entries(A).map(([g,v])=>({g,...v})).sort((a,b)=>(a[SK]>b[SK]?1:-1)*SD);
+ document.querySelector('#t tbody').innerHTML=rows.map(r=>
+ `<tr><td>${r.g} <small>(${r.effectif})</small></td><td>${fmt(r.effectif)}</td><td>${fmt(r.part_total)}</td><td>${fmt(r.part_moy)}</td><td>${fmt(r.rev_total)}</td><td>${fmt(r.rev_moy)}</td></tr>`).join('');
+}
+renderT();
+
+/* Barres horizontales */
+let MET='part_total';
+const MLAB={part_total:'Participations totales €',part_moy:'Participations moyennes €',rev_total:'Revenus totaux €',rev_moy:'Revenus moyens €'};
+document.querySelectorAll('#segM button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#segM button').forEach(x=>x.classList.remove('on'));b.classList.add('on');MET=b.dataset.m;bars();});
+function bars(){
+ const rows=Object.entries(A).filter(([g])=>!g.startsWith('(Sans')).map(([g,v])=>({g,v:v[MET]})).sort((a,b)=>b.v-a.v).slice(0,12);
+ const c=document.getElementById('c'),x=c.getContext('2d'),W=c.width,H=c.height,max=rows[0].v||1;
+ x.clearRect(0,0,W,H);x.font='11px sans-serif';
+ const rh=(H-20)/rows.length;
+ rows.forEach((r,i)=>{const y=10+i*rh,w=Math.max(2,(r.v/max)*(W-330));
+  x.fillStyle='#0b5fff';x.fillRect(300,y,w,rh-8);
+  x.fillStyle='#1c2333';x.textAlign='right';x.fillText(r.g.slice(0,34),290,y+rh/2);
+  x.textAlign='left';x.fillStyle='#677';x.fillText(fmt(r.v),308+w,y+rh/2);});
+ x.fillStyle='#1c2333';x.font='bold 12px sans-serif';x.fillText(MLAB[MET],300,12);
+}
+bars();
+
+/* Top patrimoine : carte entière cliquable → fiche HATVP */
+(()=>{const top=EL.filter(x=>x.pat>0).sort((a,b)=>b.pat-a.pat).slice(0,12);
+document.getElementById('toppat').innerHTML=top.map(h=>
+`<div class="card" data-lien="${h.lien}" style="cursor:pointer"><b>${h.n} ${h.p}</b> <span class="pill">${h.c}</span><br>
+Actif : <b>${fmt(h.pat)} €</b> · Passif : ${fmt(h.pas)} €<br>
+<small>Fiche HATVP${h.dsp?` · <a href="${h.dsp}" target="_blank" rel="noopener">PDF patrimoine</a>`:''} — clique pour ouvrir</small></div>`).join('');
+document.querySelectorAll('#toppat .card').forEach(c=>c.onclick=e=>{if(e.target.tagName!=='A')window.open(c.dataset.lien,'_blank');});})();
+
+/* Recherche + fiche */
+const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+document.getElementById('search').oninput=e=>{
+ const q=norm(e.target.value),box=document.getElementById('results');
+ document.getElementById('fiche').innerHTML='';
+ if(q.length<2){box.innerHTML='';return;}
+ const hit=EL.filter(x=>norm(x.n+' '+x.p).includes(q)).slice(0,30);
+ box.innerHTML=hit.map(h=>`<div class="card" data-i="${EL.indexOf(h)}"><b>${h.n} ${h.p}</b> — ${h.c} · ${h.g}</div>`).join('')||'<small>Aucun résultat</small>';
+ box.querySelectorAll('.card').forEach(c=>c.onclick=()=>fiche(EL[+c.dataset.i]));
+};
+function fiche(h){
+ document.getElementById('fiche').innerHTML=`<div class="card"><h3 style="margin:0">${h.n} ${h.p}</h3>
+ <p><span class="pill">${h.c}</span> ${h.f||''} · ${h.g} · ${h.d||''}</p>
+ <p>Participations : <b>${fmt(h.part)} €</b><br>Revenus 5 ans : <b>${fmt(h.rev)} €</b><br>
+ ${h.pat?`Patrimoine actif : <b>${fmt(h.pat)} €</b> (passif ${fmt(h.pas)} €)<br>`:''}</p>
+ <p><a href="${h.lien}" target="_blank" rel="noopener">Fiche HATVP</a>${h.dsp?` · <a href="${h.dsp}" target="_blank" rel="noopener">PDF patrimoine</a>`:''}</p></div>`;
+}
+</script>
+</body>
+</html>

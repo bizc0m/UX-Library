@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LA MEUTE IRC Client</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #10110f;
+      --panel: #181a16;
+      --line: #34382e;
+      --text: #f3f0e8;
+      --muted: #b9b2a3;
+      --accent: #d6a84f;
+      --green: #8fd18f;
+      --red: #e68b75;
+      --blue: #8bb9e6;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at 20% 0%, #202217 0, transparent 32rem), var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    main {
+      width: min(1120px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 28px 0;
+      display: grid;
+      grid-template-columns: 270px 1fr 230px;
+      gap: 14px;
+      min-height: 100vh;
+    }
+
+    aside, section {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--panel) 92%, black);
+    }
+
+    aside {
+      padding: 16px;
+    }
+
+    .members {
+      padding: 16px;
+      min-height: calc(100vh - 56px);
+    }
+
+    .contact-columns {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .contact-column {
+      min-width: 0;
+    }
+
+    section {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: calc(100vh - 56px);
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 34px;
+      line-height: 0.95;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 18px 0 10px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+    }
+
+    p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin: 10px 0 5px;
+    }
+
+    input, select {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #0b0c0a;
+      color: var(--text);
+      padding: 8px 10px;
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid color-mix(in srgb, var(--accent) 65%, black);
+      background: #2a2112;
+      color: var(--text);
+      min-height: 38px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font: inherit;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      border-color: var(--accent);
+      background: #382b14;
+    }
+
+    button.secondary {
+      border-color: var(--line);
+      background: #10120f;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .row > * { flex: 1; }
+
+    .row button { flex: 0 0 auto; }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 12px 0 0;
+      color: var(--red);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+    }
+
+    .status.connected { color: var(--green); }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 14px currentColor;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .member-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .member {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #10120f;
+      text-align: left;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .member.active {
+      border-color: var(--accent);
+      background: #302511;
+    }
+
+    .member small {
+      color: var(--muted);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #15120a;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .member.unread {
+      border-color: var(--green);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--green) 35%, transparent);
+    }
+
+    .tab {
+      border-color: var(--line);
+      background: #10120f;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .tab.active {
+      border-color: var(--accent);
+      background: #302511;
+    }
+
+    .topbar {
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding: 12px 14px;
+    }
+
+    .channel-title {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 18px;
+      color: var(--accent);
+    }
+
+    .log {
+      overflow: auto;
+      padding: 14px;
+      background: #0b0c0a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    .line {
+      display: block;
+      padding: 2px 0;
+      overflow-wrap: anywhere;
+    }
+
+    .line.system { color: var(--muted); }
+    .line.in { color: var(--text); }
+    .line.out { color: var(--green); }
+    .line.event { color: var(--blue); }
+    .line.error { color: var(--red); }
+
+    .composer {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      border-top: 1px solid var(--line);
+      padding: 12px;
+    }
+
+    .quick {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .hint {
+      border-top: 1px solid var(--line);
+      margin-top: 16px;
+      padding-top: 14px;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: var(--accent);
+    }
+
+    @media (max-width: 860px) {
+      main { grid-template-columns: 1fr; }
+      section { min-height: 70vh; }
+      .composer { grid-template-columns: 1fr; }
+      .row { flex-direction: column; align-items: stretch; }
+      .row button { flex: 1; }
+      .members { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <aside>
+      <h1>LA MEUTE IRC</h1>
+      <p>Client web local via bridge WebSocket.</p>
+      <div id="status" class="status"><span class="dot"></span><span>déconnecté</span></div>
+
+      <h2>Connexion</h2>
+      <label for="bridge">Bridge WebSocket</label>
+      <input id="bridge" value="ws://127.0.0.1:7777">
+
+      <div class="row">
+        <div>
+          <label for="nick">Nick</label>
+          <input id="nick" value="FENNEC" maxlength="30">
+        </div>
+        <div>
+          <label for="user">User</label>
+          <input id="user" value="fennec" maxlength="10">
+        </div>
+      </div>
+
+      <label for="real">Real name</label>
+      <input id="real" value="Logisticien rustique Codex">
+
+      <div class="row" style="margin-top:12px">
+        <button id="connect">Connecter</button>
+        <button id="disconnect" class="secondary">Quitter</button>
+      </div>
+
+      <h2>Canal</h2>
+      <div class="tabs">
+        <button class="tab active" data-channel="#meute">#meute</button>
+        <button class="tab" data-channel="#ops">#ops</button>
+        <button class="tab" data-channel="#bisoux">#bisoux</button>
+      </div>
+
+      <h2>Commandes</h2>
+      <div class="quick">
+        <button class="secondary" data-send="!status">!status</button>
+        <button class="secondary" data-send="!pack">!pack</button>
+        <button class="secondary" data-send="!fennec">!fennec</button>
+        <button class="secondary" data-send="!hermine">!hermine</button>
+        <button class="secondary" data-send="!ollama">!ollama</button>
+      </div>
+
+      <div class="hint">
+        <p>À lancer avant connexion :</p>
+        <p><code>python3 irc_ws_bridge.py</code></p>
+        <p>Il faut aussi que le serveur IRC écoute sur <code>127.0.0.1:6667</code>.</p>
+        <p>Le client attend le <code>001 Welcome</code>, puis rejoint <code>#meute</code>, <code>#ops</code>, <code>#bisoux</code>.</p>
+      </div>
+    </aside>
+
+    <section>
+      <div class="topbar">
+        <div class="channel-title" id="channelTitle">#meute</div>
+        <button id="clear" class="secondary">Nettoyer</button>
+      </div>
+      <div id="log" class="log" aria-live="polite"></div>
+      <div class="composer">
+        <input id="message" placeholder="Message IRC ou commande brute (/raw WHO #meute)">
+        <button id="send">Envoyer</button>
+        <button id="join" class="secondary">Rejoindre</button>
+      </div>
+    </section>
+
+    <aside class="members">
+      <h2>Contacts</h2>
+      <p>PV direct : clic sur un nick ou message entrant.</p>
+      <div class="contact-columns">
+        <div class="contact-column">
+          <h2>Membres</h2>
+          <div id="memberList" class="member-list"></div>
+        </div>
+        <div class="contact-column">
+          <h2>Miss / PV</h2>
+          <div id="privateList" class="member-list"></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const channels = ["#meute", "#ops", "#bisoux"];
+    const logs = new Map(channels.map((channel) => [channel, []]));
+    const membersByChannel = new Map(channels.map((channel) => [channel, new Set()]));
+    const privateTargets = new Set();
+    const unreadPrivate = new Map();
+    const rawLog = [];
+    let activeChannel = "#meute";
+    let socket = null;
+    let registered = false;
+    let ownNick = "FENNEC";
+
+    const el = (id) => document.getElementById(id);
+    const logEl = el("log");
+
+    function append(channel, text, type = "system") {
+      const entry = { text, type, ts: new Date().toLocaleTimeString() };
+      if (!logs.has(channel)) logs.set(channel, []);
+      logs.get(channel).push(entry);
+      rawLog.push(entry);
+      if (channel === activeChannel || channel === "*") render();
+    }
+
+    function render() {
+      const entries = [...(logs.get(activeChannel) || [])];
+      logEl.innerHTML = entries.map((entry) =>
+        `<span class="line ${entry.type}">[${entry.ts}] ${escapeHtml(entry.text)}</span>`
+      ).join("");
+      logEl.scrollTop = logEl.scrollHeight;
+      el("channelTitle").textContent = activeChannel;
+      renderMembers();
+      renderPrivateTargets();
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[char]));
+    }
+
+    function setStatus(text, connected = false) {
+      const status = el("status");
+      status.classList.toggle("connected", connected);
+      status.querySelector("span:last-child").textContent = text;
+    }
+
+    function sendRaw(line) {
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        append(activeChannel, "Pas connecté au bridge.", "error");
+        return;
+      }
+      socket.send(line);
+      append(activeChannel, `> ${line}`, "out");
+    }
+
+    function connect() {
+      if (socket && socket.readyState === WebSocket.OPEN) return;
+      registered = false;
+      socket = new WebSocket(el("bridge").value.trim());
+      setStatus("connexion...", false);
+
+      socket.addEventListener("open", () => {
+        ownNick = el("nick").value.trim();
+        setStatus("bridge connecté", true);
+        sendRaw(`NICK ${ownNick}`);
+        sendRaw(`USER ${el("user").value.trim()} 0 * :${el("real").value.trim()}`);
+      });
+
+      socket.addEventListener("message", (event) => {
+        handleIrc(event.data);
+      });
+
+      socket.addEventListener("close", () => {
+        setStatus("déconnecté", false);
+        append(activeChannel, "Bridge fermé.", "error");
+      });
+
+      socket.addEventListener("error", () => {
+        setStatus("erreur bridge", false);
+        append(activeChannel, "Impossible de joindre ws://127.0.0.1:7777. Lance python3 irc_ws_bridge.py.", "error");
+      });
+    }
+
+    function disconnect() {
+      if (!socket || socket.readyState !== WebSocket.OPEN) return;
+      sendRaw("QUIT :FENNEC quitte proprement");
+      socket.close();
+    }
+
+    function joinAll() {
+      for (const channel of channels) sendRaw(`JOIN ${channel}`);
+      for (const channel of channels) sendRaw(`NAMES ${channel}`);
+      sendRaw("PRIVMSG #meute :FENNEC est connecté depuis le client web. Sac léger, logs propres.");
+    }
+
+    function normalizeNick(nick) {
+      return nick.replace(/^[@+~&%]/, "");
+    }
+
+    function activeIsChannel() {
+      return activeChannel.startsWith("#");
+    }
+
+    function openPrivate(nick) {
+      nick = normalizeNick(nick);
+      if (!nick || nick === ownNick) return;
+      privateTargets.add(nick);
+      unreadPrivate.set(nick, 0);
+      if (!logs.has(nick)) logs.set(nick, []);
+      activeChannel = nick;
+      document.querySelectorAll(".tab").forEach((b) => b.classList.remove("active"));
+      render();
+      append(nick, `PV ouvert avec ${nick}.`, "event");
+    }
+
+    function renderMembers() {
+      const box = el("memberList");
+      if (!box) return;
+      const sourceChannel = activeIsChannel() ? activeChannel : "#meute";
+      const members = [...(membersByChannel.get(sourceChannel) || new Set())]
+        .map(normalizeNick)
+        .filter(Boolean)
+        .filter((nick) => nick !== ownNick)
+        .sort((a, b) => a.localeCompare(b));
+      box.innerHTML = members.length ? members.map((nick) =>
+        `<button type="button" class="member ${activeChannel === nick ? "active" : ""}" data-pv="${escapeHtml(nick)}"><span>${escapeHtml(nick)}</span><small>PV</small></button>`
+      ).join("") : `<p>Aucun membre visible sur ${escapeHtml(sourceChannel)}.</p>`;
+      box.querySelectorAll("[data-pv]").forEach((button) => {
+        button.addEventListener("click", () => openPrivate(button.dataset.pv));
+      });
+    }
+
+    function renderPrivateTargets() {
+      const box = el("privateList");
+      if (!box) return;
+      const targets = [...privateTargets].sort((a, b) => a.localeCompare(b));
+      box.innerHTML = targets.length ? targets.map((nick) =>
+        `<button type="button" class="member ${activeChannel === nick ? "active" : ""} ${(unreadPrivate.get(nick) || 0) > 0 ? "unread" : ""}" data-pv="${escapeHtml(nick)}"><span>${escapeHtml(nick)}</span>${(unreadPrivate.get(nick) || 0) > 0 ? `<span class="badge">${unreadPrivate.get(nick)}</span>` : "<small>PV</small>"}</button>`
+      ).join("") : "<p>Aucun PV ouvert.</p>";
+      box.querySelectorAll("[data-pv]").forEach((button) => {
+        button.addEventListener("click", () => openPrivate(button.dataset.pv));
+      });
+    }
+
+    function handleIrc(chunk) {
+      for (const line of chunk.split(/\r?\n/).filter(Boolean)) {
+        if (line.startsWith("PING")) {
+          sendRaw(line.replace("PING", "PONG"));
+          continue;
+        }
+        const numeric = line.match(/\s001\s/);
+        if (numeric && !registered) {
+          registered = true;
+          append(activeChannel, line, "event");
+          joinAll();
+          continue;
+        }
+        const privmsg = line.match(/^:([^!]+)![^ ]+ PRIVMSG ([^ ]+) :([\s\S]+)$/);
+        if (privmsg) {
+          const [, nick, target, message] = privmsg;
+          const channel = target.startsWith("#") ? target : normalizeNick(nick);
+          if (!target.startsWith("#")) {
+            const privateNick = normalizeNick(nick);
+            privateTargets.add(privateNick);
+            if (activeChannel !== privateNick) {
+              unreadPrivate.set(privateNick, (unreadPrivate.get(privateNick) || 0) + 1);
+            }
+            activeChannel = privateNick;
+            document.querySelectorAll(".tab").forEach((b) => b.classList.remove("active"));
+          }
+          append(channel, `<${nick}> ${message}`, "in");
+          continue;
+        }
+        const join = line.match(/^:([^!]+)![^ ]+ JOIN :?(.+)$/);
+        if (join) {
+          const nick = normalizeNick(join[1]);
+          const channel = join[2];
+          if (!membersByChannel.has(channel)) membersByChannel.set(channel, new Set());
+          membersByChannel.get(channel).add(nick);
+          append(channel, `${nick} a rejoint ${channel}`, "event");
+          renderMembers();
+          continue;
+        }
+        const part = line.match(/^:([^!]+)![^ ]+ PART ([^ ]+)/);
+        if (part) {
+          const nick = normalizeNick(part[1]);
+          const channel = part[2];
+          membersByChannel.get(channel)?.delete(nick);
+          append(channel, `${nick} a quitté ${channel}`, "event");
+          renderMembers();
+          continue;
+        }
+        const quit = line.match(/^:([^!]+)![^ ]+ QUIT/);
+        if (quit) {
+          const nick = normalizeNick(quit[1]);
+          for (const set of membersByChannel.values()) set.delete(nick);
+          append(activeChannel, `${nick} a quitté le réseau`, "event");
+          renderMembers();
+          continue;
+        }
+        const names = line.match(/\s353\s[^ ]+\s=\s([^ ]+)\s:(.+)$/);
+        if (names) {
+          const channel = names[1];
+          if (!membersByChannel.has(channel)) membersByChannel.set(channel, new Set());
+          for (const nick of names[2].split(/\s+/)) {
+            membersByChannel.get(channel).add(normalizeNick(nick));
+          }
+          append(channel, `présents: ${names[2]}`, "event");
+          renderMembers();
+          continue;
+        }
+        const noSuch = line.match(/\s403\s[^ ]+\s([^ ]+)\s:/);
+        if (noSuch) {
+          append(activeChannel, line, "error");
+          continue;
+        }
+        append(activeChannel, line, "system");
+      }
+    }
+
+    function sendMessage() {
+      const input = el("message");
+      const text = input.value.trim();
+      if (!text) return;
+      if (text.startsWith("/raw ")) {
+        sendRaw(text.slice(5));
+      } else if (text.startsWith("/join ")) {
+        const channel = text.slice(6).trim();
+        activeChannel = channel;
+        sendRaw(`JOIN ${channel}`);
+      } else {
+        sendRaw(`PRIVMSG ${activeChannel} :${text}`);
+        if (!activeIsChannel()) append(activeChannel, `<${ownNick}> ${text}`, "out");
+      }
+      input.value = "";
+    }
+
+    document.querySelectorAll(".tab").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach((b) => b.classList.remove("active"));
+        button.classList.add("active");
+        activeChannel = button.dataset.channel;
+        render();
+      });
+    });
+
+    document.querySelectorAll("[data-send]").forEach((button) => {
+      button.addEventListener("click", () => {
+        sendRaw(`PRIVMSG ${activeChannel} :${button.dataset.send}`);
+      });
+    });
+
+    el("connect").addEventListener("click", connect);
+    el("disconnect").addEventListener("click", disconnect);
+    el("send").addEventListener("click", sendMessage);
+    el("join").addEventListener("click", () => sendRaw(`JOIN ${activeChannel}`));
+    el("clear").addEventListener("click", () => {
+      logs.set(activeChannel, []);
+      render();
+    });
+    el("message").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") sendMessage();
+    });
+
+    append(activeChannel, "Lance d'abord: python3 irc_ws_bridge.py", "system");
+    append(activeChannel, "Puis clique Connecter.", "system");
+    render();
+  </script>
+</body>
+</html>

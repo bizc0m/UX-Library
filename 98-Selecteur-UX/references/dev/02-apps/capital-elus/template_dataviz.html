@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<!-- template_dataviz.html v2 — build via build_dataviz_v1.4.py (injecte D3 + DATA, écrit dataviz.html). -->
+<!-- DONNÉES : élus = open data HATVP réel ; partis = comptes réels CNCCFP 2024 (adhérents revendiqués, non audités). -->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Salaires, patrimoine et financement des partis : ce que disent les chiffres</title>
+<style>
+:root{--acc:#c0392b;--ink:#1c2333;--mut:#677;--bg:#f6f8fb;--card:#fff}
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;margin:0;background:var(--bg);color:var(--ink)}
+header{background:#101828;color:#fff;padding:26px 22px}
+header h1{margin:0;font-size:1.5em}
+header p{margin:6px 0 0;color:#c4cede;font-size:.88em}
+nav{display:flex;background:#1d2939;position:sticky;top:0;z-index:5}
+nav button{flex:1;background:none;border:none;color:#c4cede;padding:13px;font-size:.95em;cursor:pointer}
+nav button.on{background:var(--bg);color:var(--ink);font-weight:700}
+main{max-width:1200px;margin:0 auto;padding:20px}
+.view{display:none}.view.on{display:block}
+.layout{display:grid;grid-template-columns:250px 1fr;gap:16px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+aside{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 1px 4px #0001;align-self:start;position:sticky;top:60px}
+aside h3{margin:.4em 0;font-size:.9em}
+aside label{display:block;font-size:.83em;margin:6px 0}
+aside select,aside input[type=text]{width:100%;padding:6px}
+section{background:var(--card);border-radius:12px;padding:18px;margin:0 0 16px;box-shadow:0 1px 4px #0001}
+h2{margin-top:0;font-size:1.2em}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 1px 4px #0001}
+.kpi b{display:block;font-size:1.45em;font-variant-numeric:tabular-nums}
+.kpi.acc b{color:var(--acc)}
+.kpi span{font-size:.78em;color:var(--mut)}
+.seg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.seg button{border:1px solid #ccd;padding:6px 12px;border-radius:20px;background:#fff;cursor:pointer;font-size:.85em}
+.seg button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.seg select{padding:6px;border:1px solid #ccd;border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:.82em}
+th,td{border-bottom:1px solid #eee;padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums}
+th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+th{cursor:pointer;color:var(--acc);position:sticky;top:48px;background:#fff;z-index:2;box-shadow:0 1px 0 #eee}
+tr:hover td{background:#faf3f1}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:baseline}
+.lnk{cursor:pointer;text-decoration:underline dotted}
+.cmp-table td:first-child{font-weight:700;text-align:left;white-space:nowrap}
+.badge{background:var(--acc);color:#fff;border-radius:10px;padding:1px 8px;font-size:.75em}
+svg text{font-size:11px}
+.tip{position:fixed;pointer-events:none;background:#101828;color:#fff;padding:8px 10px;border-radius:8px;font-size:.8em;display:none;z-index:20;max-width:280px}
+/* panneau latéral coulissant pour les fiches */
+#drawer{position:fixed;top:0;right:-430px;width:400px;max-width:92vw;height:100vh;background:#fff;box-shadow:-4px 0 18px #0003;z-index:15;transition:right .25s;padding:20px;overflow:auto}
+#drawer.open{right:0}
+#drawer .x{float:right;border:none;background:#eee;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:1em}
+#scrim{position:fixed;inset:0;background:#0005;display:none;z-index:10}
+#scrim.on{display:block}
+button.act{background:var(--acc);color:#fff;border:1px solid var(--acc);border-radius:8px;padding:8px 14px;cursor:pointer}
+button.ghost{background:#fff;border:1px solid #ccd;border-radius:8px;padding:8px 14px;cursor:pointer}
+small{color:var(--mut)}
+input[type=range]{width:100%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}}
+.pill{display:inline-block;background:#f3d9d4;color:var(--acc);border-radius:12px;padding:2px 10px;font-size:.78em;margin-right:6px}
+.src{font-size:.78em;color:var(--mut);margin:4px 0 12px}
+.src a{color:var(--acc)}
+</style>
+</head>
+<body>
+<header>
+<h1>Salaires, patrimoine et financement des partis : ce que disent les chiffres</h1>
+<p>Élus : open data HATVP réel (indemnités annuelles <b>estimées</b>, patrimoine net sur DSP chiffrées) · Partis : comptes réels <b>CNCCFP exercice 2024</b> (adhérents : chiffres revendiqués, non audités) · Budget : <b>PLF 2024</b>. Tout est sourcé — voir l'onglet <b>Sources &amp; méthode</b>.</p>
+</header>
+<nav>
+<button data-v="elus" class="on">Élus &amp; patrimoine</button>
+<button data-v="partis">Partis : capital vs membres</button>
+<button data-v="budget">Budget de l'État</button>
+<button data-v="faits">Faits marquants</button>
+<button data-v="sources">Sources &amp; méthode</button>
+</nav>
+<main>
+
+<!-- ============ VUE ÉLUS ============ -->
+<div class="view on" id="v-elus">
+<p class="src">Sources : <a href="https://www.hatvp.fr/livraison/opendata/liste.csv" target="_blank" rel="noopener">HATVP liste.csv</a> · <a href="https://www.hatvp.fr/livraison/merge/declarations.xml" target="_blank" rel="noopener">HATVP declarations.xml</a> (27/08/2026, Licence ouverte Etalab) · Assemblée (AMO XVIIe) · data.senat.fr · Europarlement. Détail onglet Sources &amp; méthode.</p>
+<div class="kpis" id="k-elus"></div>
+<div class="layout">
+<aside>
+<h3>Filtres</h3>
+<label>Catégorie<select id="f-cat"><option value="">Toutes</option></select></label>
+<label>Fonction<select id="f-role"><option value="">Toutes</option></select></label>
+<label>Parti / groupe<select id="f-party"><option value="">Tous</option></select></label>
+<label>Patrimoine<select id="f-nw"><option value="">Tous</option><option value="np">Non publié</option><option value="a">&lt; 500 k€</option><option value="b">500 k–1 M€</option><option value="c">1–2 M€</option><option value="d">2–5 M€</option><option value="e">&gt; 5 M€</option></select></label>
+<label>Indemnité<select id="f-sal"><option value="">Toutes</option><option value="nr">Non renseignée</option><option value="a">&lt; 50 k€</option><option value="b">50–70 k€</option><option value="c">70–100 k€</option><option value="d">&gt; 100 k€</option></select></label>
+<label><input type="checkbox" id="f-mio"> Seulement patrimoine &gt; 1 M€</label>
+<h3>Choix d'affichage</h3>
+<label>Top patrimoines<select id="f-topn"><option>10</option><option selected>20</option><option>30</option></select></label>
+<button class="ghost" id="dl">Télécharger le tableau filtré (CSV)</button>
+</aside>
+<div>
+<section><h2>Distribution</h2>
+<div class="seg" id="segH"><button data-m="netWorth" class="on">Patrimoines</button><button data-m="salary">Indemnités</button></div>
+<div id="histo"></div><p><small id="histo-note"></small></p></section>
+<section><h2>Top patrimoines</h2><div id="topnw"></div></section>
+<section><h2>Participations vs revenus <small>(log, couleur = catégorie — clic = fiche)</small></h2><div id="sc-elus"></div></section>
+<section><h2>Tableau <small id="cnt"></small></h2>
+<div class="seg"><button class="ghost" id="cmp-btn">Comparer la sélection (<span id="cmp-n">0</span>/6)</button><small>Coche jusqu'à 6 élus · clique un parti pour sa fiche groupe</small></div>
+<div style="overflow:auto;max-height:520px"><table id="t-elus"><thead><tr>
+<th title="Sélectionner pour comparer">☐</th><th data-k="name">Nom</th><th data-k="role">Fonction</th><th data-k="party">Parti</th>
+<th data-k="salary">Indemnité/an €</th><th data-k="netWorth">Patrimoine net €</th><th data-k="isMillionnaire">&gt; 1M€</th>
+</tr></thead><tbody></tbody></table></div></section>
+<section><h2>Non-déclaration par groupe <small>(% sans revenus chiffrés / sans patrimoine publié — triable)</small></h2>
+<div style="overflow:auto;max-height:420px"><table id="t-nd"><thead><tr>
+<th data-k="g">Groupe</th><th data-k="effectif">Élus</th><th data-k="noRev">Sans revenus %</th><th data-k="noPat">Sans patrimoine %</th><th data-k="mio">&gt; 1M€ %</th>
+</tr></thead><tbody></tbody></table></div>
+<p><small>Global : <b id="nd-global"></b> — « sans » = aucune donnée chiffrée en open data HATVP (déclaration PDF uniquement ou absente).</small></p></section>
+</div>
+</div>
+</div>
+
+<!-- ============ VUE PARTIS ============ -->
+<div class="view" id="v-partis">
+<p class="src">Source : <a href="https://www.data.gouv.fr/datasets/comptes-des-partis-et-groupements-politiques" target="_blank" rel="noopener">CNCCFP — Comptes des partis 2024</a> (data.gouv.fr, màj 10/02/2026). Adhérents : effectifs revendiqués, non audités.</p>
+<div class="kpis" id="k-partis"></div>
+<div class="layout">
+<aside>
+<h3>Filtres</h3>
+<label>Famille<select id="p-fam"><option value="">Toutes</option></select></label>
+<label>Subventions<select id="p-sub"><option value="">Toutes</option><option value="low">Faibles (&lt; 1 M€)</option><option value="mid">Moyennes (1–4 M€)</option><option value="high">Élevées (&gt; 4 M€)</option></select></label>
+<label>Adhérents min : <b id="p-min-v"></b><input type="range" id="p-min" min="0" max="200000" step="5000" value="0"></label>
+<h3>Choix d'affichage</h3>
+<label>Axe X<select id="p-x"><option value="members">Adhérents (log)</option><option value="subsidies">Subventions (log)</option></select></label>
+<label>Axe Y<select id="p-y"><option value="treasury">Trésorerie totale</option><option value="cpm">Capital par adhérent</option></select></label>
+</aside>
+<div>
+<section><h2>Capital vs base militante <small>(taille = subventions — clic = fiche)</small></h2><div id="scatter"></div></section>
+<section><h2>Capital par adhérent</h2><div id="bars-p"></div></section>
+<section><h2>Tableau <small>(clique les en-têtes pour trier)</small></h2><div style="overflow:auto"><table id="t-partis"><thead><tr>
+<th data-k="name">Parti</th><th data-k="subsidies">Subventions €</th><th data-k="donations">Dons €</th><th data-k="membershipFees">Cotisations €</th><th data-k="treasury">Trésorerie €</th><th data-k="members">Adhérents</th><th data-k="cpm">Capital/adhérent €</th>
+</tr></thead><tbody></tbody></table></div></section>
+</div>
+</div>
+</div>
+
+<!-- ============ VUE BUDGET ============ -->
+<div class="view" id="v-budget">
+<p class="src">Sources : <a href="https://www.budget.gouv.fr/budget-etat/mission" target="_blank" rel="noopener">budget.gouv.fr — dépenses par mission</a> · <a href="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/plf-2024-depenses-2024-selon-nomenclatures-destination-et-nature/exports/csv" target="_blank" rel="noopener">PLF 2024 CSV (data.economie.gouv.fr)</a> · aide versée : CNCCFP avis 2024. Indemnités : estimées HATVP.</p>
+<div class="kpis" id="k-budget"></div>
+<section><h2>Top 15 missions <small>(Md€)</small></h2><div id="bars-missions"></div></section>
+<div class="grid2">
+<section><h2>Pouvoirs publics + Vie politique : détail</h2><div id="bars-pp"></div></section>
+<section><h2>Liaison : budget voté vs constaté</h2><div style="overflow:auto"><table id="t-liaison"><thead><tr>
+<th>Poste</th><th>Budget voté €</th><th>Constaté €</th><th>Note</th>
+</tr></thead><tbody></tbody></table></div></section>
+</div>
+</div>
+
+<!-- ============ VUE FAITS ============ -->
+<div class="view" id="v-faits"><div class="kpis" id="k-faits"></div>
+<section><h2>Top 3 capital par adhérent <small>(CNCCFP 2024, adhérents revendiqués)</small></h2><div id="top3"></div></section>
+</div>
+
+<!-- ============ VUE SOURCES ============ -->
+<div class="view" id="v-sources">
+<section><h2>Sources — chaque chiffre est traçable</h2>
+<div style="overflow:auto"><table><thead><tr><th>Donnée affichée</th><th>Source officielle</th><th>Date / millésime</th><th>Licence</th></tr></thead><tbody>
+<tr><td>Liste des déclarations (fiches, PDF, statuts)</td><td><a href="https://www.hatvp.fr/livraison/opendata/liste.csv" target="_blank" rel="noopener">hatvp.fr/livraison/opendata/liste.csv</a> (<a href="https://www.hatvp.fr/open-data/" target="_blank" rel="noopener">page open data</a>)</td><td>27/08/2026</td><td>Licence ouverte Etalab</td></tr>
+<tr><td>Contenu déclarations (participations, revenus, patrimoine)</td><td><a href="https://www.hatvp.fr/livraison/merge/declarations.xml" target="_blank" rel="noopener">hatvp.fr/livraison/merge/declarations.xml</a></td><td>27/08/2026</td><td>Licence ouverte Etalab</td></tr>
+<tr><td>577 députés (groupe, circonscription, lien HATVP)</td><td><a href="https://data.assemblee-nationale.fr/acteurs/deputes-en-exercice" target="_blank" rel="noopener">data.assemblee-nationale.fr</a> (AMO, XVIIe législature)</td><td>09/2026</td><td>Licence ouverte Etalab</td></tr>
+<tr><td>348 sénateurs en exercice</td><td><a href="https://data.senat.fr/data/senateurs/ODSEN_GENERAL.json" target="_blank" rel="noopener">data.senat.fr ODSEN_GENERAL.json</a> (filtre État = ACTIF)</td><td>09/2026</td><td>Licence ouverte Etalab</td></tr>
+<tr><td>81 eurodéputés français</td><td><a href="https://data.europarl.europa.eu/api/v2/meps/show-current" target="_blank" rel="noopener">data.europarl.europa.eu — meps/show-current</a> (filtre FR)</td><td>09/2026</td><td>Réutilisation UE</td></tr>
+<tr><td>Comptes des partis (aide, dons, cotisations, disponibilités)</td><td><a href="https://www.data.gouv.fr/datasets/comptes-des-partis-et-groupements-politiques" target="_blank" rel="noopener">data.gouv.fr — CNCCFP exercice 2024</a> (màj 10/02/2026)</td><td>exercice 2024</td><td>Licence ouverte Etalab</td></tr>
+<tr><td>Budget de l'État par mission/programme (CP)</td><td><a href="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/plf-2024-depenses-2024-selon-nomenclatures-destination-et-nature/exports/csv" target="_blank" rel="noopener">data.economie.gouv.fr — PLF 2024</a> (<a href="https://www.budget.gouv.fr/budget-etat/mission" target="_blank" rel="noopener">budget.gouv.fr</a>)</td><td>PLF 2024</td><td>Licence ouverte Etalab</td></tr>
+<tr><td>Aide publique versée 2024 (66,44 M€)</td><td>CNCCFP — avis publication générale exercice 2024 (<a href="https://cnccfp.fr/partis-politiques/" target="_blank" rel="noopener">cnccfp.fr</a>)</td><td>exercice 2024</td><td>Document public</td></tr>
+<tr><td>Graphiques</td><td><a href="https://d3js.org" target="_blank" rel="noopener">D3.js v7.9.0</a> (inclus, BSD-3-Clause)</td><td>—</td><td>BSD-3-Clause</td></tr>
+</tbody></table></div></section>
+<section><h2>Méthode &amp; limites (lire avant de citer)</h2>
+<p><small>
+· <b>Indemnités annuelles estimées</b> = moyenne annuelle des montants (mandats + activités) déclarés à la HATVP par l'élu. Pas le bulletin de paie.<br>
+· <b>Patrimoine net</b> = actif − passif des seules DSP chiffrées en open data (36 nationaux). Le reste n'existe qu'en PDF.<br>
+· <b>Participations</b> = somme des évaluations déclarées (financières + dirigeant). Doublons possibles (déclaration initiale + modificative).<br>
+· <b>Adhérents partis</b> = effectifs revendiqués par les formations (presse), non audités — le ratio capital/adhérent en dépend.<br>
+· <b>Aide publique</b> : 68,67 M€ = crédits votés PLF 2024 (P232 A01) ; 66,44 M€ = aide versée au titre des législatives 2022.<br>
+· <b>Dotations AN/Sénat</b> couvrent tout le fonctionnement des chambres, pas seulement les indemnités.<br>
+· Données activité/présence (NosDéputés) et lois soutenues non intégrées : 16e législature uniquement / endpoints instables (vérifié 09/2026).
+</small></p></section>
+</div>
+</main>
+<div id="scrim"></div>
+<aside id="drawer"><button class="x" id="dx">✕</button><div id="drawer-body"></div></aside>
+<div class="tip" id="tip"></div>
+
+<script>/*__D3__*/</script>
+<script>
+/* ---------- loadData : JSON embarqué (remplacer par fetch('data.json') pour brancher une API) ---------- */
+const DATA=/*__DATA__*/{};
+const P=DATA.politicians, PT=DATA.parties.map(p=>({...p,cpm:Math.round(p.treasury/Math.max(1,p.members))}));
+const fmt=n=>n==null?'n.p.':n.toLocaleString('fr-FR');
+const tip=document.getElementById('tip');
+function showTip(e,h){tip.innerHTML=h;tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY+14)+'px';}
+function hideTip(){tip.style.display='none';}
+/* panneau latéral */
+function openDrawer(h){document.getElementById('drawer-body').innerHTML=h;document.getElementById('drawer').classList.add('open');document.getElementById('scrim').classList.add('on');}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('scrim').classList.remove('on');}
+document.getElementById('dx').onclick=closeDrawer;document.getElementById('scrim').onclick=closeDrawer;
+
+/* ---------- navigation ---------- */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+ document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+ document.getElementById('v-'+b.dataset.v).classList.add('on');});
+
+/* ================= ÉLUS ================= */
+const inNW=(v,t)=>t===''||(t==='np'&&v==null)||(t==='a'&&v!=null&&v<5e5)||(t==='b'&&v!=null&&v>=5e5&&v<1e6)||(t==='c'&&v!=null&&v>=1e6&&v<2e6)||(t==='d'&&v!=null&&v>=2e6&&v<5e6)||(t==='e'&&v!=null&&v>=5e6);
+const inSal=(v,t)=>t===''||(t==='nr'&&v==null)||(t==='a'&&v!=null&&v<5e4)||(t==='b'&&v!=null&&v>=5e4&&v<7e4)||(t==='c'&&v!=null&&v>=7e4&&v<1e5)||(t==='d'&&v!=null&&v>=1e5);
+const F=id=>document.getElementById(id).value;
+function fElus(){return P.filter(x=>
+ (!F('f-cat')||x.category===F('f-cat'))&&(!F('f-role')||x.role===F('f-role'))&&
+ (!F('f-party')||x.party===F('f-party'))&&inNW(x.netWorth,F('f-nw'))&&inSal(x.salary,F('f-sal'))&&
+ (!document.getElementById('f-mio').checked||x.isMillionnaire));}
+/* remplit les selects */
+[...new Set(P.map(x=>x.category))].forEach(c=>document.getElementById('f-cat').insertAdjacentHTML('beforeend',`<option>${c}</option>`));
+[...new Set(P.map(x=>x.role))].sort().forEach(c=>document.getElementById('f-role').insertAdjacentHTML('beforeend',`<option>${c}</option>`));
+[...new Set(P.map(x=>x.party))].sort().forEach(c=>document.getElementById('f-party').insertAdjacentHTML('beforeend',`<option>${c}</option>`));
+[...new Set(PT.map(x=>x.family))].sort().forEach(c=>document.getElementById('p-fam').insertAdjacentHTML('beforeend',`<option>${c}</option>`));
+
+/* KPIs élus */
+(()=>{const kn=P.filter(x=>x.netWorth!=null).map(x=>x.netWorth).sort((a,b)=>a-b);
+const mio=P.filter(x=>x.isMillionnaire).length;
+const med=kn.length?kn[Math.floor(kn.length/2)]:0, moy=kn.length?Math.round(kn.reduce((a,b)=>a+b,0)/kn.length):0;
+document.getElementById('k-elus').innerHTML=
+`<div class="kpi"><b>${P.length}</b><span>élus</span></div>
+<div class="kpi acc"><b>${kn.length?Math.round(100*mio/kn.length):0} %</b><span>&gt; 1 M€ (sur ${kn.length} patrimoines publiés)</span></div>
+<div class="kpi"><b>${fmt(med)} €</b><span>patrimoine médian (publiés)</span></div>
+<div class="kpi"><b>${fmt(moy)} €</b><span>patrimoine moyen (publiés)</span></div>`;})();
+
+/* histogramme D3 : patrimoine OU indemnités */
+let HM='netWorth';
+document.querySelectorAll('#segH button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#segH button').forEach(x=>x.classList.remove('on'));b.classList.add('on');HM=b.dataset.m;renderTE();});
+function histo(rows){
+ const vals=rows.map(x=>x[HM]).filter(v=>v!=null);
+ const el=document.getElementById('histo');el.innerHTML='';
+ const note=document.getElementById('histo-note');
+ if(!vals.length){el.innerHTML='<small>Aucune donnée dans cette sélection.</small>';note.textContent='';return;}
+ note.textContent=HM==='netWorth'?`${vals.length} patrimoines publiés. Barres rouges : > 1 M€.`:`${vals.length} indemnités estimées (moyenne annuelle des montants déclarés).`;
+ const W=760,H=220,M={l:55,r:10,t:10,b:30};
+ const x=d3.scaleLinear().domain([0,d3.max(vals)*1.05]).range([M.l,W-M.r]);
+ const bins=d3.bin().domain(x.domain()).thresholds(14)(vals);
+ const y=d3.scaleLinear().domain([0,d3.max(bins,d=>d.length)]).range([H-M.b,M.t]);
+ const s=d3.select(el).append('svg').attr('viewBox',`0 0 ${W} ${H}`).attr('width','100%');
+ const fx=v=>v>=1e6?(v/1e6)+'M':v>=1e3?(v/1e3)+'k':v;
+ s.selectAll('rect').data(bins).join('rect')
+  .attr('x',d=>x(d.x0)+1).attr('width',d=>Math.max(1,x(d.x1)-x(d.x0)-2))
+  .attr('y',d=>y(d.length)).attr('height',d=>H-M.b-y(d.length))
+  .attr('fill',d=>(HM==='netWorth'&&d.x0>=1e6)?'#c0392b':'#2c3e50')
+  .on('mousemove',(e,d)=>showTip(e,`${fmt(Math.round(d.x0))}–${fmt(Math.round(d.x1))} €<br>${d.length} élus`))
+  .on('mouseleave',hideTip);
+ s.append('g').attr('transform',`translate(0,${H-M.b})`).call(d3.axisBottom(x).ticks(6).tickFormat(fx));
+ s.append('g').attr('transform',`translate(${M.l},0)`).call(d3.axisLeft(y).ticks(4));
+ if(HM==='netWorth'){s.append('line').attr('x1',x(1e6)).attr('x2',x(1e6)).attr('y1',M.t).attr('y2',H-M.b).attr('stroke','#c0392b').attr('stroke-dasharray','4 3');}
+}
+/* top patrimoines (N sélectionnable) */
+function topnw(rows){
+ const N=+F('f-topn');
+ const top=rows.filter(x=>x.netWorth!=null).sort((a,b)=>b.netWorth-a.netWorth).slice(0,N);
+ const el=document.getElementById('topnw');el.innerHTML='';
+ const W=760,rh=24,H=Math.max(60,top.length*rh+10);
+ const x=d3.scaleLinear().domain([0,d3.max(top,d=>d.netWorth)||1]).range([250,W-110]);
+ const s=d3.select(el).append('svg').attr('viewBox',`0 0 ${W} ${H}`).attr('width','100%');
+ const g=s.selectAll('g').data(top).join('g').attr('transform',(d,i)=>`translate(0,${10+i*rh})`);
+ g.append('text').attr('x',240).attr('y',15).attr('text-anchor','end').text(d=>d.name.slice(0,26));
+ g.append('rect').attr('x',250).attr('width',d=>x(d.netWorth)-250).attr('height',16).attr('fill','#c0392b')
+  .on('mousemove',(e,d)=>showTip(e,`${d.name}<br>${d.role} · ${d.party}<br><b>${fmt(d.netWorth)} €</b>`)).on('mouseleave',hideTip)
+  .on('click',(e,d)=>ficheE(d));
+ g.append('text').attr('x',d=>x(d.netWorth)+6).attr('y',14).attr('fill','#677').text(d=>(d.netWorth/1e6).toFixed(1)+' M€');
+}
+/* scatter participations vs revenus (log, couleur = catégorie) */
+const CCAT={'Député':'#2c3e50','Sénateur':'#7f8c8d','Ministre':'#c0392b','Ministre (aussi député)':'#e67e22','Eurodéputé':'#2980b9'};
+function scElus(rows){
+ const pts=rows.filter(x=>x.salary!=null&&x.part!=null);
+ const el=document.getElementById('sc-elus');el.innerHTML='';
+ const W=760,H=300,M={l:60,r:15,t:10,b:40};
+ const x=d3.scaleLog().domain([1,d3.max(pts,p=>p.part+1)*1.2]).range([M.l,W-M.r]);
+ const y=d3.scaleLog().domain([d3.min(pts,p=>p.salary)/1.2,d3.max(pts,p=>p.salary)*1.2]).range([H-M.b,M.t]);
+ const s=d3.select(el).append('svg').attr('viewBox',`0 0 ${W} ${H}`).attr('width','100%');
+ s.append('g').attr('transform',`translate(0,${H-M.b})`).call(d3.axisBottom(x).ticks(5,','));
+ s.append('g').attr('transform',`translate(${M.l},0)`).call(d3.axisLeft(y).ticks(5,','));
+ s.append('text').attr('x',W/2).attr('y',H-5).attr('text-anchor','middle').text('Participations € (log)');
+ s.selectAll('circle').data(pts).join('circle')
+  .attr('cx',p=>x(p.part+1)).attr('cy',p=>y(p.salary)).attr('r',3.5)
+  .attr('fill',p=>CCAT[p.category]||'#999').attr('opacity',.7)
+  .on('mousemove',(e,p)=>showTip(e,`<b>${p.name}</b><br>${p.role}<br>Particip. ${fmt(p.part)} € · Rev/an ${fmt(p.salary)} €`))
+  .on('mouseleave',hideTip).on('click',(e,p)=>ficheE(p));
+}
+/* pastille couleur par groupe */
+const GPAL=['#c0392b','#2980b9','#27ae60','#8e44ad','#e67e22','#16a085','#d4ac0d','#2c3e50','#7f8c8d','#e84393','#00cec9','#6c5ce7'];
+const gcol=g=>{let h=0;for(const c of g)h=(h*31+c.charCodeAt(0))>>>0;return GPAL[h%GPAL.length];};
+/* tableau élus triable + sélection comparaison (max 6) + partis cliquables */
+let EK='name',ED=1;const CMP=new Set();
+document.querySelectorAll('#t-elus th[data-k]').forEach(th=>th.onclick=()=>{const k=th.dataset.k;ED=(EK===k)?-ED:1;EK=k;renderTE();});
+function renderTE(){
+ const rows=fElus().sort((a,b)=>{const x=a[EK],y=b[EK];if(x==null)return 1;if(y==null)return -1;return (x>y?1:-1)*ED;});
+ document.getElementById('cnt').textContent=`— ${rows.length} lignes`;
+ document.querySelector('#t-elus tbody').innerHTML=rows.slice(0,200).map(r=>
+ `<tr data-i="${P.indexOf(r)}"><td><input type="checkbox" class="cmp" data-i="${P.indexOf(r)}" ${CMP.has(P.indexOf(r))?'checked':''}></td><td>${r.name}</td><td>${r.role.slice(0,28)}</td><td><span class="dot" style="background:${gcol(r.party)}"></span><span class="lnk" data-g="${r.party.replace(/"/g,'')}">${r.party.slice(0,26)}</span></td><td>${fmt(r.salary)}</td><td>${fmt(r.netWorth)}</td><td>${r.isMillionnaire?'<span class="badge">oui</span>':'non'}</td></tr>`).join('')
+ +(rows.length>200?`<tr><td colspan="7"><small>… ${rows.length-200} autres — télécharge le CSV.</small></td></tr>`:'');
+ document.querySelectorAll('#t-elus tbody tr[data-i]').forEach(tr=>tr.onclick=e=>{
+  if(e.target.matches('input.cmp'))return;
+  if(e.target.matches('.lnk')){ficheG(e.target.dataset.g);return;}
+  ficheE(P[+tr.dataset.i]);});
+ document.querySelectorAll('#t-elus input.cmp').forEach(c=>c.onclick=e=>{
+  e.stopPropagation();const i=+c.dataset.i;
+  if(c.checked&&CMP.size>=6){c.checked=false;showTip(e,'Maximum 6 élus');setTimeout(hideTip,1200);return;}
+  c.checked?CMP.add(i):CMP.delete(i);document.getElementById('cmp-n').textContent=CMP.size;});
+ histo(rows);topnw(rows);scElus(rows);
+}
+document.getElementById('cmp-btn').onclick=()=>{
+ if(!CMP.size)return;
+ const sel=[...CMP].map(i=>P[i]),m=['Indemnité/an','Patrimoine net','Participations','> 1M€','Fiche'];
+ openDrawer(`<h2 style="margin-top:0">Comparaison (${sel.length})</h2>
+ <div style="overflow:auto"><table class="cmp-table"><thead><tr><th></th>${sel.map(h=>`<th>${h.name}</th>`).join('')}</tr></thead><tbody>
+ <tr><td>Fonction</td>${sel.map(h=>`<td>${h.role}</td>`).join('')}</tr>
+ <tr><td>Parti</td>${sel.map(h=>`<td>${h.party}</td>`).join('')}</tr>
+ <tr><td>Indemnité/an</td>${sel.map(h=>`<td>${fmt(h.salary)}</td>`).join('')}</tr>
+ <tr><td>Patrimoine net</td>${sel.map(h=>`<td>${fmt(h.netWorth)}</td>`).join('')}</tr>
+ <tr><td>Participations</td>${sel.map(h=>`<td>${fmt(h.part)}</td>`).join('')}</tr>
+ <tr><td>Fiche</td>${sel.map(h=>`<td><a href="${h.lien}" target="_blank" rel="noopener">HATVP</a></td>`).join('')}</tr>
+ </tbody></table></div>`);
+};
+/* fiche groupe : stats + taux de non-déclaration */
+function ficheG(g){
+ const m=P.filter(x=>x.party===g),n=m.length||1;
+ const noR=m.filter(x=>x.salary==null).length,noP=m.filter(x=>x.netWorth==null).length,mio=m.filter(x=>x.isMillionnaire).length;
+ openDrawer(`<h2 style="margin-top:0"><span class="dot" style="background:${gcol(g)}"></span>${g}</h2>
+ <p>${m.length} élus suivis</p>
+ <p>Sans revenus chiffrés : <b>${Math.round(100*noR/n)} %</b><br>Sans patrimoine publié : <b>${Math.round(100*noP/n)} %</b><br>&gt; 1 M€ : <b>${Math.round(100*mio/n)} %</b></p>
+ <p><small>« Sans » = aucune donnée chiffrée en open data HATVP.</small></p>`);
+}
+/* table non-déclaration par groupe (triable) */
+let NK='effectif',ND=-1;
+document.querySelectorAll('#t-nd th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;ND=(NK===k)?-ND:-1;NK=k;renderND();});
+function renderND(){
+ const by={};
+ P.forEach(x=>{(by[x.party]=by[x.party]||{g:x.party,effectif:0,noR:0,noP:0,mio:0});
+  const o=by[x.party];o.effectif++;if(x.salary==null)o.noR++;if(x.netWorth==null)o.noP++;if(x.isMillionnaire)o.mio++;});
+ const rows=Object.values(by).map(o=>({...o,noRev:Math.round(100*o.noR/o.effectif),noPat:Math.round(100*o.noP/o.effectif),mio:Math.round(100*o.mio/o.effectif)}))
+  .sort((a,b)=>(a[NK]>b[NK]?1:-1)*ND);
+ document.querySelector('#t-nd tbody').innerHTML=rows.map(o=>
+ `<tr><td><span class="dot" style="background:${gcol(o.g)}"></span><span class="lnk" data-g="${o.g.replace(/"/g,'')}">${o.g.slice(0,34)}</span></td><td>${o.effectif}</td><td>${o.noRev} %</td><td>${o.noPat} %</td><td>${o.mio} %</td></tr>`).join('');
+ document.querySelectorAll('#t-nd .lnk').forEach(s=>s.onclick=()=>ficheG(s.dataset.g));
+ const gr=P.filter(x=>x.salary==null).length,gp=P.filter(x=>x.netWorth==null).length;
+ document.getElementById('nd-global').textContent=`${Math.round(100*gr/P.length)} % sans revenus (${gr}/${P.length}) · ${Math.round(100*gp/P.length)} % sans patrimoine (${gp}/${P.length})`;
+}
+renderND();
+/* fiche élu dans le panneau latéral */
+const B_IMMO=['immeubleDto','bienEtrangerDto'],B_FIN=['comptesBancaireDto','valeursEnBourseDto','valeursNonEnBourseDto','assuranceVieDto','fondDto'];
+function ficheE(h){
+ const b=h.breakdown||{};let im=0,fi=0,au=0;
+ Object.entries(b).forEach(([k,v])=>{if(B_IMMO.includes(k))im+=v.total_eur;else if(B_FIN.includes(k))fi+=v.total_eur;else au+=v.total_eur;});
+ openDrawer(`<h2 style="margin-top:0">${h.name}</h2>
+ <p><span class="pill">${h.category}</span> ${h.role} · ${h.party}</p>
+ <p>Participations : <b>${fmt(h.part)} €</b><br>Revenus/an (estimés) : <b>${fmt(h.salary)} €</b><br>
+ ${h.netWorth!=null?`Patrimoine net : <b>${fmt(h.netWorth)} €</b> ${h.isMillionnaire?'<span class="badge">&gt; 1 M€</span>':''}<br>
+ <small>Immobilier ${fmt(im)} € · Financier ${fmt(fi)} € · Autres ${fmt(au)} €</small>`: '<small>Patrimoine non chiffré en open data.</small>'}</p>
+ <p><a href="${h.lien}" target="_blank" rel="noopener">Fiche HATVP</a>${h.dsp?` · <a href="${h.dsp}" target="_blank" rel="noopener">PDF patrimoine</a>`:''}</p>`);
+}
+document.getElementById('dl').onclick=()=>{
+ const rows=fElus(),cols=['name','role','category','party','salary','netWorth','part','isMillionnaire','lien'];
+ const csv=[cols.join(';')].concat(rows.map(r=>cols.map(c=>String(r[c]??'').replace(/;/g,',')).join(';')));
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(["\ufeff"+csv.join('\n'),{type:'text/csv'}]));a.download='elus_filtre.csv';a.click();};
+['f-cat','f-role','f-party','f-nw','f-sal','f-mio','f-topn'].forEach(id=>document.getElementById(id).onchange=renderTE);
+renderTE();
+
+/* ================= PARTIS (réel CNCCFP 2024) ================= */
+const FCOL={gauche:'#d73027',centre:'#fdae61',droite:'#4575b4','extrême droite':'#542788',autre:'#999'};
+const inSub=(v,t)=>t===''||(t==='low'&&v<1e6)||(t==='mid'&&v>=1e6&&v<=4e6)||(t==='high'&&v>4e6);
+function fPartis(){const m=+document.getElementById('p-min').value;
+ return PT.filter(p=>(!F('p-fam')||p.family===F('p-fam'))&&inSub(p.subsidies,F('p-sub'))&&p.members>=m);}
+document.getElementById('p-min-v').textContent='0';
+(()=>{const med=PT.map(p=>p.cpm).sort((a,b)=>a-b)[Math.floor(PT.length/2)];
+document.getElementById('k-partis').innerHTML=
+`<div class="kpi"><b>${PT.length}</b><span>partis (CNCCFP 2024)</span></div>
+<div class="kpi"><b>${fmt(PT.reduce((a,p)=>a+p.treasury,0))} €</b><span>disponibilités cumulées</span></div>
+<div class="kpi"><b>${fmt(PT.reduce((a,p)=>a+p.members,0))}</b><span>adhérents revendiqués</span></div>
+<div class="kpi acc"><b>${fmt(med)} €</b><span>capital/adhérent médian</span></div>`;})();
+/* scatter partis : X adhérents/subventions (log), Y trésorerie/cpm, taille = subventions */
+function scatter(){
+ const rows=fPartis(),el=document.getElementById('scatter');el.innerHTML='';
+ const X=F('p-x'),Y=F('p-y'),W=760,H=340,M={l:70,r:20,t:10,b:45};
+ const XLAB={members:'Adhérents (log)',subsidies:'Subventions € (log)'},YLAB={treasury:'Trésorerie €',cpm:'Capital/adhérent €'};
+ const x=d3.scaleLog().domain([d3.min(rows,p=>p[X])/1.2,d3.max(rows,p=>p[X])*1.2]).range([M.l,W-M.r]);
+ const y=d3.scaleLinear().domain([0,d3.max(rows,p=>p[Y])*1.1]).range([H-M.b,M.t]);
+ const r=d3.scaleSqrt().domain([0,d3.max(PT,p=>p.subsidies)]).range([3,22]);
+ const s=d3.select(el).append('svg').attr('viewBox',`0 0 ${W} ${H}`).attr('width','100%');
+ s.append('g').attr('transform',`translate(0,${H-M.b})`).call(d3.axisBottom(x).ticks(5,','));
+ s.append('g').attr('transform',`translate(${M.l},0)`).call(d3.axisLeft(y).ticks(5).tickFormat(d=>d>=1e6?(d/1e6)+'M':d));
+ s.append('text').attr('x',W/2).attr('y',H-5).attr('text-anchor','middle').text(XLAB[X]);
+ s.selectAll('circle').data(rows).join('circle')
+  .attr('cx',p=>x(p[X])).attr('cy',p=>y(p[Y])).attr('r',p=>r(p.subsidies))
+  .attr('fill',p=>FCOL[p.family]||'#999').attr('opacity',.75)
+  .on('mousemove',(e,p)=>showTip(e,`<b>${p.name}</b><br>${fmt(p.members)} adhérents<br>Tréso ${fmt(p.treasury)} € · ${fmt(p.cpm)} €/adhérent`))
+  .on('mouseleave',hideTip).on('click',(e,p)=>ficheP(p));
+ s.selectAll('t2').data(rows).join('text').attr('x',p=>x(p[X])).attr('y',p=>y(p[Y])-r(p.subsidies)-3)
+  .attr('text-anchor','middle').text(p=>p.name.split(' ')[0]);
+}
+/* barres + tableau partis triable */
+let PK='cpm',PD=-1;
+document.querySelectorAll('#t-partis th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;PD=(PK===k)?-PD:-1;PK=k;renderTP();});
+function renderTP(){
+ const rows=fPartis().sort((a,b)=>{const x=a[PK],y=b[PK];if(x==null)return 1;if(y==null)return -1;return (x>y?1:-1)*PD;});
+ const el=document.getElementById('bars-p');el.innerHTML='';
+ const brows=[...rows].sort((a,b)=>b.cpm-a.cpm),W=760,rh=26,H=brows.length*rh+10;
+ const x=d3.scaleLinear().domain([0,d3.max(brows,p=>p.cpm)||1]).range([220,W-90]);
+ const s=d3.select(el).append('svg').attr('viewBox',`0 0 ${W} ${H}`).attr('width','100%');
+ const g=s.selectAll('g').data(brows).join('g').attr('transform',(d,i)=>`translate(0,${i*rh})`);
+ g.append('text').attr('x',210).attr('y',17).attr('text-anchor','end').text(d=>d.name.slice(0,24));
+ g.append('rect').attr('x',220).attr('width',d=>x(d.cpm)-220).attr('height',17).attr('fill',d=>FCOL[d.family]||'#999')
+  .on('mousemove',(e,d)=>showTip(e,`${d.name}<br><b>${fmt(d.cpm)} €/adhérent</b>`)).on('mouseleave',hideTip)
+  .on('click',(e,d)=>ficheP(d));
+ g.append('text').attr('x',d=>x(d.cpm)+6).attr('y',14).attr('fill','#677').text(d=>fmt(d.cpm)+' €');
+ document.querySelector('#t-partis tbody').innerHTML=rows.map(p=>
+ `<tr data-n="${p.name}"><td>${p.name}</td><td>${fmt(p.subsidies)}</td><td>${fmt(p.donations)}</td><td>${fmt(p.membershipFees)}</td><td>${fmt(p.treasury)}</td><td>${fmt(p.members)}</td><td><b>${fmt(p.cpm)}</b></td></tr>`).join('');
+ document.querySelectorAll('#t-partis tbody tr').forEach(tr=>tr.onclick=()=>ficheP(PT.find(p=>p.name===tr.dataset.n)));
+}
+function ficheP(p){
+ openDrawer(`<h2 style="margin-top:0">${p.name}</h2>
+ <p>Famille ${p.family} · ${fmt(p.members)} adhérents <small>(revendiqués)</small></p>
+ <p>Subventions <b>${fmt(p.subsidies)} €</b><br>Dons ${fmt(p.donations)} € · Cotisations ${fmt(p.membershipFees)} €<br>
+ Disponibilités <b>${fmt(p.treasury)} €</b> → <b>${fmt(p.cpm)} €/adhérent</b></p>
+ <p><small>CNCCFP exercice 2024.</small></p>`);
+}
+['p-fam','p-sub','p-min','p-y','p-x'].forEach(id=>document.getElementById(id).oninput=()=>{document.getElementById('p-min-v').textContent=(+document.getElementById('p-min').value).toLocaleString('fr-FR');scatter();renderTP();});
+scatter();renderTP();
+
+/* ================= BUDGET DE L'ÉTAT (PLF 2024) ================= */
+(()=>{
+const B=DATA.budget;if(!B)return;
+const tot=B.missions.reduce((a,m)=>a+m.cp,0);
+const pp=B.detail.filter(d=>d.mission==='Pouvoirs publics').reduce((a,d)=>a+d.cp_plf,0);
+document.getElementById('k-budget').innerHTML=
+`<div class="kpi"><b>${(tot/1e9).toFixed(1)} Md€</b><span>total CP 46 missions</span></div>
+<div class="kpi"><b>${fmt(pp)} €</b><span>mission Pouvoirs publics</span></div>
+<div class="kpi acc"><b>${fmt(B.liaison[0].budget)} €</b><span>financement partis voté (A01)</span></div>
+<div class="kpi"><b>${fmt(B.liaison[0].constate)} €</b><span>aide versée (CNCCFP)</span></div>`;
+/* top missions */
+const top=[...B.missions].sort((a,b)=>b.cp-a.cp).slice(0,15),W=760,rh=26,H=top.length*rh+10;
+const x=d3.scaleLinear().domain([0,top[0].cp]).range([260,W-90]);
+const s=d3.select('#bars-missions').append('svg').attr('viewBox',`0 0 ${W} ${H}`).attr('width','100%');
+const g=s.selectAll('g').data(top).join('g').attr('transform',(d,i)=>`translate(0,${i*rh})`);
+g.append('text').attr('x',250).attr('y',17).attr('text-anchor','end').text(d=>d.m.slice(0,32));
+g.append('rect').attr('x',260).attr('width',d=>x(d.cp)-260).attr('height',17)
+ .attr('fill',d=>d.m==='Pouvoirs publics'?'#c0392b':'#2c3e50')
+ .on('mousemove',(e,d)=>showTip(e,`${d.m}<br><b>${(d.cp/1e9).toFixed(2)} Md€</b>`)).on('mouseleave',hideTip);
+g.append('text').attr('x',d=>x(d.cp)+6).attr('y',14).attr('fill','#677').text(d=>(d.cp/1e9).toFixed(1)+' Md€');
+/* détail PP + P232 */
+const det=[...B.detail].sort((a,b)=>b.cp_plf-a.cp_plf),H2=det.length*52+16;
+const x2=d3.scaleLinear().domain([0,det[0].cp_plf]).range([260,W-110]);
+const s2=d3.select('#bars-pp').append('svg').attr('viewBox',`0 0 ${W} ${H2}`).attr('width','100%');
+const g2=s2.selectAll('g').data(det).join('g').attr('transform',(d,i)=>`translate(0,${8+i*52})`);
+g2.append('text').attr('x',250).attr('y',22).attr('text-anchor','end').text(d=>(d.libelle_action||d.libelle_programme).slice(0,32));
+g2.append('rect').attr('x',260).attr('width',d=>x2(d.cp_plf)-260).attr('height',26)
+ .attr('fill',d=>/partis/i.test(d.libelle_action||'')?'#c0392b':'#2c3e50')
+ .on('mousemove',(e,d)=>showTip(e,`${d.libelle_action||d.libelle_programme}<br><b>${fmt(d.cp_plf)} €</b>`)).on('mouseleave',hideTip);
+g2.append('text').attr('x',d=>x2(d.cp_plf)+6).attr('y',21).attr('fill','#677').text(d=>(d.cp_plf/1e6).toFixed(1)+' M€');
+/* liaison */
+document.querySelector('#t-liaison tbody').innerHTML=B.liaison.map(l=>
+`<tr><td>${l.poste}</td><td>${fmt(l.budget)}</td><td>${l.constate==null?'—':fmt(l.constate)}</td><td><small>${l.note}</small></td></tr>`).join('');
+})();
+
+/* ================= FAITS MARQUANTS ================= */
+(()=>{
+ const kn=P.filter(x=>x.netWorth!=null),mio=kn.filter(x=>x.isMillionnaire).length;
+ const med=PT.map(p=>p.cpm).sort((a,b)=>a-b)[Math.floor(PT.length/2)];
+ const top=[...PT].sort((a,b)=>b.cpm-a.cpm).slice(0,3);
+ document.getElementById('k-faits').innerHTML=
+ `<div class="kpi acc"><b>${kn.length?Math.round(100*mio/kn.length):0} %</b><span>des élus au patrimoine publié ont &gt; 1 M€ (${mio}/${kn.length})</span></div>
+ <div class="kpi acc"><b>${(top[0].cpm/med).toFixed(1)}×</b><span>${top[0].name} vs capital/adhérent médian (CNCCFP 2024)</span></div>`;
+ document.getElementById('top3').innerHTML=top.map((p,i)=>`<div class="kpi"><b>#${i+1} ${p.name}</b><span>${fmt(p.cpm)} €/adhérent · ${fmt(p.members)} adhérents</span></div>`).join('');
+})();
+</script>
+</body>
+</html>

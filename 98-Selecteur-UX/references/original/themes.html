@@ -1,0 +1,1360 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nyx UX Skeleton</title>
+    <style>:root {
+  --ink-0: #07080b;
+  --ink-1: #101116;
+  --ink-2: #171923;
+  --ink-3: #20232e;
+  --ink-4: #303543;
+  --bone-0: #f3f5f7;
+  --bone-1: #c1c5cb;
+  --bone-2: #8d939c;
+  --bone-3: #59606b;
+  --accent: #48c7c2;
+  --accent-soft: rgba(72, 199, 194, 0.14);
+  --danger: #ff5a52;
+  --warning: #f5a524;
+  --info: #60a5fa;
+  --radius: 8px;
+  --toolbar-h: 42px;
+  --tabbar-h: 34px;
+  --sidebar-w: 260px;
+  --panel-pad: 14px;
+  --row-min-h: 31px;
+  --pane-pad: 14px 16px;
+  --pane-gap: 8px;
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: var(--ink-0);
+  color: var(--bone-0);
+  font-family: var(--font-ui);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+.app-shell {
+  width: 100%;
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: var(--toolbar-h) var(--tabbar-h) 1fr;
+  overflow: hidden;
+  background: var(--ink-0);
+}
+
+.app-shell[data-density="0"] {
+  --toolbar-h: 48px;
+  --tabbar-h: 38px;
+  --panel-pad: 18px;
+  --row-min-h: 36px;
+  --pane-pad: 18px 20px;
+  --pane-gap: 11px;
+}
+
+.app-shell[data-density="2"] {
+  --toolbar-h: 38px;
+  --tabbar-h: 30px;
+  --panel-pad: 10px;
+  --row-min-h: 27px;
+  --pane-pad: 10px 12px;
+  --pane-gap: 5px;
+}
+
+.titlebar {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  background: var(--ink-1);
+  border-bottom: 1px solid var(--ink-4);
+}
+
+.window-controls {
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.control {
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+}
+
+.control.close { background: #ff5f57; }
+.control.minimize { background: #febc2e; }
+.control.zoom { background: #28c840; }
+
+.icon-button,
+.tool-button,
+.pane-action,
+.pane-collapse,
+.tab,
+.nav-row,
+.section-title,
+.blade-row {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.icon-button,
+.pane-action,
+.pane-collapse {
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--bone-2);
+}
+
+.icon-button:hover,
+.pane-action:hover,
+.pane-collapse:hover {
+  background: var(--ink-3);
+  color: var(--bone-0);
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 155px;
+}
+
+.brand strong {
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.brand span {
+  color: var(--bone-2);
+  font-size: 12px;
+}
+
+.toolbar-group {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--ink-4);
+  border-radius: var(--radius);
+  background: var(--ink-2);
+}
+
+.tool-button {
+  min-width: 64px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--bone-1);
+  font-size: 12px;
+}
+
+.tool-button:hover {
+  background: var(--ink-3);
+}
+
+.search-box {
+  margin-left: auto;
+  width: min(260px, 28vw);
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1px solid var(--ink-4);
+  border-radius: var(--radius);
+  background: var(--ink-2);
+  color: var(--bone-3);
+}
+
+.search-box input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--bone-0);
+}
+
+.runtime-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid var(--ink-4);
+  border-radius: var(--radius);
+  color: var(--bone-1);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 14px var(--accent);
+}
+
+.tabbar {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 0 10px;
+  background: var(--ink-1);
+  border-bottom: 1px solid var(--ink-4);
+  overflow-x: auto;
+}
+
+.tab {
+  height: 25px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding: 0 12px;
+  border-radius: 6px;
+  color: var(--bone-2);
+  font-size: 12px;
+}
+
+.tab.active {
+  background: var(--ink-3);
+  color: var(--bone-0);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.workspace {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr) 300px;
+  background: var(--ink-4);
+}
+
+.workspace.sidebar-closed {
+  grid-template-columns: 0 minmax(0, 1fr) 300px;
+}
+
+.workspace.theme-closed {
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr) 42px;
+}
+
+.workspace.sidebar-closed.theme-closed {
+  grid-template-columns: 0 minmax(0, 1fr) 42px;
+}
+
+.sidebar {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: auto;
+  padding: var(--panel-pad) 10px;
+  background: var(--ink-1);
+  border-right: 1px solid var(--ink-4);
+}
+
+.workspace.sidebar-closed .sidebar {
+  padding-inline: 0;
+  border-right: 0;
+}
+
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.section-title {
+  width: 100%;
+  padding: 0 8px 5px;
+  color: var(--bone-3);
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 10.5px;
+}
+
+.section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.section-body.is-collapsed {
+  display: none;
+}
+
+.nav-row,
+.blade-row {
+  width: 100%;
+  min-height: 31px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--row-min-h);
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  color: var(--bone-1);
+  text-align: left;
+  font-size: 12.5px;
+}
+
+.nav-row:hover,
+.blade-row:hover {
+  background: var(--ink-2);
+}
+
+.nav-row.active,
+.blade-row.active {
+  background: var(--ink-3);
+  color: var(--bone-0);
+}
+
+.row-meta {
+  color: var(--bone-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.note-folder {
+  padding: 5px 8px;
+  color: var(--bone-1);
+  font-size: 12px;
+}
+
+.note-file {
+  padding: 4px 8px 4px 22px;
+  color: var(--bone-2);
+  font-size: 12px;
+}
+
+.guardrails {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--ink-4);
+}
+
+.guardrail {
+  padding: 7px 8px;
+  border: 1px solid var(--ink-4);
+  border-radius: var(--radius);
+  color: var(--bone-1);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.guardrail.danger {
+  border-color: rgba(255, 90, 82, 0.34);
+}
+
+.guardrail.warning {
+  border-color: rgba(245, 165, 36, 0.34);
+}
+
+.theme-panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: auto;
+  padding: var(--panel-pad);
+  background: var(--ink-1);
+  border-left: 1px solid var(--ink-4);
+}
+
+.workspace.theme-closed .theme-panel {
+  padding: 8px 7px;
+}
+
+.workspace.theme-closed .preset-row,
+.workspace.theme-closed .theme-form,
+.workspace.theme-closed .theme-actions,
+.workspace.theme-closed .css-output,
+.workspace.theme-closed .theme-head span {
+  display: none;
+}
+
+.theme-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.theme-head div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.theme-head strong {
+  font-size: 13px;
+}
+
+.theme-head span {
+  color: var(--bone-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.preset-row,
+.theme-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.preset {
+  min-width: 0;
+  min-height: 28px;
+  border: 1px solid var(--ink-4);
+  border-radius: var(--radius);
+  background: var(--ink-2);
+  color: var(--bone-1);
+  cursor: pointer;
+  font-size: 11.5px;
+}
+
+.preset.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--bone-0);
+}
+
+.theme-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.theme-field {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  color: var(--bone-2);
+  font-size: 12px;
+}
+
+.theme-field input[type="color"] {
+  width: 100%;
+  height: 30px;
+  border: 1px solid var(--ink-4);
+  border-radius: var(--radius);
+  background: var(--ink-2);
+}
+
+.theme-field input[type="range"] {
+  accent-color: var(--accent);
+}
+
+.css-output {
+  min-height: 180px;
+  resize: vertical;
+  border: 1px solid var(--ink-4);
+  border-radius: var(--radius);
+  outline: 0;
+  padding: 10px;
+  background: var(--ink-2);
+  color: var(--bone-1);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.css-output:focus {
+  border-color: var(--accent);
+}
+
+.pane-stage {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--pane-count, 3), minmax(220px, 1fr));
+  gap: 4px;
+  overflow: auto;
+  background: var(--ink-4);
+}
+
+.pane-stage.is-zoomed {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.pane {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--ink-1);
+  outline: 1px solid transparent;
+}
+
+.pane:focus-within,
+.pane.is-focused {
+  outline-color: var(--accent);
+}
+
+.pane.is-collapsed .pane-content {
+  display: none;
+}
+
+.pane.is-collapsed {
+  min-height: 36px;
+}
+
+.pane-header {
+  height: 36px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 9px;
+  border-bottom: 1px solid var(--ink-4);
+  cursor: grab;
+}
+
+.pane-mode {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--danger);
+}
+
+.pane-mode.fixture {
+  background: var(--accent);
+}
+
+.pane-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.pane-source {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--bone-3);
+  font-size: 11px;
+}
+
+.pane-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pane-gap);
+  overflow: auto;
+  padding: var(--pane-pad);
+}
+
+.item {
+  min-height: 28px;
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 9px;
+  color: var(--bone-1);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.item-dot {
+  width: 6px;
+  height: 6px;
+  margin-top: 7px;
+  border-radius: 999px;
+  background: var(--bone-3);
+}
+
+.item[data-tone="danger"] .item-dot { background: var(--danger); }
+.item[data-tone="warning"] .item-dot { background: var(--warning); }
+.item[data-tone="info"] .item-dot { background: var(--info); }
+.item[data-tone="accent"] .item-dot { background: var(--accent); }
+
+.item-meta {
+  color: var(--bone-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.empty-state {
+  height: 100%;
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  color: var(--bone-3);
+  font-size: 13px;
+}
+
+@media (max-width: 840px) {
+  .titlebar {
+    gap: 7px;
+  }
+
+  .brand span,
+  .toolbar-group,
+  .runtime-badge {
+    display: none;
+  }
+
+  .search-box {
+    width: min(190px, 40vw);
+  }
+
+  .workspace,
+  .workspace.sidebar-closed,
+  .workspace.theme-closed,
+  .workspace.sidebar-closed.theme-closed {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) 285px;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .theme-panel {
+    display: flex;
+    min-height: 0;
+    border-left: 0;
+    border-top: 1px solid var(--ink-4);
+  }
+
+  .workspace.theme-closed {
+    grid-template-rows: minmax(0, 1fr) 42px;
+  }
+
+  .workspace.theme-closed .theme-panel {
+    display: flex;
+  }
+
+  .theme-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .css-output {
+    min-height: 72px;
+  }
+
+  .pane-stage {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+  </head>
+  <body>
+    <div class="app-shell" data-density="compact">
+      <header class="titlebar">
+        
+        <button class="icon-button" id="sidebarToggle" title="Plier la colonne" aria-label="Plier la colonne">☰</button>
+        <div class="brand">
+          <strong>Nyx</strong>
+          <span>Dashboard skeleton</span>
+        </div>
+        <div class="toolbar-group">
+          <button class="tool-button" id="splitVertical">Split V</button>
+          <button class="tool-button" id="splitHorizontal">Split H</button>
+        </div>
+        <label class="search-box">
+          <span>⌕</span>
+          <input id="searchInput" type="search" placeholder="Rechercher">
+        </label>
+        <div class="runtime-badge">
+          <span class="status-dot"></span>
+          <span>v0.1.0 · fixture-only</span>
+        </div>
+      </header>
+
+      <nav class="tabbar" id="tabbar" aria-label="Onglets"></nav>
+
+      <main class="workspace">
+        <aside class="sidebar" id="sidebar">
+          <section class="sidebar-section">
+            <button class="section-title" data-toggle="cockpit">Cockpit</button>
+            <div class="section-body" id="section-cockpit">
+              <button class="nav-row active" data-tab="today">Aujourd'hui</button>
+              <button class="nav-row" data-tab="queue">Queue</button>
+              <button class="nav-row" data-tab="agenda">Agenda</button>
+              <button class="nav-row" data-tab="notecortex">NoteCortex</button>
+            </div>
+          </section>
+
+          <section class="sidebar-section">
+            <button class="section-title" data-toggle="blades">Blades</button>
+            <div class="section-body blade-list" id="section-blades"></div>
+          </section>
+
+          <section class="sidebar-section">
+            <button class="section-title" data-toggle="notes">Notes fixture</button>
+            <div class="section-body" id="section-notes"></div>
+          </section>
+
+          <section class="sidebar-section guardrails">
+            <div class="guardrail danger">No NotePlan writes</div>
+            <div class="guardrail warning">No KM writes</div>
+          </section>
+        </aside>
+
+        <section class="pane-stage" id="paneStage" aria-live="polite"></section>
+
+        <aside class="theme-panel" id="themePanel">
+          <div class="theme-head">
+            <div>
+              <strong>Theme Editor</strong>
+              <span>CSS live</span>
+            </div>
+            <button class="icon-button" id="themeToggle" title="Masquer l'éditeur" aria-label="Masquer l'éditeur">›</button>
+          </div>
+
+          <div class="preset-row" aria-label="Presets">
+            <button class="preset active" data-preset="nyx">Nyx</button>
+            <button class="preset" data-preset="graphite">Graphite</button>
+            <button class="preset" data-preset="daylight">Daylight</button>
+          </div>
+
+          <form class="theme-form" id="themeForm">
+            <label class="theme-field">
+              <span>Accent</span>
+              <input type="color" data-token="--accent" value="#48c7c2">
+            </label>
+            <label class="theme-field">
+              <span>Fond</span>
+              <input type="color" data-token="--ink-0" value="#07080b">
+            </label>
+            <label class="theme-field">
+              <span>Surface</span>
+              <input type="color" data-token="--ink-1" value="#101116">
+            </label>
+            <label class="theme-field">
+              <span>Texte</span>
+              <input type="color" data-token="--bone-0" value="#f3f5f7">
+            </label>
+            <label class="theme-field">
+              <span>Radius</span>
+              <input type="range" data-token="--radius" data-unit="px" min="0" max="18" value="8">
+            </label>
+            <label class="theme-field">
+              <span>Sidebar</span>
+              <input type="range" data-token="--sidebar-w" data-unit="px" min="210" max="340" value="260">
+            </label>
+            <label class="theme-field">
+              <span>Densité</span>
+              <input type="range" data-density min="0" max="2" value="1">
+            </label>
+          </form>
+
+          <div class="theme-actions">
+            <button class="tool-button" id="copyCss">Copier CSS</button>
+            <button class="tool-button" id="downloadCss">Exporter</button>
+            <button class="tool-button" id="resetTheme">Reset</button>
+          </div>
+
+          <textarea class="css-output" id="cssOutput" spellcheck="false" aria-label="CSS exporté"></textarea>
+        </aside>
+      </main>
+    </div>
+
+    <template id="paneTemplate">
+      <article class="pane" draggable="true">
+        <header class="pane-header">
+          <button class="pane-collapse" title="Replier">⌄</button>
+          <span class="pane-mode"></span>
+          <strong class="pane-title"></strong>
+          <span class="pane-source"></span>
+          <button class="pane-action pane-zoom" title="Zoom">□</button>
+          <button class="pane-action pane-close" title="Fermer">×</button>
+        </header>
+        <div class="pane-content"></div>
+      </article>
+    </template>
+
+    <script>const state = {
+  fixtures: null,
+  activeTab: "today",
+  focusedPane: null,
+  zoomedPane: null,
+  closedPanes: new Set(),
+  collapsedPanes: new Set(),
+  sidebarOpen: true,
+  themeOpen: true,
+  theme: {},
+  dragPaneId: null
+};
+
+const els = {
+  workspace: document.querySelector(".workspace"),
+  sidebar: document.querySelector("#sidebar"),
+  tabbar: document.querySelector("#tabbar"),
+  paneStage: document.querySelector("#paneStage"),
+  paneTemplate: document.querySelector("#paneTemplate"),
+  bladeList: document.querySelector("#section-blades"),
+  notes: document.querySelector("#section-notes"),
+  search: document.querySelector("#searchInput"),
+  themeForm: document.querySelector("#themeForm"),
+  cssOutput: document.querySelector("#cssOutput")
+};
+
+const defaultTheme = {
+  "--accent": "#48c7c2",
+  "--accent-soft": "rgba(72, 199, 194, 0.14)",
+  "--ink-0": "#07080b",
+  "--ink-1": "#101116",
+  "--ink-2": "#171923",
+  "--ink-3": "#20232e",
+  "--ink-4": "#303543",
+  "--bone-0": "#f3f5f7",
+  "--bone-1": "#c1c5cb",
+  "--bone-2": "#8d939c",
+  "--bone-3": "#59606b",
+  "--danger": "#ff5a52",
+  "--warning": "#f5a524",
+  "--info": "#60a5fa",
+  "--radius": "8px",
+  "--sidebar-w": "260px",
+  density: "1"
+};
+
+const presets = {
+  nyx: defaultTheme,
+  graphite: {
+    "--accent": "#7dd3fc",
+    "--accent-soft": "rgba(125, 211, 252, 0.14)",
+    "--ink-0": "#0a0a0a",
+    "--ink-1": "#151515",
+    "--ink-2": "#1d1d1d",
+    "--ink-3": "#282828",
+    "--ink-4": "#3a3a3a",
+    "--bone-0": "#f4f4f5",
+    "--bone-1": "#c8c8cc",
+    "--bone-2": "#92929a",
+    "--bone-3": "#64646b",
+    "--danger": "#fb7185",
+    "--warning": "#fbbf24",
+    "--info": "#7dd3fc",
+    "--radius": "4px",
+    "--sidebar-w": "280px",
+    density: "2"
+  },
+  daylight: {
+    "--accent": "#2563eb",
+    "--accent-soft": "rgba(37, 99, 235, 0.11)",
+    "--ink-0": "#e9edf2",
+    "--ink-1": "#f8fafc",
+    "--ink-2": "#eef2f7",
+    "--ink-3": "#dce3ed",
+    "--ink-4": "#c7d0dd",
+    "--bone-0": "#111827",
+    "--bone-1": "#334155",
+    "--bone-2": "#64748b",
+    "--bone-3": "#94a3b8",
+    "--danger": "#dc2626",
+    "--warning": "#d97706",
+    "--info": "#2563eb",
+    "--radius": "10px",
+    "--sidebar-w": "250px",
+    density: "1"
+  }
+};
+
+async function boot() {
+  const response = {json: async () => ({
+  "tabs": [
+    {
+      "id": "today",
+      "label": "Aujourd'hui",
+      "panes": ["queue", "journal", "captures"]
+    },
+    {
+      "id": "queue",
+      "label": "Queue",
+      "panes": ["queue"]
+    },
+    {
+      "id": "agenda",
+      "label": "Agenda",
+      "panes": ["agenda"]
+    },
+    {
+      "id": "notecortex",
+      "label": "NoteCortex",
+      "panes": ["notecortex"]
+    },
+    {
+      "id": "multi-llm",
+      "label": "Multi-LLM",
+      "panes": ["multi-llm"]
+    },
+    {
+      "id": "notedroppy",
+      "label": "NoteDroppy",
+      "panes": ["notedroppy"]
+    }
+  ],
+  "blades": [
+    { "id": "queue", "label": "Queue", "kind": "Alert", "count": "3" },
+    { "id": "agenda", "label": "Agenda", "kind": "Calendar", "count": "" },
+    { "id": "km", "label": "KM Raindrop", "kind": "Source", "count": "48" },
+    { "id": "graph", "label": "Search / Graph", "kind": "Index", "count": "" },
+    { "id": "inventory", "label": "App Inventory", "kind": "Audit", "count": "" },
+    { "id": "notecortex", "label": "NoteCortex", "kind": "Action", "count": "" },
+    { "id": "multi-llm", "label": "Multi-LLM", "kind": "LLM", "count": "" },
+    { "id": "notedroppy", "label": "NoteDroppy", "kind": "Capture", "count": "" }
+  ],
+  "notes": [
+    { "name": "01-projets", "files": [] },
+    { "name": "_KM", "files": ["Base Lien.md", "Raindrop Full Ingest.md"] },
+    { "name": "_Dash", "files": [] },
+    { "name": "02-apps", "files": [] },
+    { "name": "_Tools", "files": [] }
+  ],
+  "panes": {
+    "queue": {
+      "title": "Backlog urgences",
+      "source": "Queue",
+      "mode": "read-only",
+      "items": [
+        { "tone": "danger", "text": "Sync KM Raindrop cassé depuis migration", "meta": "2h" },
+        { "tone": "warning", "text": "Doublon dashboard / blade Agenda", "meta": "6h" },
+        { "tone": "muted", "text": "Auditer icônes Smart Sorter", "meta": "1j" }
+      ]
+    },
+    "journal": {
+      "title": "Journal - unification",
+      "source": "NotePlan fixture",
+      "mode": "fixture",
+      "items": [
+        { "tone": "neutral", "text": "Rail gauche pliable. Panes déplacables par drag du header.", "meta": "" },
+        { "tone": "neutral", "text": "Chaque pane se replie en un bandeau via le chevron.", "meta": "" },
+        { "tone": "neutral", "text": "Onglets et modules réordonnables par glisser-déposer.", "meta": "" }
+      ]
+    },
+    "captures": {
+      "title": "Captures",
+      "source": "Raindrop fixture",
+      "mode": "fixture",
+      "items": [
+        { "tone": "info", "text": "devonthink.com/inbox-triage", "meta": "08:41" },
+        { "tone": "accent", "text": "note - règles de tags Nyx v0", "meta": "08:12" },
+        { "tone": "info", "text": "capture - sidebar NotePlan", "meta": "07:58" }
+      ]
+    },
+    "agenda": {
+      "title": "Agenda du jour",
+      "source": "Smart Sorter fixture",
+      "mode": "fixture",
+      "items": [
+        { "tone": "neutral", "text": "09:00 - Point équipe", "meta": "30m" },
+        { "tone": "neutral", "text": "11:00 - Revue des blades Nyx", "meta": "1h" },
+        { "tone": "neutral", "text": "14:00 - Bloc deep work KM Raindrop", "meta": "2h" }
+      ]
+    },
+    "notecortex": {
+      "title": "Cartouche - Actions",
+      "source": "NoteCortex fixture",
+      "mode": "fixture",
+      "items": [
+        { "tone": "info", "text": "Capturer", "meta": "" },
+        { "tone": "info", "text": "Envoyer à LLM", "meta": "" },
+        { "tone": "info", "text": "Résumer", "meta": "" },
+        { "tone": "info", "text": "Créer tâche", "meta": "" },
+        { "tone": "muted", "text": "Prompt Manager - 48 prompts", "meta": "" }
+      ]
+    },
+    "multi-llm": {
+      "title": "Sélecteur LLM",
+      "source": "Multi-LLM fixture",
+      "mode": "fixture",
+      "items": [
+        { "tone": "accent", "text": "Claude", "meta": "actif" },
+        { "tone": "muted", "text": "ChatGPT", "meta": "" },
+        { "tone": "muted", "text": "Perplexity", "meta": "" },
+        { "tone": "neutral", "text": "Bascule le modèle utilisé par les blades Capturer / Résumer.", "meta": "" }
+      ]
+    },
+    "notedroppy": {
+      "title": "NoteDroppy - Préférences",
+      "source": "NoteDroppy fixture",
+      "mode": "fixture",
+      "items": [
+        { "tone": "neutral", "text": "Capture - service macOS vers NotePlan (#capture, section cible).", "meta": "" },
+        { "tone": "neutral", "text": "Raccourcis - app générée qui ouvre une note choisie.", "meta": "" },
+        { "tone": "neutral", "text": "Commander - palette de commandes globales.", "meta": "" },
+        { "tone": "warning", "text": "Déposer une note .md ou un lien noteplan:// ici", "meta": "" }
+      ]
+    }
+  }
+}
+)};
+  state.fixtures = await response.json();
+  state.theme = loadTheme();
+  applyTheme();
+  render();
+  bindChrome();
+}
+
+function bindChrome() {
+  document.querySelector("#sidebarToggle").addEventListener("click", () => {
+    state.sidebarOpen = !state.sidebarOpen;
+    renderWorkspaceShell();
+  });
+
+  document.querySelector("#splitVertical").addEventListener("click", () => addScratchPane("vertical"));
+  document.querySelector("#splitHorizontal").addEventListener("click", () => addScratchPane("horizontal"));
+  document.querySelector("#themeToggle").addEventListener("click", () => {
+    state.themeOpen = !state.themeOpen;
+    renderWorkspaceShell();
+  });
+  document.querySelector("#copyCss").addEventListener("click", copyCss);
+  document.querySelector("#downloadCss").addEventListener("click", downloadCss);
+  document.querySelector("#resetTheme").addEventListener("click", resetTheme);
+
+  document.querySelectorAll(".section-title").forEach((button) => {
+    button.addEventListener("click", () => {
+      const body = document.querySelector(`#section-${button.dataset.toggle}`);
+      body.classList.toggle("is-collapsed");
+    });
+  });
+
+  document.querySelectorAll("[data-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.activeTab = button.dataset.tab;
+      state.zoomedPane = null;
+      render();
+    });
+  });
+
+  els.search.addEventListener("input", () => renderPanes());
+  els.themeForm.addEventListener("input", onThemeInput);
+  document.querySelectorAll(".preset").forEach((button) => {
+    button.addEventListener("click", () => applyPreset(button.dataset.preset));
+  });
+}
+
+function render() {
+  renderWorkspaceShell();
+  renderTabs();
+  renderBlades();
+  renderNotes();
+  renderPanes();
+}
+
+function renderWorkspaceShell() {
+  els.workspace.classList.toggle("sidebar-closed", !state.sidebarOpen);
+  els.workspace.classList.toggle("theme-closed", !state.themeOpen);
+  document.querySelector("#themeToggle").textContent = state.themeOpen ? "›" : "‹";
+}
+
+function renderTabs() {
+  els.tabbar.replaceChildren();
+  state.fixtures.tabs.forEach((tab) => {
+    const button = document.createElement("button");
+    button.className = `tab${tab.id === state.activeTab ? " active" : ""}`;
+    button.textContent = tab.label;
+    button.draggable = true;
+    button.addEventListener("click", () => {
+      state.activeTab = tab.id;
+      state.zoomedPane = null;
+      render();
+    });
+    button.addEventListener("dragstart", (event) => {
+      event.dataTransfer.setData("text/plain", tab.id);
+    });
+    button.addEventListener("dragover", (event) => event.preventDefault());
+    button.addEventListener("drop", (event) => {
+      event.preventDefault();
+      reorderById(state.fixtures.tabs, event.dataTransfer.getData("text/plain"), tab.id);
+      renderTabs();
+    });
+    els.tabbar.append(button);
+  });
+}
+
+function renderBlades() {
+  els.bladeList.replaceChildren();
+  state.fixtures.blades.forEach((blade) => {
+    const row = document.createElement("button");
+    row.className = `blade-row${blade.id === state.activeTab ? " active" : ""}`;
+    row.draggable = true;
+    row.innerHTML = `<span>${blade.label}</span><span class="row-meta">${blade.count || blade.kind}</span>`;
+    row.addEventListener("click", () => {
+      const tab = state.fixtures.tabs.find((item) => item.id === blade.id);
+      state.activeTab = tab ? tab.id : "today";
+      state.zoomedPane = null;
+      render();
+    });
+    row.addEventListener("dragstart", (event) => event.dataTransfer.setData("text/plain", blade.id));
+    row.addEventListener("dragover", (event) => event.preventDefault());
+    row.addEventListener("drop", (event) => {
+      event.preventDefault();
+      reorderById(state.fixtures.blades, event.dataTransfer.getData("text/plain"), blade.id);
+      renderBlades();
+    });
+    els.bladeList.append(row);
+  });
+}
+
+function renderNotes() {
+  els.notes.replaceChildren();
+  state.fixtures.notes.forEach((folder) => {
+    const folderEl = document.createElement("div");
+    folderEl.className = "note-folder";
+    folderEl.textContent = folder.name;
+    els.notes.append(folderEl);
+    folder.files.forEach((file) => {
+      const fileEl = document.createElement("div");
+      fileEl.className = "note-file";
+      fileEl.textContent = file;
+      els.notes.append(fileEl);
+    });
+  });
+}
+
+function renderPanes() {
+  const active = state.fixtures.tabs.find((tab) => tab.id === state.activeTab) || state.fixtures.tabs[0];
+  const query = els.search.value.trim().toLowerCase();
+  const paneIds = active.panes.filter((id) => !state.closedPanes.has(`${active.id}:${id}`));
+  const visibleIds = state.zoomedPane ? paneIds.filter((id) => id === state.zoomedPane) : paneIds;
+
+  els.paneStage.replaceChildren();
+  els.paneStage.classList.toggle("is-zoomed", Boolean(state.zoomedPane));
+  els.paneStage.style.setProperty("--pane-count", String(Math.max(1, visibleIds.length)));
+
+  if (!visibleIds.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = "Aucun pane actif.";
+    els.paneStage.append(empty);
+    return;
+  }
+
+  visibleIds.forEach((paneId) => {
+    const pane = state.fixtures.panes[paneId] || makeScratchPane(paneId);
+    const node = els.paneTemplate.content.firstElementChild.cloneNode(true);
+    const key = `${active.id}:${paneId}`;
+    node.dataset.paneId = paneId;
+    node.classList.toggle("is-focused", state.focusedPane === paneId);
+    node.classList.toggle("is-collapsed", state.collapsedPanes.has(key));
+    node.querySelector(".pane-title").textContent = pane.title;
+    node.querySelector(".pane-source").textContent = pane.source;
+    const mode = node.querySelector(".pane-mode");
+    mode.classList.toggle("fixture", pane.mode === "fixture");
+    mode.title = pane.mode;
+
+    const content = node.querySelector(".pane-content");
+    pane.items
+      .filter((item) => !query || item.text.toLowerCase().includes(query) || pane.title.toLowerCase().includes(query))
+      .forEach((item) => content.append(renderItem(item)));
+
+    if (!content.childElementCount) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = "Aucun résultat.";
+      content.append(empty);
+    }
+
+    node.addEventListener("click", () => {
+      state.focusedPane = paneId;
+      renderPanes();
+    });
+    node.addEventListener("dragstart", (event) => {
+      state.dragPaneId = paneId;
+      event.dataTransfer.setData("text/plain", paneId);
+    });
+    node.addEventListener("dragover", (event) => event.preventDefault());
+    node.addEventListener("drop", (event) => {
+      event.preventDefault();
+      swapPane(active.panes, state.dragPaneId, paneId);
+      state.dragPaneId = null;
+      renderPanes();
+    });
+    node.querySelector(".pane-collapse").addEventListener("click", (event) => {
+      event.stopPropagation();
+      toggleSet(state.collapsedPanes, key);
+      renderPanes();
+    });
+    node.querySelector(".pane-zoom").addEventListener("click", (event) => {
+      event.stopPropagation();
+      state.zoomedPane = state.zoomedPane === paneId ? null : paneId;
+      renderPanes();
+    });
+    node.querySelector(".pane-close").addEventListener("click", (event) => {
+      event.stopPropagation();
+      state.closedPanes.add(key);
+      renderPanes();
+    });
+    els.paneStage.append(node);
+  });
+}
+
+function renderItem(item) {
+  const row = document.createElement("div");
+  row.className = "item";
+  row.dataset.tone = item.tone;
+  row.innerHTML = `<span class="item-dot"></span><span>${item.text}</span><span class="item-meta">${item.meta || ""}</span>`;
+  return row;
+}
+
+function addScratchPane(direction) {
+  const active = state.fixtures.tabs.find((tab) => tab.id === state.activeTab);
+  const id = `scratch-${Date.now().toString(36)}`;
+  state.fixtures.panes[id] = {
+    title: direction === "vertical" ? "Nouveau pane vertical" : "Nouveau pane horizontal",
+    source: "fixture",
+    mode: "fixture",
+    items: [{ tone: "neutral", text: "Pane vide - assigne un blade ou une note.", meta: "" }]
+  };
+  active.panes.push(id);
+  state.focusedPane = id;
+  state.zoomedPane = null;
+  renderPanes();
+}
+
+function makeScratchPane(id) {
+  return {
+    title: id,
+    source: "fixture",
+    mode: "fixture",
+    items: [{ tone: "neutral", text: "Pane temporaire.", meta: "" }]
+  };
+}
+
+function reorderById(list, fromId, toId) {
+  const from = list.findIndex((item) => item.id === fromId);
+  const to = list.findIndex((item) => item.id === toId);
+  if (from < 0 || to < 0 || from === to) return;
+  const [item] = list.splice(from, 1);
+  list.splice(to, 0, item);
+}
+
+function swapPane(list, fromId, toId) {
+  const from = list.indexOf(fromId);
+  const to = list.indexOf(toId);
+  if (from < 0 || to < 0 || from === to) return;
+  [list[from], list[to]] = [list[to], list[from]];
+}
+
+function toggleSet(set, key) {
+  if (set.has(key)) set.delete(key);
+  else set.add(key);
+}
+
+function onThemeInput(event) {
+  const input = event.target;
+  if (input.dataset.token) {
+    const unit = input.dataset.unit || "";
+    state.theme[input.dataset.token] = `${input.value}${unit}`;
+  }
+  if (input.dataset.density !== undefined) {
+    state.theme.density = input.value;
+  }
+  applyTheme();
+  saveTheme();
+}
+
+function applyPreset(name) {
+  state.theme = { ...presets[name] };
+  applyTheme();
+  saveTheme();
+  document.querySelectorAll(".preset").forEach((button) => {
+    button.classList.toggle("active", button.dataset.preset === name);
+  });
+}
+
+function resetTheme() {
+  state.theme = { ...defaultTheme };
+  localStorage.removeItem("nyx-theme");
+  applyTheme();
+  syncThemeInputs();
+}
+
+function loadTheme() {
+  try {
+    return { ...defaultTheme, ...JSON.parse(localStorage.getItem("nyx-theme") || "{}") };
+  } catch {
+    return { ...defaultTheme };
+  }
+}
+
+function saveTheme() {
+  localStorage.setItem("nyx-theme", JSON.stringify(state.theme));
+}
+
+function applyTheme() {
+  Object.entries(state.theme).forEach(([token, value]) => {
+    if (token.startsWith("--")) document.documentElement.style.setProperty(token, value);
+  });
+  document.querySelector(".app-shell").dataset.density = state.theme.density;
+  syncThemeInputs();
+  updateCssOutput();
+}
+
+function syncThemeInputs() {
+  els.themeForm.querySelectorAll("[data-token]").forEach((input) => {
+    const raw = state.theme[input.dataset.token] || defaultTheme[input.dataset.token];
+    input.value = input.type === "range" ? parseFloat(raw) : raw;
+  });
+  const density = els.themeForm.querySelector("[data-density]");
+  density.value = state.theme.density || defaultTheme.density;
+}
+
+function themeCss() {
+  const entries = Object.entries(state.theme)
+    .filter(([token]) => token.startsWith("--"))
+    .map(([token, value]) => `  ${token}: ${value};`)
+    .join("\n");
+  return `:root {\n${entries}\n}`;
+}
+
+function updateCssOutput() {
+  els.cssOutput.value = themeCss();
+}
+
+async function copyCss() {
+  await navigator.clipboard.writeText(themeCss());
+}
+
+function downloadCss() {
+  const blob = new Blob([themeCss() + "\n"], { type: "text/css" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "nyx-theme.css";
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+boot().catch((error) => {
+  els.paneStage.innerHTML = `<div class="empty-state">Erreur de chargement: ${error.message}</div>`;
+});
+</script>
+  </body>
+</html>

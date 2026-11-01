@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM-ROX</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="window">
+    <!-- SIDEBAR GAUCHE -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1>LLM-ROX</h1>
+        <button class="btn-icon" title="Ajouter une app">+</button>
+      </div>
+
+      <!-- ACCOUNT SELECTOR (Feature 7) -->
+      <div class="account-selector">
+        <div class="account-current">
+          <span class="account-icon">👤</span>
+          <span class="account-name">Default</span>
+          <span class="account-arrow">▼</span>
+        </div>
+        <div class="account-menu" style="display: none;">
+          <button class="account-item active" data-account="default">👤 Default</button>
+          <hr style="margin: 4px 0; border: none; border-top: 1px solid #ddd;">
+          <button class="account-add">+ New Account</button>
+        </div>
+      </div>
+
+      <!-- GROUPES -->
+      <nav class="groups">
+        <div class="group">
+          <h3>Work</h3>
+          <ul class="apps-list">
+            <li class="app active" data-app="claude">
+              <span class="icon">🤖</span>
+              <span class="label">Claude</span>
+              <span class="badge">2</span>
+            </li>
+            <li class="app" data-app="chatgpt">
+              <span class="icon">💬</span>
+              <span class="label">ChatGPT</span>
+              <span class="badge">0</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="group">
+          <h3>Tools</h3>
+          <ul class="apps-list">
+            <li class="app" data-app="gemini">
+              <span class="icon">✨</span>
+              <span class="label">Gemini</span>
+              <span class="badge">0</span>
+            </li>
+            <li class="app" data-app="perplexity">
+              <span class="icon">🔍</span>
+              <span class="label">Perplexity</span>
+              <span class="badge">0</span>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- FOOTER -->
+      <div class="sidebar-footer">
+        <button class="btn-settings" title="Settings">⚙️</button>
+        <button class="btn-donate">❤️ Donate</button>
+      </div>
+    </aside>
+
+    <!-- ZONE PRINCIPALE -->
+    <main class="main">
+      <!-- TOP TABS -->
+      <div class="tabs-bar">
+        <div class="tabs">
+          <button class="tab active" data-app="claude">
+            <span class="icon">🤖</span>
+            Claude
+            <button class="btn-close">×</button>
+          </button>
+        </div>
+        <button class="btn-add-tab">+</button>
+      </div>
+
+      <!-- WEBVIEW CONTAINER -->
+      <div class="content">
+        <webview id="webview-container" src="about:blank"></webview>
+      </div>
+    </main>
+
+    <!-- RIGHT PANEL (Optional pour plus tard) -->
+    <aside class="inspector">
+      <div class="inspector-header">Info</div>
+    </aside>
+  </div>
+
+  <!-- CONTEXT MENU -->
+  <div class="context-menu" id="contextMenu">
+    <button data-action="rename">Renommer</button>
+    <button data-action="favorite">☆ Favoris</button>
+    <button data-action="mute">🔇 Mute</button>
+    <hr>
+    <button data-action="remove">Supprimer</button>
+  </div>
+
+  <!-- SETTINGS MODAL (Feature 10) -->
+  <div class="settings-overlay" id="settingsOverlay" style="display: none;"></div>
+  <div class="settings-modal" id="settingsModal" style="display: none;">
+    <div class="settings-header">
+      <h2>Settings</h2>
+      <button class="settings-close">×</button>
+    </div>
+
+    <div class="settings-body">
+      <!-- Theme Section -->
+      <div class="settings-section">
+        <h3>Theme</h3>
+        <div class="settings-group">
+          <label>
+            <input type="checkbox" id="dark-mode-toggle" />
+            <span>Dark Mode</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Display Section -->
+      <div class="settings-section">
+        <h3>Display</h3>
+        <div class="settings-group">
+          <label>Font Size</label>
+          <div class="slider-container">
+            <input type="range" id="font-size-slider" min="12" max="18" value="14" />
+            <span id="font-size-value">14px</span>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label>Sidebar Width</label>
+          <div class="slider-container">
+            <input type="range" id="sidebar-width-slider" min="180" max="350" value="240" />
+            <span id="sidebar-width-value">240px</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Color Scheme Section -->
+      <div class="settings-section">
+        <h3>Color Scheme</h3>
+        <div class="color-scheme-options">
+          <button class="color-scheme-btn active" data-scheme="default" title="Default">🎨</button>
+          <button class="color-scheme-btn" data-scheme="blue" title="Blue">🔵</button>
+          <button class="color-scheme-btn" data-scheme="purple" title="Purple">🟣</button>
+          <button class="color-scheme-btn" data-scheme="green" title="Green">🟢</button>
+          <button class="color-scheme-btn" data-scheme="orange" title="Orange">🟠</button>
+        </div>
+      </div>
+
+      <!-- About Section -->
+      <div class="settings-section">
+        <h3>About</h3>
+        <p class="about-text">LLM-ROX v1.0.0<br>Desktop prototype for managing multiple LLM services</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEARCH INPUT (Feature 9) -->
+  <div class="search-overlay" id="searchOverlay" style="display: none;"></div>
+  <div class="search-modal" id="searchModal" style="display: none;">
+    <div class="search-input-container">
+      <input type="text" id="search-input" placeholder="Search apps, tabs, history..." autofocus />
+      <div class="search-results" id="searchResults"></div>
+    </div>
+  </div>
+
+  <!-- Scripts: Order matters! -->
+  <script src="skill-manager.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

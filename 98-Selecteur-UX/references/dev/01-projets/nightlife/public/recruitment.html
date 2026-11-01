@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Night Intel · Recruitment</title>
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <style>
+    body { margin: 0; min-height: 100vh; color: var(--fg); background:
+      radial-gradient(circle at 20% 20%, rgba(255,45,111,.18), transparent 28%),
+      radial-gradient(circle at 78% 38%, rgba(91,207,255,.12), transparent 30%),
+      var(--bg-app); font-family: var(--font-body); }
+    main { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+    section { width: min(860px, 100%); border: 1px solid rgba(255,45,111,.32); border-radius: 18px;
+      background: rgba(15,15,21,.82); box-shadow: 0 30px 100px rgba(0,0,0,.42); padding: clamp(24px, 5vw, 56px); }
+    a { color: inherit; }
+    .eyebrow { color: var(--accent); }
+    h1 { margin-top: 12px; max-width: 740px; }
+    p { max-width: 680px; margin-top: 16px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 28px; }
+    .card { border: 1px solid var(--border); border-radius: 12px; padding: 16px; background: rgba(255,255,255,.04); }
+    .card strong { display: block; font-family: var(--font-display); margin-bottom: 8px; }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 30px; }
+    .btn { min-height: 44px; padding: 0 16px; border-radius: 999px; display: inline-flex; align-items: center; text-decoration: none; font-weight: 900; border: 1px solid var(--border); }
+    .btn.primary { color: var(--ink-0); background: var(--accent); border-color: var(--accent); }
+    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <section>
+      <span class="eyebrow">Night Intel · secret recruitment</span>
+      <h1>Build the nightlife intelligence network.</h1>
+      <p>We recruit scouts, validators, builders and local operators. The mission: scan zones, verify venues, clean data, and make safer nights easier to navigate.</p>
+      <div class="grid">
+        <div class="card"><strong>Scout</strong><span>Scan zones, report signals, earn explorer badges.</span></div>
+        <div class="card"><strong>Validator</strong><span>Check hours, duplicates, safety points and source quality.</span></div>
+        <div class="card"><strong>Builder</strong><span>Improve maps, scrapers, open data exports and city intelligence.</span></div>
+      </div>
+      <div class="actions">
+        <a class="btn primary" href="/">Enter Night Intel</a>
+        <a class="btn" href="/archi">Architecture</a>
+        <a class="btn" href="/world-radar">World Radar</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

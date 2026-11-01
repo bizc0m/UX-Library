@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MadameGlitch — Dashboard Unifié</title>
+  <style>
+    :root {
+      --bg: #050505;
+      --panel: #0f0f0f;
+      --panel-2: #161616;
+      --fg: #eee;
+      --muted: #888;
+      --accent: #ff0080;
+      --accent-2: #00f0ff;
+      --ok: #0f0;
+      --warn: #ff0;
+      --danger: #f00;
+      --border: rgba(255,255,255,0.1);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Courier New", monospace;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      grid-template-columns: 280px 1fr;
+      grid-template-areas:
+        "header header"
+        "sidebar main"
+        "footer footer";
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* HEADER */
+    header {
+      grid-area: header;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    header h1 {
+      font-size: 20px;
+      color: var(--accent);
+      text-shadow: 0 0 10px var(--accent);
+    }
+    .status-bar {
+      display: flex;
+      gap: 20px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .status-bar span { display: flex; align-items: center; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+
+    /* SIDEBAR */
+    aside {
+      grid-area: sidebar;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      padding: 16px;
+      overflow-y: auto;
+    }
+    aside h2 {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+    }
+    .tool-list { display: flex; flex-direction: column; gap: 8px; }
+    .tool-item {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .tool-item:hover, .tool-item.active {
+      border-color: var(--accent);
+      background: rgba(255,0,128,0.08);
+    }
+    .tool-item .name { font-size: 12px; font-weight: bold; }
+    .tool-item .tag {
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(0,240,255,0.15);
+      color: var(--accent-2);
+    }
+
+    /* MAIN */
+    main {
+      grid-area: main;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .preview-frame {
+      flex: 1;
+      min-height: 400px;
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .preview-frame iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    .preview-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      gap: 12px;
+    }
+    .preview-placeholder h3 { color: var(--fg); font-size: 18px; }
+
+    .info-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .info-panel h3 { color: var(--accent); font-size: 14px; margin-bottom: 10px; }
+    .info-panel p { font-size: 12px; line-height: 1.6; color: var(--muted); }
+    .actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .actions a, .actions button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: var(--panel-2);
+      border: 1px solid var(--accent);
+      color: var(--fg);
+      text-decoration: none;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .actions a:hover, .actions button:hover { background: var(--accent); color: #000; }
+
+    /* FOOTER */
+    footer {
+      grid-area: footer;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      padding: 8px 20px;
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* QUICK STATS */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      text-align: center;
+    }
+    .stat-card .value { font-size: 24px; color: var(--accent); font-weight: bold; }
+    .stat-card .label { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
+
+    @media (max-width: 900px) {
+      body { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr auto; grid-template-areas: "header" "sidebar" "main" "footer"; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎛️ MadameGlitch — Dashboard</h1>
+    <div class="status-bar">
+      <span><span class="dot"></span> Serveur local OK</span>
+      <span id="clock">--:--</span>
+      <span>13 commits</span>
+    </div>
+  </header>
+
+  <aside>
+    <h2>Outils disponibles</h2>
+    <div class="tool-list" id="toolList"></div>
+
+    <h2 style="margin-top: 24px">Ressources</h2>
+    <div class="tool-list">
+      <div class="tool-item" onclick="openDoc('README.md')">
+        <span class="name">README.md</span>
+        <span class="tag">DOC</span>
+      </div>
+      <div class="tool-item" onclick="openDoc('Features.md')">
+        <span class="name">Features.md</span>
+        <span class="tag">DOC</span>
+      </div>
+      <div class="tool-item" onclick="openDoc('todo.md')">
+        <span class="name">todo.md</span>
+        <span class="tag">DOC</span>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="stats">
+      <div class="stat-card"><div class="value" id="stat-versions">11</div><div class="label">Versions / outils</div></div>
+      <div class="stat-card"><div class="value">9</div><div class="label">Effets V15 Fusion</div></div>
+      <div class="stat-card"><div class="value">20</div><div class="label">Types de nodes V4</div></div>
+      <div class="stat-card"><div class="value" id="stat-commits">13</div><div class="label">Commits locaux</div></div>
+    </div>
+
+    <div class="preview-frame" id="previewFrame">
+      <div class="preview-placeholder">
+        <h3>Sélectionne un outil dans la sidebar</h3>
+        <p>Le dashboard unifié regroupe toutes les versions de MadameGlitch.</p>
+      </div>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3>Bienvenue</h3>
+      <p>Choisis un outil pour voir l’aperçu, puis clique sur <strong>Ouvrir en plein écran</strong> pour l’utiliser.</p>
+      <div class="actions">
+        <a href="madameglitch_v15_fusion.html" target="_blank">🚀 Lancer V15 Fusion</a>
+        <button onclick="location.reload()">🔄 Rafraîchir le dashboard</button>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <span>MadameGlitch — suite VJ / webcam / stream</span>
+    <span>http://localhost:8080/madameglitch_dashboard.html</span>
+  </footer>
+
+  <script>
+    const tools = [
+      { id: "unified", name: "UNIFIED", file: "madameglitch_unified.html", tag: "★ UNIFIED", desc: "Application unique : Layers + CodersFX + Rack + export. C’est LA version à utiliser." },
+      { id: "codersfx", name: "CodersFX Clone", file: "madameglitch_codersfx_clone.html", tag: "EDITOR", desc: "Clone de l’éditeur demoscene CodersFX : HTML/CSS/JS + preview live + templates + export HTML/JSON + audio reactive." },
+      { id: "v15-fusion", name: "V15 Fusion", file: "madameglitch_v15_fusion.html", tag: "ULTIME", desc: "TOUT en un fichier : 9 effets, timeline, keyframes, audio, MIDI, WebSocket, export, shader editor, post-FX CRT/bloom." },
+      { id: "v15-ultimate", name: "V15 Ultimate", file: "madameglitch_v15_ultimate.html", tag: "DEMO", desc: "DemoForge Studio — éditeur demoscene complet (14+ effets, FX chain, timeline, skins, export)." },
+      { id: "demoforge-ansi", name: "DemoForge ANSI", file: "demoforge_ansi_motion.html", tag: "FX", desc: "Effets terminal rétro ANSI motion." },
+      { id: "demoforge-shader", name: "DemoForge Shader", file: "demoforge_shader_editor.html", tag: "SHADER", desc: "Éditeur de shaders GLSL live." },
+      { id: "v4-rack", name: "V4 Rack Modulaire", file: "madameglitch_v4_rack.html", tag: "RACK", desc: "Rack 8×8 nodes : deck, mixer, fx, plasma, glitch, CRT, shader, MIDI, WebSocket, save/load." },
+      { id: "mistresspixel", name: "MistressPixel V3", file: "mistresspixel_v3.html", tag: "MIX", desc: "Mix live 4 calques + audio micro + export + shader editor." },
+      { id: "v2", name: "V2 Audio Reactive", file: "madameglitch_v2_audio.html", tag: "AUDIO", desc: "Plasma réactif au micro avec détection BPM." },
+      { id: "v1", name: "V1 Base Plasma", file: "madameglitch_v1_base.html", tag: "BASE", desc: "Plasma Three.js fullscreen, 60 fps." },
+      { id: "dashboard", name: "Dashboard", file: "madameglitch_dashboard.html", tag: "META", desc: "Ce tableau de bord unifié." }
+    ];
+
+    const toolList = document.getElementById("toolList");
+    const previewFrame = document.getElementById("previewFrame");
+    const infoPanel = document.getElementById("infoPanel");
+
+    function loadTool(tool) {
+      // Update sidebar active state
+      document.querySelectorAll(".tool-item").forEach(el => el.classList.remove("active"));
+      document.getElementById(tool.id)?.classList.add("active");
+
+      // Load iframe
+      previewFrame.innerHTML = `<iframe src="${tool.file}" sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-popups"></iframe>`;
+
+      // Update info panel
+      infoPanel.innerHTML = `
+        <h3>${tool.name}</h3>
+        <p>${tool.desc}</p>
+        <div class="actions">
+          <a href="${tool.file}" target="_blank">⛶ Ouvrir en plein écran</a>
+          <button onclick="loadTool(tools.find(t => t.id === '${tool.id}'))">🔄 Recharger l'aperçu</button>
+        </div>
+      `;
+    }
+
+    function openDoc(file) {
+      previewFrame.innerHTML = `<iframe src="${file}" sandbox="allow-same-origin"></iframe>`;
+      infoPanel.innerHTML = `<h3>Documentation</h3><p>Affichage de <code>${file}</code>.</p>`;
+    }
+
+    tools.forEach(tool => {
+      const div = document.createElement("div");
+      div.className = "tool-item";
+      div.id = tool.id;
+      div.innerHTML = `<span class="name">${tool.name}</span><span class="tag">${tool.tag}</span>`;
+      div.addEventListener("click", () => loadTool(tool));
+      toolList.appendChild(div);
+    });
+
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById("clock").textContent = now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Auto-load V15 Fusion on start
+    loadTool(tools[0]);
+  </script>
+</body>
+</html>

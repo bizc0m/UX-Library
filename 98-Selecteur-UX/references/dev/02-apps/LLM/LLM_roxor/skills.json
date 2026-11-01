@@ -1,0 +1,52 @@
+{
+  "builtIn": {
+    "claude": {
+      "name": "Claude",
+      "icon": "🤖",
+      "url": "https://claude.ai",
+      "group": "Work"
+    },
+    "chatgpt": {
+      "name": "ChatGPT",
+      "icon": "💬",
+      "url": "https://chat.openai.com",
+      "group": "Work"
+    },
+    "gemini": {
+      "name": "Gemini",
+      "icon": "✨",
+      "url": "https://gemini.google.com",
+      "group": "Tools"
+    },
+    "perplexity": {
+      "name": "Perplexity",
+      "icon": "🔍",
+      "url": "https://www.perplexity.ai",
+      "group": "Tools"
+    }
+  },
+  "external": [
+    {
+      "id": "notion",
+      "name": "Notion",
+      "icon": "📝",
+      "url": "https://www.notion.so",
+      "group": "Productivity",
+      "github": "user/llm-rox-skill-notion",
+      "enabled": false
+    },
+    {
+      "id": "figma",
+      "name": "Figma",
+      "icon": "🎨",
+      "url": "https://figma.com",
+      "group": "Design",
+      "github": "user/llm-rox-skill-figma",
+      "enabled": false
+    }
+  ],
+  "metadata": {
+    "version": "0.2",
+    "lastUpdated": "2026-06-08"
+  }
+}

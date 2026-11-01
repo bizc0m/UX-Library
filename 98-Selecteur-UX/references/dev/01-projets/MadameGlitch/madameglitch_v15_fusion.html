@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MadameGlitch V15 — FUSION ULTIMATE</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      font-family: monospace;
+      color: #0f0;
+    }
+    canvas { display: block; }
+    #ui {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.8);
+      border: 1px solid #0f0;
+      padding: 10px;
+      max-height: 94vh;
+      max-width: 380px;
+      overflow-y: auto;
+      z-index: 10;
+      font-size: 12px;
+    }
+    h1, h3 { margin: 0 0 6px 0; font-size: 13px; }
+    .section { margin: 10px 0; padding: 8px; border: 1px solid #0f0; }
+    button, input, select, textarea {
+      background: #000; color: #0f0; border: 1px solid #0f0;
+      padding: 4px 6px; margin: 2px 0; font-family: monospace; font-size: 11px;
+      cursor: pointer; width: 100%;
+    }
+    button:hover { background: #0f0; color: #000; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .row { display: flex; gap: 4px; }
+    .row button, .row select, .row input { flex: 1; }
+    .layer-item {
+      border: 1px solid #0f0; padding: 4px; margin: 3px 0;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .layer-item span { flex: 1; }
+    .layer-item button { width: auto; margin: 0; }
+    textarea { height: 70px; resize: vertical; font-size: 10px; }
+    #timeline {
+      width: 100%; height: 40px; background: #111; border: 1px solid #0f0;
+      position: relative; margin: 5px 0;
+    }
+    #playhead {
+      position: absolute; top: 0; bottom: 0; width: 2px; background: #f0f;
+      left: 0%;
+    }
+    .keyframe-dot {
+      position: absolute; top: 12px; width: 6px; height: 6px;
+      background: #0f0; border-radius: 50%; transform: translateX(-50%);
+    }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <h1>MadameGlitch V15 — FUSION</h1>
+
+    <div class="section">
+      <h3>Transport</h3>
+      <div class="row">
+        <button id="playPause">⏸ Pause</button>
+        <button id="rewind">⏮ 0s</button>
+      </div>
+      <div>Time: <span id="timeDisplay">0.0</span>s / 60s</div>
+      <div id="timeline"><div id="playhead"></div></div>
+    </div>
+
+    <div class="section">
+      <h3>Audio</h3>
+      <button id="toggleMic">Micro ON</button>
+      <input type="file" id="audioFile" accept="audio/*"/>
+      <div id="audioInfo">BPM: -- | B: -- | M: -- | T: --</div>
+    </div>
+
+    <div class="section">
+      <h3>Layers</h3>
+      <div class="row">
+        <select id="layerType">
+          <option value="plasma">Plasma</option>
+          <option value="tunnel">Tunnel</option>
+          <option value="glitch">Glitch</option>
+          <option value="starfield">Starfield</option>
+          <option value="rotozoomer">Rotozoomer</option>
+          <option value="copper">Copper Bars</option>
+          <option value="sine">Sine Scroller</option>
+          <option value="matrix">Digital Rain</option>
+          <option value="ansi">ANSI Motion</option>
+        </select>
+        <button id="addLayer">+</button>
+      </div>
+      <div id="layersList"></div>
+    </div>
+
+    <div class="section">
+      <h3>Keyframes</h3>
+      <div class="row">
+        <button id="addKeyframe">+ Keyframe</button>
+        <button id="clearKeyframes">Clear</button>
+      </div>
+      <div id="keyframesList"></div>
+    </div>
+
+    <div class="section">
+      <h3>Presets</h3>
+      <button id="savePreset">Save Preset</button>
+      <input type="file" id="loadPreset" accept=".json"/>
+      <div class="row">
+        <select id="presetSelect">
+          <option value="">Default presets</option>
+          <option value="demo-base">Demo Base</option>
+          <option value="cyber-storm">Cyber Storm</option>
+          <option value="amiga-blue">Amiga Blue</option>
+        </select>
+        <button id="loadDefaultPreset">Load</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Shader Editor</h3>
+      <select id="shaderLayerSelect"></select>
+      <textarea id="vertexShader" placeholder="Vertex Shader"></textarea>
+      <textarea id="fragmentShader" placeholder="Fragment Shader"></textarea>
+      <button id="applyShader">Apply Shader</button>
+    </div>
+
+    <div class="section">
+      <h3>Post-FX</h3>
+      <label><input type="checkbox" id="crtToggle" checked/> CRT Scanlines</label>
+      <label><input type="checkbox" id="bloomToggle"/> Bloom (simple)</label>
+    </div>
+
+    <div class="section">
+      <h3>Export</h3>
+      <button id="exportMp4">Export MP4/WebM</button>
+      <button id="exportHtml">Export HTML</button>
+    </div>
+
+    <div class="section">
+      <h3>Network</h3>
+      <button id="toggleMidi">MIDI OFF</button>
+      <button id="toggleWs">WebSocket OFF</button>
+    </div>
+
+    <div class="section">
+      <h3>Theme</h3>
+      <select id="themeSelect">
+        <option value="dark">Dark</option>
+        <option value="cyberpunk">Cyberpunk</option>
+        <option value="neon">Neon</option>
+      </select>
+    </div>
+  </div>
+
+  <script>
+    (async function() {
+      const THREE = await import('./assets/three.module.js');
+      window.THREE = THREE;
+      if (!THREE) {
+        document.body.innerHTML = '<div style="color:#f00;padding:20px;">ERREUR: Three.js non charge.</div>';
+        throw new Error('Three.js non charge');
+      }
+
+      // ============================================================
+      // MADAMEGLITCH V15 — FUSION ULTIMATE
+      // Fusion de V1 (plasma), V2 (audio reactive), V3-V14 (MIDI, WebSocket,
+      // rack, livecam, stream, shaders, timeline, keyframes) et effets DemoForge.
+      // ============================================================
+
+      const DURATION = 60; // durée timeline en secondes
+    let currentTime = 0;
+    let isPlaying = true;
+    let lastFrameTime = performance.now();
+
+    // --- AUDIO ---
+    let audioContext, analyser, dataArray, microphoneStream, audioSource, audioElement;
+    let audioEnabled = false;
+    let bpm = 0, lastPeakTime = 0, peakCount = 0, firstPeakTime = 0;
+
+    async function initMicrophone() {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 2048;
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const src = audioContext.createMediaStreamSource(microphoneStream);
+      src.connect(analyser);
+    }
+
+    async function loadAudioFile(file) {
+      if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      if (!analyser) {
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+      }
+      if (audioSource) { audioSource.stop?.(); audioSource.disconnect(); }
+      if (audioElement) { audioElement.pause(); }
+      const url = URL.createObjectURL(file);
+      const resp = await fetch(url);
+      const arrayBuffer = await resp.arrayBuffer();
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      audioSource = audioContext.createBufferSource();
+      audioSource.buffer = audioBuffer;
+      audioSource.connect(analyser);
+      analyser.connect(audioContext.destination);
+      audioSource.start(0);
+      audioEnabled = true;
+    }
+
+    function getAudioData() {
+      if (!analyser) return null;
+      analyser.getByteFrequencyData(dataArray);
+      return dataArray;
+    }
+
+    function getBand(start, end) {
+      const data = getAudioData();
+      if (!data) return 0;
+      let sum = 0;
+      for (let i = start; i < end; i++) sum += data[i];
+      return sum / (end - start) / 255;
+    }
+
+    const getBass = () => getBand(0, 10);
+    const getMid = () => getBand(50, 200);
+    const getTreble = () => getBand(200, 500);
+
+    function detectBPM(bass) {
+      const threshold = 0.75;
+      const now = performance.now();
+      if (bass > threshold && now - lastPeakTime > 300) {
+        if (peakCount === 0) firstPeakTime = now;
+        peakCount++; lastPeakTime = now;
+        if (peakCount >= 4) {
+          const interval = (now - firstPeakTime) / (peakCount - 1);
+          bpm = Math.round(60000 / interval);
+          peakCount = 0;
+        }
+      }
+      return bpm;
+    }
+
+    function stopAudio() {
+      if (microphoneStream) microphoneStream.getTracks().forEach(t => t.stop());
+      if (audioSource) { audioSource.stop?.(); audioSource.disconnect(); }
+      if (audioElement) audioElement.pause();
+      if (audioContext) audioContext.close();
+      analyser = null; dataArray = null;
+    }
+
+    // --- MIDI ---
+    let midiEnabled = false;
+    async function initMidi() {
+      const access = await navigator.requestMIDIAccess();
+      access.inputs.forEach(input => {
+        input.onmidimessage = e => {
+          const [cmd, note, vel] = e.data;
+          if (cmd === 144 && vel > 0 && note >= 60 && note <= 68) {
+            const idx = note - 60;
+            if (layers[idx]) layers[idx].mesh.material.uniforms.opacity.value = vel / 127;
+          }
+        };
+      });
+      midiEnabled = true;
+    }
+
+    // --- WEBSOCKET ---
+    let ws = null, wsEnabled = false;
+    function connectWs() {
+      const url = prompt('WebSocket URL:', 'ws://localhost:3000');
+      if (!url) return;
+      ws = new WebSocket(url);
+      ws.onopen = () => { wsEnabled = true; document.getElementById('toggleWs').textContent = 'WebSocket ON'; };
+      ws.onclose = () => { wsEnabled = false; document.getElementById('toggleWs').textContent = 'WebSocket OFF'; };
+      ws.onmessage = e => {
+        try {
+          const d = JSON.parse(e.data);
+          if (d.type === 'opacity' && layers[d.layer]) layers[d.layer].mesh.material.uniforms.opacity.value = d.value;
+          if (d.type === 'toggle' && layers[d.layer]) toggleLayer(d.layer);
+        } catch (err) {}
+      };
+    }
+
+    // --- THREE.JS + RENDER TARGET ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 1);
+    document.body.insertBefore(renderer.domElement, document.body.firstChild);
+
+    const renderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight);
+
+    // Post-processing CRT
+    const crtMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        tDiffuse: { value: null },
+        resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+        time: { value: 0 },
+        crtEnabled: { value: 1.0 },
+        bloomEnabled: { value: 0.0 }
+      },
+      vertexShader: `void main(){ gl_Position=vec4(position,1.0); }`,
+      fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform vec2 resolution;
+        uniform float time;
+        uniform float crtEnabled;
+        uniform float bloomEnabled;
+        void main(){
+          vec2 uv = gl_FragCoord.xy / resolution;
+          vec4 col = texture2D(tDiffuse, uv);
+          if(crtEnabled > 0.5){
+            float scan = sin(uv.y * resolution.y * 1.5 + time * 10.0) * 0.08 + 0.92;
+            col.rgb *= scan;
+            float vign = 1.0 - length(uv - 0.5) * 0.8;
+            col.rgb *= vign;
+          }
+          if(bloomEnabled > 0.5){
+            col.rgb = pow(col.rgb, vec3(0.8)) * 1.2;
+          }
+          gl_FragColor = col;
+        }
+      `
+    });
+    const crtQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), crtMaterial);
+    const postScene = new THREE.Scene();
+    postScene.add(crtQuad);
+
+    const layers = [];
+
+    function getLayerShader(type) {
+      const vs = `void main(){ gl_Position=vec4(position,1.0); }`;
+      if (type === 'plasma') return {
+        uniforms: { time: 0, speed: 1, opacity: 0.8, resolution: new THREE.Vector2() },
+        fs: `uniform float time,speed,opacity; uniform vec2 resolution;
+          void main(){ vec2 uv=gl_FragCoord.xy/resolution;
+          float c=sin(uv.x*12.0+time*speed)+sin(uv.y*10.0+time*speed*1.3)+sin((uv.x+uv.y)*8.0+time*speed*0.7);
+          c=c/3.0*0.5+0.5; gl_FragColor=vec4(vec3(c*1.2,c*0.5,c*0.9),opacity); }`
+      };
+      if (type === 'tunnel') return {
+        uniforms: { time: 0, rotation: 0, opacity: 0.6, resolution: new THREE.Vector2() },
+        fs: `uniform float time,rotation,opacity; uniform vec2 resolution;
+          void main(){ vec2 uv=gl_FragCoord.xy/resolution*2.0-1.0;
+          float a=rotation+time*0.3; float x=uv.x*cos(a)-uv.y*sin(a); float y=uv.x*sin(a)+uv.y*cos(a);
+          float c=1.0/(length(vec2(x,y))*2.5+0.05); gl_FragColor=vec4(vec3(c*0.4,c*0.7,c*1.2),opacity); }`
+      };
+      if (type === 'glitch') return {
+        uniforms: { time: 0, intensity: 0.5, opacity: 0.4, resolution: new THREE.Vector2() },
+        fs: `uniform float time,intensity,opacity; uniform vec2 resolution;
+          void main(){ vec2 uv=gl_FragCoord.xy/resolution;
+          float g=sin(uv.x*80.0+time*20.0)*intensity; float g2=sin(uv.y*60.0-time*15.0)*intensity;
+          vec3 col=vec3(fract(uv.x+g+time),fract(uv.y-g2),fract(time*1.3)); gl_FragColor=vec4(col,opacity); }`
+      };
+      if (type === 'starfield') return {
+        uniforms: { time: 0, speed: 1, opacity: 0.8, resolution: new THREE.Vector2() },
+        fs: `uniform float time,speed,opacity; uniform vec2 resolution;
+          void main(){ vec2 uv=gl_FragCoord.xy/resolution-0.5; float c=0.0;
+          for(float i=0.0;i<30.0;i++){
+            float z=fract(i/30.0+time*speed*0.1); float x=fract(sin(i*12.0)*0.5)/z; float y=fract(cos(i*13.0)*0.5)/z;
+            float d=length(uv-vec2(x,y)*0.3); c+=smoothstep(0.02,0.0,d)*z;
+          } gl_FragColor=vec4(vec3(c),opacity); }`
+      };
+      if (type === 'rotozoomer') return {
+        uniforms: { time: 0, speed: 1, opacity: 0.7, resolution: new THREE.Vector2() },
+        fs: `uniform float time,speed,opacity; uniform vec2 resolution;
+          void main(){ vec2 uv=gl_FragCoord.xy/resolution-0.5; float a=time*speed;
+          vec2 r=vec2(uv.x*cos(a)-uv.y*sin(a),uv.x*sin(a)+uv.y*cos(a));
+          float c=step(0.5,fract(r.x*10.0))*step(0.5,fract(r.y*10.0));
+          gl_FragColor=vec4(vec3(c*0.8,c*0.2,c*0.5),opacity); }`
+      };
+      if (type === 'copper') return {
+        uniforms: { time: 0, speed: 1, opacity: 0.7, resolution: new THREE.Vector2() },
+        fs: `uniform float time,speed,opacity; uniform vec2 resolution;
+          void main(){ float y=gl_FragCoord.y/resolution.y;
+          float c=sin(y*20.0+time*speed)*0.5+0.5; vec3 col=vec3(c,c*0.3,c*0.1);
+          gl_FragColor=vec4(col,opacity); }`
+      };
+      if (type === 'sine') return {
+        uniforms: { time: 0, speed: 1, opacity: 0.8, resolution: new THREE.Vector2() },
+        fs: `uniform float time,speed,opacity; uniform vec2 resolution;
+          void main(){ vec2 uv=gl_FragCoord.xy/resolution; float y=uv.y*20.0;
+          float wave=sin(uv.x*30.0+time*speed+y)*0.1;
+          float c=smoothstep(0.02,0.0,abs(uv.y-0.5+wave)); gl_FragColor=vec4(vec3(0.0,c,0.5),opacity); }`
+      };
+      if (type === 'matrix') return {
+        uniforms: { time: 0, speed: 1, opacity: 0.7, resolution: new THREE.Vector2() },
+        fs: `uniform float time,speed,opacity; uniform vec2 resolution;
+          void main(){ vec2 uv=gl_FragCoord.xy/resolution; float cols=40.0;
+          float x=floor(uv.x*cols); float y=fract(uv.y*20.0-time*speed+fract(x*0.3));
+          float c=step(0.9,y)*step(fract(sin(x)*43758.0),0.3); gl_FragColor=vec4(vec3(0.0,c,0.0),opacity); }`
+      };
+      if (type === 'ansi') return {
+        uniforms: { time: 0, speed: 1, opacity: 0.7, resolution: new THREE.Vector2() },
+        fs: `uniform float time,speed,opacity; uniform vec2 resolution;
+          void main(){ vec2 uv=gl_FragCoord.xy/resolution; float rows=24.0,cols=40.0;
+          float y=floor(uv.y*rows); float x=floor(uv.x*cols);
+          float blink=mod(time*speed*10.0+y*0.7+x*0.3,2.0)>1.0?1.0:0.0;
+          gl_FragColor=vec4(vec3(0.0,blink,0.0),opacity); }`
+      };
+      return null;
+    }
+
+    function createLayer(type, params = {}) {
+      const def = getLayerShader(type);
+      if (!def) return;
+      const uniforms = {};
+      for (const k in def.uniforms) {
+        const v = def.uniforms[k];
+        uniforms[k] = { value: params[k] !== undefined ? params[k] : (v && v.isVector2 ? v.clone() : v) };
+      }
+      if (!uniforms.resolution) uniforms.resolution = { value: new THREE.Vector2(window.innerWidth, window.innerHeight) };
+      const material = new THREE.ShaderMaterial({
+        uniforms, vertexShader: def.vs || `void main(){gl_Position=vec4(position,1.0);}`,
+        fragmentShader: def.fs, transparent: true, blending: THREE.AdditiveBlending
+      });
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+      scene.add(mesh);
+      layers.push({ mesh, type, enabled: true, params });
+      renderLayersList(); updateShaderEditor();
+    }
+
+    function removeLayer(i) { scene.remove(layers[i].mesh); layers.splice(i, 1); renderLayersList(); updateShaderEditor(); }
+    function toggleLayer(i) { layers[i].enabled = !layers[i].enabled; layers[i].mesh.visible = layers[i].enabled; renderLayersList(); }
+    window.toggleLayer = toggleLayer; window.removeLayer = removeLayer;
+
+    function renderLayersList() {
+      const list = document.getElementById('layersList');
+      list.innerHTML = '';
+      layers.forEach((l, i) => {
+        const div = document.createElement('div'); div.className = 'layer-item';
+        div.innerHTML = `<span>${i+1}. ${l.type} ${l.enabled?'':'(off)'}</span><button onclick="toggleLayer(${i})">👁</button><button onclick="removeLayer(${i})">✕</button>`;
+        list.appendChild(div);
+      });
+    }
+
+    // --- SHADER EDITOR ---
+    function updateShaderEditor() {
+      const sel = document.getElementById('shaderLayerSelect'); sel.innerHTML = '';
+      layers.forEach((l, i) => { const o = document.createElement('option'); o.value = i; o.textContent = `${i}. ${l.type}`; sel.appendChild(o); });
+      if (layers.length) loadShaderInEditor(0);
+    }
+    function loadShaderInEditor(i) {
+      const m = layers[i].mesh.material;
+      document.getElementById('vertexShader').value = m.vertexShader;
+      document.getElementById('fragmentShader').value = m.fragmentShader;
+    }
+
+    // --- KEYFRAMES ---
+    const keyframes = [];
+    function addKeyframe() {
+      const idx = parseInt(document.getElementById('shaderLayerSelect').value) || 0;
+      if (!layers[idx]) return;
+      keyframes.push({ time: currentTime, layer: idx, opacity: layers[idx].mesh.material.uniforms.opacity.value });
+      renderKeyframes();
+    }
+    function clearKeyframes() { keyframes.length = 0; renderKeyframes(); }
+    function renderKeyframes() {
+      const list = document.getElementById('keyframesList');
+      list.innerHTML = '';
+      const tl = document.getElementById('timeline');
+      tl.querySelectorAll('.keyframe-dot').forEach(d => d.remove());
+      keyframes.forEach((k, i) => {
+        const div = document.createElement('div');
+        div.textContent = `${k.time.toFixed(1)}s L${k.layer} opacity ${k.opacity.toFixed(2)}`;
+        list.appendChild(div);
+        const dot = document.createElement('div'); dot.className = 'keyframe-dot';
+        dot.style.left = (k.time / DURATION * 100) + '%';
+        tl.appendChild(dot);
+      });
+    }
+    function applyKeyframes() {
+      keyframes.forEach(k => {
+        if (Math.abs(k.time - currentTime) < 0.1 && layers[k.layer]) {
+          layers[k.layer].mesh.material.uniforms.opacity.value = k.opacity;
+        }
+      });
+    }
+
+    // --- PRESETS ---
+    const defaultPresets = {
+      'demo-base': { layers: [{ type: 'plasma', params: { opacity: 0.8, speed: 1 } }, { type: 'starfield', params: { opacity: 0.6, speed: 1 } }, { type: 'copper', params: { opacity: 0.5, speed: 1 } }] },
+      'cyber-storm': { layers: [{ type: 'glitch', params: { opacity: 0.6, intensity: 0.7 } }, { type: 'matrix', params: { opacity: 0.7, speed: 1.5 } }] },
+      'amiga-blue': { layers: [{ type: 'copper', params: { opacity: 0.9, speed: 1.2 } }, { type: 'sine', params: { opacity: 0.8, speed: 1 } }] }
+    };
+    function clearLayers() { while (layers.length) removeLayer(0); }
+    function loadPresetData(data) {
+      clearLayers();
+      (data.layers || []).forEach(l => createLayer(l.type, l.uniforms || l.params || {}));
+    }
+    function savePreset() {
+      const data = { layers: layers.map(l => {
+        const u = {};
+        for (const k in l.mesh.material.uniforms) {
+          const v = l.mesh.material.uniforms[k].value;
+          u[k] = (v && v.isVector2) ? { x: v.x, y: v.y } : v;
+        }
+        return { type: l.type, uniforms: u };
+      }), version: 'madameglitch-v15-fusion' };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'madameglitch-v15-preset.json'; a.click();
+    }
+
+    // --- EXPORT ---
+    let recorder, chunks = [];
+    function startExportMp4() {
+      const stream = renderer.domElement.captureStream(60);
+      if (microphoneStream) { const t = microphoneStream.getAudioTracks()[0]; if (t) stream.addTrack(t); }
+      const opts = { mimeType: 'video/webm;codecs=vp9' };
+      if (!MediaRecorder.isTypeSupported(opts.mimeType)) opts.mimeType = 'video/webm';
+      recorder = new MediaRecorder(stream, opts);
+      chunks = [];
+      recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+      recorder.onstop = () => { const b = new Blob(chunks, { type: 'video/webm' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'madameglitch-v15.webm'; a.click(); };
+      recorder.start(100);
+      const btn = document.getElementById('exportMp4'); btn.textContent = 'Stop MP4/WebM';
+      btn.onclick = () => { recorder.stop(); btn.textContent = 'Export MP4/WebM'; btn.onclick = startExportMp4; };
+    }
+    function exportHtml() {
+      const html = document.documentElement.outerHTML;
+      const blob = new Blob([html], { type: 'text/html' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'madameglitch-v15-standalone.html'; a.click();
+    }
+
+    // --- THEMES ---
+    const themes = {
+      dark: { bg: '#000', ui: '#0f0', border: '#0f0' },
+      cyberpunk: { bg: '#0a0a1a', ui: '#ff00ff', border: '#00ffff' },
+      neon: { bg: '#000', ui: '#ffff00', border: '#ff00ff' }
+    };
+    function applyTheme(name) {
+      const t = themes[name] || themes.dark;
+      document.body.style.background = t.bg;
+      const ui = document.getElementById('ui'); ui.style.color = t.ui; ui.style.borderColor = t.border;
+      ui.querySelectorAll('button, input, select, textarea, .section, .layer-item').forEach(el => el.style.borderColor = t.border);
+      ui.querySelectorAll('button, input, select, textarea').forEach(el => el.style.color = t.ui);
+    }
+
+    // --- EVENTS ---
+    document.getElementById('playPause').addEventListener('click', () => {
+      isPlaying = !isPlaying;
+      document.getElementById('playPause').textContent = isPlaying ? '⏸ Pause' : '▶ Play';
+    });
+    document.getElementById('rewind').addEventListener('click', () => { currentTime = 0; });
+    document.getElementById('toggleMic').addEventListener('click', async () => {
+      if (!audioEnabled) { await initMicrophone(); audioEnabled = true; document.getElementById('toggleMic').textContent = 'Micro OFF'; }
+      else { stopAudio(); audioEnabled = false; document.getElementById('toggleMic').textContent = 'Micro ON'; }
+    });
+    document.getElementById('audioFile').addEventListener('change', e => { if (e.target.files[0]) loadAudioFile(e.target.files[0]); });
+    document.getElementById('addLayer').addEventListener('click', () => createLayer(document.getElementById('layerType').value));
+    document.getElementById('shaderLayerSelect').addEventListener('change', e => loadShaderInEditor(parseInt(e.target.value)));
+    document.getElementById('applyShader').addEventListener('click', () => {
+      const idx = parseInt(document.getElementById('shaderLayerSelect').value);
+      if (!layers[idx]) return;
+      try {
+        const m = layers[idx].mesh.material;
+        const nm = new THREE.ShaderMaterial({ uniforms: m.uniforms, vertexShader: document.getElementById('vertexShader').value, fragmentShader: document.getElementById('fragmentShader').value, transparent: true, blending: THREE.AdditiveBlending });
+        layers[idx].mesh.material = nm;
+      } catch (err) { alert('Shader error: ' + err.message); }
+    });
+    document.getElementById('addKeyframe').addEventListener('click', addKeyframe);
+    document.getElementById('clearKeyframes').addEventListener('click', clearKeyframes);
+    document.getElementById('savePreset').addEventListener('click', savePreset);
+    document.getElementById('loadPreset').addEventListener('change', e => {
+      const f = e.target.files[0]; if (!f) return;
+      const r = new FileReader();
+      r.onload = ev => { try { loadPresetData(JSON.parse(ev.target.result)); } catch { alert('Invalid preset'); } };
+      r.readAsText(f);
+    });
+    document.getElementById('loadDefaultPreset').addEventListener('click', () => {
+      const key = document.getElementById('presetSelect').value;
+      if (key) loadPresetData(defaultPresets[key]);
+    });
+    document.getElementById('exportMp4').onclick = startExportMp4;
+    document.getElementById('exportHtml').addEventListener('click', exportHtml);
+    document.getElementById('toggleMidi').addEventListener('click', async () => {
+      if (!midiEnabled) { try { await initMidi(); document.getElementById('toggleMidi').textContent = 'MIDI ON'; } catch (e) { alert('MIDI unavailable'); } }
+      else { midiEnabled = false; document.getElementById('toggleMidi').textContent = 'MIDI OFF'; }
+    });
+    document.getElementById('toggleWs').addEventListener('click', () => {
+      if (!wsEnabled) connectWs(); else if (ws) { ws.close(); wsEnabled = false; document.getElementById('toggleWs').textContent = 'WebSocket OFF'; }
+    });
+    document.getElementById('themeSelect').addEventListener('change', e => applyTheme(e.target.value));
+    document.getElementById('crtToggle').addEventListener('change', e => crtMaterial.uniforms.crtEnabled.value = e.target.checked ? 1.0 : 0.0);
+    document.getElementById('bloomToggle').addEventListener('change', e => crtMaterial.uniforms.bloomEnabled.value = e.target.checked ? 1.0 : 0.0);
+
+    document.addEventListener('keydown', e => {
+      if (e.code === 'Space') { e.preventDefault(); isPlaying = !isPlaying; document.getElementById('playPause').textContent = isPlaying ? '⏸ Pause' : '▶ Play'; }
+      else if (e.key >= '1' && e.key <= '9') { const i = parseInt(e.key) - 1; if (layers[i]) toggleLayer(i); }
+    });
+
+    window.addEventListener('resize', () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderTarget.setSize(window.innerWidth, window.innerHeight);
+      crtMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
+      layers.forEach(l => l.mesh.material.uniforms.resolution.value.set(window.innerWidth, window.innerHeight));
+    });
+
+    // --- ANIMATE ---
+    function animate() {
+      requestAnimationFrame(animate);
+      const now = performance.now();
+      const dt = (now - lastFrameTime) / 1000;
+      lastFrameTime = now;
+
+      if (isPlaying) {
+        currentTime += dt;
+        if (currentTime > DURATION) currentTime = 0;
+      }
+      document.getElementById('timeDisplay').textContent = currentTime.toFixed(1);
+      document.getElementById('playhead').style.left = (currentTime / DURATION * 100) + '%';
+
+      let bass = 0, mid = 0, treble = 0;
+      if (audioEnabled) {
+        bass = getBass(); mid = getMid(); treble = getTreble();
+        const bpmNow = detectBPM(bass);
+        document.getElementById('audioInfo').textContent = `BPM: ${bpmNow || '--'} | B: ${bass.toFixed(2)} | M: ${mid.toFixed(2)} | T: ${treble.toFixed(2)}`;
+      }
+
+      applyKeyframes();
+
+      layers.forEach(l => {
+        if (!l.enabled) return;
+        const mat = l.mesh.material;
+        if (l.type === 'plasma') mat.uniforms.speed.value = 1 + bass * 2;
+        if (l.type === 'tunnel') mat.uniforms.rotation.value += mid * 0.01;
+        if (l.type === 'glitch') mat.uniforms.intensity.value = 0.5 + treble * 0.5;
+        if (l.type === 'matrix') mat.uniforms.speed.value = 1 + bass * 3;
+        if (l.type === 'copper') mat.uniforms.speed.value = 1 + mid;
+        if (l.type === 'sine') mat.uniforms.speed.value = 1 + bass;
+        if (l.type === 'ansi') mat.uniforms.speed.value = 1 + bass * 3;
+        mat.uniforms.time.value += dt;
+      });
+
+      // Render layers to target
+      renderer.setRenderTarget(renderTarget);
+      renderer.render(scene, camera);
+
+      // Post-process
+      renderer.setRenderTarget(null);
+      crtMaterial.uniforms.tDiffuse.value = renderTarget.texture;
+      crtMaterial.uniforms.time.value = currentTime;
+      renderer.render(postScene, camera);
+    }
+
+    // --- INIT ---
+    createLayer('plasma');
+    createLayer('starfield');
+    applyTheme('dark');
+    animate();
+    })();
+  </script>
+</body>
+</html>

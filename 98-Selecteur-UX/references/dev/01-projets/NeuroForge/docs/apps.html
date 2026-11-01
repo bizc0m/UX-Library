@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#030504">
+  <title>NeuroForge Apps</title>
+  <link rel="icon" href="assets/logo/neuro-forge-logo-32.png" type="image/png">
+  <link rel="stylesheet" href="style.css">
+  <script src="apps.js" defer></script>
+</head>
+<body class="nfo-body">
+  <main class="apps-page nfo-shell">
+    <header class="nfo-header">
+      <div class="nfo-topline"><a href="index.html">[ NEUROFORGE ]</a><span>PRODUCTION DIRECTORY</span><span>CP437 / FR</span></div>
+      <pre class="ascii-mark" aria-label="NeuroForge"> _   _ _____ _   _ ____   ___  _____ ___  ____   ____ _____
+| \ | | ____| | | |  _ \ / _ \|  ___/ _ \|  _ \ / ___| ____|
+|  \| |  _| | | | | |_) | | | | |_ | | | | |_) | |  _|  _|
+| |\  | |___| |_| |  _ &lt;| |_| |  _|| |_| |  _ &lt;| |_| | |___
+|_| \_|_____|\___/|_| \_\\___/|_|   \___/|_| \_\\____|_____|</pre>
+      <div class="nfo-titlebar"><span>&lt;&lt;</span><h1>APPS DIRECTORY</h1><span>&gt;&gt;</span></div>
+      <p class="nfo-intro">Capturer, organiser, créer et travailler plus simplement sur macOS. Tous les accès publics passent par GitHub.</p>
+      <div class="nfo-status-filters" aria-label="Filtrer par état">
+        <button type="button" data-status-filter="alpha"><span class="status-light alpha"></span>ALPHA</button>
+        <button type="button" data-status-filter="beta"><span class="status-light beta"></span>BETA</button>
+        <button type="button" data-status-filter="stable"><span class="status-light stable"></span>STABLE</button>
+      </div>
+      <div class="nfo-filter-state" aria-live="polite"><span id="filter-label">TOUTES LES PRODUCTIONS</span><button id="filter-reset" type="button" hidden>EFFACER LE FILTRE</button></div>
+    </header>
+
+    <section class="nfo-roster" aria-label="Productions NeuroForge">
+      <div class="nfo-roster-head"><span>ID</span><span>PRODUCTION / DESCRIPTION / ACCÈS</span></div>
+
+      <article class="nfo-entry" data-preview="assets/screenshots/notecortex.png" data-preview-alt="Capture de NoteCortex">
+        <span class="nfo-id">[01]</span><img class="nfo-app-icon" src="assets/apps/notecortex-logo.png" alt="Icône NoteCortex">
+        <div class="nfo-copy">
+          <div class="nfo-copy-head"><h2>NoteCortex</h2><span class="nfo-status alpha">ALPHA</span><nav class="nfo-actions"><a href="projects/notecortex.html">PAGE</a><a href="https://github.com/bizc0m/NeuroForge">GITHUB</a></nav></div>
+          <p class="nfo-definition">Espace macOS qui réunit notes, tâches et agenda dans une interface unique.</p>
+          <p class="nfo-benefit">Retrouvez rapidement vos priorités et restez concentré sur l'essentiel.</p>
+          <p class="nfo-tags"><button type="button">#NoteCortex</button><button type="button">#Organisation</button><button type="button">#Productivité</button><button type="button">#Notes</button><button type="button">#Agenda</button><button type="button">#Focus</button><button type="button">#macOS</button></p>
+        </div>
+      </article>
+
+      <article class="nfo-entry">
+        <span class="nfo-id">[02]</span><span class="nfo-glyph">DX</span>
+        <div class="nfo-copy">
+          <div class="nfo-copy-head"><h2>NoteCortex Dashboard</h2><span class="nfo-status beta">BETA</span><nav class="nfo-actions"><a href="https://github.com/bizc0m/NeuroForge">GITHUB</a></nav></div>
+          <p class="nfo-definition">Tableau de bord qui rassemble les informations essentielles de l'écosystème NoteCortex.</p>
+          <p class="nfo-benefit">Visualisez votre activité et vos priorités depuis un écran unique.</p>
+          <p class="nfo-tags"><button type="button">#NoteCortexDashboard</button><button type="button">#Dashboard</button><button type="button">#NoteCortex</button><button type="button">#Productivité</button><button type="button">#Visualisation</button><button type="button">#Organisation</button><button type="button">#macOS</button></p>
+        </div>
+      </article>
+
+      <article class="nfo-entry">
+        <span class="nfo-id">[03]</span><span class="nfo-glyph">NC</span>
+        <div class="nfo-copy">
+          <div class="nfo-copy-head"><h2>NCTx</h2><span class="nfo-status alpha">ALPHA</span><nav class="nfo-actions"><a href="https://github.com/bizc0m/NeuroForge">GITHUB</a></nav></div>
+          <p class="nfo-definition">Relie NoteCortex et NotePlan dans un même flux.</p>
+          <p class="nfo-benefit">Gardez vos notes et votre travail dans un ensemble cohérent.</p>
+          <p class="nfo-tags"><button type="button">#NCTx</button><button type="button">#NoteCortex</button><button type="button">#NotePlan</button><button type="button">#Workflow</button><button type="button">#Notes</button><button type="button">#Synchronisation</button><button type="button">#macOS</button></p>
+        </div>
+      </article>
+
+      <article class="nfo-entry">
+        <span class="nfo-id">[04]</span><span class="nfo-glyph">SY</span>
+        <div class="nfo-copy">
+          <div class="nfo-copy-head"><h2>nctx-noteplan-sync</h2><span class="nfo-status alpha">ALPHA</span><nav class="nfo-actions"><a href="https://github.com/bizc0m/NeuroForge">GITHUB</a></nav></div>
+          <p class="nfo-definition">Synchronise les données NCTx avec les notes NotePlan.</p>
+          <p class="nfo-benefit">Retrouvez les mêmes informations sans effectuer de doubles saisies.</p>
+          <p class="nfo-tags"><button type="button">#NCTxNotePlanSync</button><button type="button">#Synchronisation</button><button type="button">#NCTx</button><button type="button">#NotePlan</button><button type="button">#Automatisation</button><button type="button">#Notes</button><button type="button">#macOS</button></p>
+        </div>
+      </article>
+
+      <article class="nfo-entry">
+        <span class="nfo-id">[05]</span><img class="nfo-app-icon" src="assets/apps/egrecore-logo.png" alt="Icône EgreCore">
+        <div class="nfo-copy">
+          <div class="nfo-copy-head"><h2>EgreCore</h2><span class="nfo-status alpha">ALPHA</span><nav class="nfo-actions"><a href="https://github.com/bizc0m/NeuroForge">GITHUB</a></nav></div>
+          <p class="nfo-definition">Partage les fonctions cognitives communes aux productions NeuroForge.</p>
+          <p class="nfo-benefit">Accélère la création et maintient une expérience cohérente.</p>
+          <p class="nfo-tags"><button type="button">#EgreCore</button><button type="button">#Socle</button><button type="button">#NeuroForge</button><button type="button">#Développement</button><button type="button">#Architecture</button><button type="button">#Cognition</button><button type="button">#macOS</button></p>
+        </div>
+      </article>
+
+      <article class="nfo-entry" data-preview="assets/screenshots/notedroppy.png" data-preview-alt="Capture de NoteDroppy">
+        <span class="nfo-id">[06]</span><img class="nfo-app-icon" src="assets/apps/notedroppy-logo.png" alt="Icône NoteDroppy">
+        <div class="nfo-copy">
+          <div class="nfo-copy-head"><h2>NoteDroppy</h2><span class="nfo-status stable">STABLE</span><nav class="nfo-actions"><a href="projects/notedroppy.html">PAGE</a><a href="https://github.com/bizc0m/NoteDroppy-page">GITHUB</a><a href="https://github.com/bizc0m/NoteDroppy-page/releases/latest">APP</a></nav></div>
+          <p class="nfo-definition">Envoie textes, liens et sélections directement vers NotePlan.</p>
+          <p class="nfo-benefit">Conservez une information sans interrompre votre navigation ou votre travail.</p>
+          <p class="nfo-tags"><button type="button">#NoteDroppy</button><button type="button">#Capture</button><button type="button">#NotePlan</button><button type="button">#Notes</button><button type="button">#Liens</button><button type="button">#Productivité</button><button type="button">#macOS</button></p>
+        </div>
+      </article>
+
+      <article class="nfo-entry">
+        <span class="nfo-id">[07]</span><span class="nfo-glyph">PT</span>
+        <div class="nfo-copy">
+          <div class="nfo-copy-head"><h2>Photo Travel Studio</h2><span class="nfo-status alpha">ALPHA</span><nav class="nfo-actions"><a href="https://github.com/bizc0m/NeuroForge">GITHUB</a></nav></div>
+          <p class="nfo-definition">Studio photo qui organise les souvenirs de voyage par lieux, albums et parcours.</p>
+          <p class="nfo-benefit">Transformez votre photothèque en récit de voyage facile à explorer.</p>
+          <p class="nfo-tags"><button type="button">#PhotoTravelStudio</button><button type="button">#Photo</button><button type="button">#Voyage</button><button type="button">#Albums</button><button type="button">#Cartographie</button><button type="button">#Souvenirs</button><button type="button">#macOS</button></p>
+        </div>
+      </article>
+
+      <article class="nfo-entry" data-preview="assets/screenshots/instabatch-crop.png" data-preview-alt="Capture de InstaBatch Crop">
+        <span class="nfo-id">[08]</span><img class="nfo-app-icon" src="assets/apps/instabatch-logo.png" alt="Icône InstaBatch Crop">
+        <div class="nfo-copy">
+          <div class="nfo-copy-head"><h2>InstaBatch Crop</h2><span class="nfo-status stable">STABLE</span><nav class="nfo-actions"><a href="https://github.com/bizc0m/InstaBatchCrop">GITHUB</a><a href="https://github.com/bizc0m/InstaBatchCrop/releases/latest">APP</a></nav></div>
+          <p class="nfo-definition">Recadre et exporte plusieurs images aux formats des réseaux sociaux.</p>
+          <p class="nfo-benefit">Préparez plusieurs images cohérentes en une seule opération.</p>
+          <p class="nfo-tags"><button type="button">#InstaBatchCrop</button><button type="button">#Photo</button><button type="button">#Recadrage</button><button type="button">#Export</button><button type="button">#Instagram</button><button type="button">#Création</button><button type="button">#macOS</button></p>
+        </div>
+      </article>
+
+      <article class="nfo-entry">
+        <span class="nfo-id">[09]</span><img class="nfo-app-icon" src="assets/apps/viper-logo.png" alt="Icône VIPeR">
+        <div class="nfo-copy">
+          <div class="nfo-copy-head"><h2>VIPeR</h2><span class="nfo-status beta">BETA</span><nav class="nfo-actions"><a href="https://github.com/bizc0m/NeuroForge">GITHUB</a></nav></div>
+          <p class="nfo-definition">Analyse localement les événements détectés dans les vidéos.</p>
+          <p class="nfo-benefit">Repérez plus rapidement les séquences qui méritent votre attention.</p>
+          <p class="nfo-tags"><button type="button">#VIPeR</button><button type="button">#Vidéo</button><button type="button">#Analyse</button><button type="button">#Surveillance</button><button type="button">#Événements</button><button type="button">#Local</button><button type="button">#macOS</button></p>
+        </div>
+      </article>
+
+      <article class="nfo-entry">
+        <span class="nfo-id">[10]</span><img class="nfo-app-icon" src="assets/apps/openwithcleaner-logo.png" alt="Icône OpenWithCleaner">
+        <div class="nfo-copy">
+          <div class="nfo-copy-head"><h2>OpenWithCleaner</h2><span class="nfo-status beta">BETA</span><nav class="nfo-actions"><a href="https://github.com/bizc0m/NeuroForge">GITHUB</a></nav></div>
+          <p class="nfo-definition">Identifie les entrées inutiles du menu Ouvrir avec de macOS.</p>
+          <p class="nfo-benefit">Retrouvez un menu plus propre et ouvrez vos fichiers plus vite.</p>
+          <p class="nfo-tags"><button type="button">#OpenWithCleaner</button><button type="button">#Maintenance</button><button type="button">#Nettoyage</button><button type="button">#Finder</button><button type="button">#Associations</button><button type="button">#Productivité</button><button type="button">#macOS</button></p>
+        </div>
+      </article>
+
+      <article class="nfo-entry">
+        <span class="nfo-id">[11]</span><span class="nfo-glyph">RP</span>
+        <div class="nfo-copy">
+          <div class="nfo-copy-head"><h2>REPTIL</h2><span class="nfo-status alpha">ALPHA</span><nav class="nfo-actions"><a href="https://github.com/bizc0m/NeuroForge">GITHUB</a></nav></div>
+          <p class="nfo-definition">Explore de nouveaux usages avant leur intégration dans NeuroForge.</p>
+          <p class="nfo-benefit">Teste rapidement de nouvelles idées avant leur intégration dans NeuroForge.</p>
+          <p class="nfo-tags"><button type="button">#REPTIL</button><button type="button">#Expérimental</button><button type="button">#Prototype</button><button type="button">#Innovation</button><button type="button">#NeuroForge</button><button type="button">#Recherche</button><button type="button">#macOS</button></p>
+        </div>
+      </article>
+
+      <article class="nfo-entry" data-preview="assets/screenshots/demoforge.png" data-preview-alt="Aperçu de DemoForge">
+        <span class="nfo-id">[12]</span><span class="nfo-glyph">DF</span>
+        <div class="nfo-copy">
+          <div class="nfo-copy-head"><h2>DemoForge</h2><span class="nfo-status alpha">ALPHA</span><nav class="nfo-actions"><a href="https://github.com/bizc0m/DemoForge-Public">GITHUB</a></nav></div>
+          <p class="nfo-definition">Atelier de création d'expériences visuelles interactives inspirées par la demoscene.</p>
+          <p class="nfo-benefit">Transformez rapidement une idée créative en démonstration visuelle partageable.</p>
+          <p class="nfo-tags"><button type="button">#DemoForge</button><button type="button">#Demoscene</button><button type="button">#Création</button><button type="button">#ArtNumérique</button><button type="button">#Web</button><button type="button">#Animation</button><button type="button">#OpenSource</button></p>
+        </div>
+      </article>
+
+      <article class="nfo-entry">
+        <span class="nfo-id">[13]</span><span class="nfo-glyph">NS</span>
+        <div class="nfo-copy">
+          <div class="nfo-copy-head"><h2>NotePlan Shorty</h2><span class="nfo-status beta">BETA</span><nav class="nfo-actions"><a href="https://github.com/bizc0m/NoteplanShorty">GITHUB</a><a href="https://github.com/bizc0m/NoteplanShorty/releases/latest">APP</a></nav></div>
+          <p class="nfo-definition">Crée des raccourcis macOS qui ouvrent directement une note NotePlan.</p>
+          <p class="nfo-benefit">Accédez à vos notes importantes depuis le Finder ou le Dock.</p>
+          <p class="nfo-tags"><button type="button">#NotePlanShorty</button><button type="button">#NotePlan</button><button type="button">#Raccourcis</button><button type="button">#Notes</button><button type="button">#AccèsRapide</button><button type="button">#Productivité</button><button type="button">#macOS</button></p>
+        </div>
+      </article>
+    </section>
+
+    <figure class="nfo-preview" id="app-preview" hidden><img src="" alt=""><figcaption>APERÇU</figcaption></figure>
+
+    <footer class="nfo-footer"><span>FORGED FOR ATYPICAL THINKERS.</span><b>by NeuroForge</b></footer>
+  </main>
+</body>
+</html>

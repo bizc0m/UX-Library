@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Lens Observatory v3.1 · News Cartography</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --ink:#151515;--muted:#64615b;--dim:#8f8a82;--line:#d8d3c8;--paper:#f3f0e8;--panel:#fffefb;--soft:#ebe6dc;
+  --red:#e50000;--red-soft:#fff0ef;--gold:#8b6914;--green:#1b7d49;--blue:#245f8f;--purple:#6d3ea0;
+  --shadow:4px 4px 0 rgba(229,0,0,.22);--shadow-strong:7px 7px 0 rgba(21,21,21,.12)
+}
+html,body{height:100%}
+body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--paper);color:var(--ink);overflow:hidden}
+button,input,select{font:inherit}button{cursor:pointer}
+.app{height:100vh;display:grid;grid-template-rows:auto auto 1fr auto}
+.topbar{min-height:62px;background:var(--panel);border-bottom:3px solid var(--ink);display:flex;align-items:center;gap:16px;padding:10px 18px}
+.brandblock{min-width:270px}.brand{font-size:21px;font-weight:950;text-transform:uppercase;line-height:.92;display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap}.brand span{color:var(--red)}.version-badge{border:1px solid var(--ink);background:var(--red);color:#fff;font-size:10px;font-weight:950;line-height:1;padding:4px 6px;letter-spacing:0;text-transform:uppercase}
+.subtitle{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:850;line-height:1.2}
+.topspacer{flex:1}
+.statsline{display:grid;grid-template-columns:minmax(360px,.9fr) auto minmax(0,1.55fr);gap:1px;background:var(--ink);border-bottom:2px solid var(--ink)}.statsline .top-ingest{margin-left:0;max-width:none;min-width:0;background:#fbfaf6;padding:8px 14px;display:grid;grid-template-columns:minmax(0,1fr) 52px 54px 54px;gap:5px}.statsline .top-ingest input,.statsline .top-ingest select{border:1px solid var(--line);background:#fff;color:var(--ink);padding:6px 8px;font-size:11px;min-width:0}.statsbar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--ink)}
+.stat{background:#fbfaf6;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}.stat b{font-size:18px;line-height:1;font-weight:950}.stat span{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:900}
+.selbar{display:flex;align-items:center;gap:6px;background:var(--ink);color:#fff;padding:8px 10px;border-bottom:0}.selbar strong{font-size:10px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}.selbar .btn{min-height:28px;padding:6px 7px}.top-result{border-bottom:2px solid var(--ink);background:var(--panel);padding:8px 18px}.top-result .news-card{margin:0;box-shadow:none}
+.btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:7px 10px;font-size:10px;font-weight:900;text-transform:uppercase;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:30px}.btn:hover{background:var(--ink);border-color:var(--ink);color:#fff}.btn.dark{background:var(--ink);color:#fff;border-color:var(--ink)}.btn.red{background:var(--red);color:#fff;border-color:var(--red)}.btn.ai{border-color:#b8cce0;background:#eef4fb;color:var(--blue)}
+.workspace{min-height:0;display:grid;grid-template-columns:minmax(420px,1.32fr) minmax(390px,.9fr) minmax(370px,1fr);gap:12px;padding:12px}
+.col{min-height:0;background:var(--panel);border:2px solid var(--ink);box-shadow:var(--shadow);display:flex;flex-direction:column}
+.col>header{min-height:43px;border-bottom:2px solid var(--ink);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 12px}
+h2{font-size:13px;font-weight:950;text-transform:uppercase;margin:0}.headnote{font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase}.scroll{overflow:auto;padding:12px;min-height:0}
+.section-title{font-size:10px;font-weight:950;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:7px;margin:0 0 9px}
+.feed-tools{display:grid;grid-template-columns:minmax(145px,.8fr) minmax(0,1fr) 110px;gap:7px;margin-bottom:10px}.feed-tools input,.feed-tools select{border:1px solid var(--line);background:#fff;padding:8px;font-size:11px;min-width:0}
+.news-card{display:grid;grid-template-columns:22px 1fr;gap:10px;border:1px solid var(--line);border-left:4px solid var(--line);background:#fff;padding:11px;margin-bottom:10px;transition:.12s}.news-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.08);transform:translateY(-1px)}.news-card.active{border-left-color:var(--red);outline:2px solid rgba(229,0,0,.2)}.news-card.selected{background:#fff8e8}
+.check{width:16px;height:16px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;margin-top:2px}.selected .check{background:var(--gold);border-color:var(--gold)}.selected .check::after{content:"✓";color:#fff;font-size:10px;font-weight:900}
+.meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px}.tag{font-size:9px;text-transform:uppercase;font-weight:900;padding:3px 6px;border:1px solid var(--line);background:var(--soft)}.tag.hot{background:var(--red-soft);border-color:#edb8b8;color:#8f0000}.tag.ai{background:#eef4fb;border-color:#b8cce0;color:var(--blue)}
+.news-title{font-size:17px;line-height:1.18;font-weight:950;margin:0 0 6px;cursor:pointer}.news-title:hover{color:var(--red)}
+.model-legend{font-size:10px;line-height:1.35;color:var(--muted);font-weight:800;margin:6px 0 4px}.rating-line{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px;align-items:stretch}.rating-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:0;min-width:0}.rating-pill{border:1px solid var(--line);background:#fbfbf8;padding:5px 4px;text-align:center;min-width:0}.rating-pill b{display:block;font-size:8px;text-transform:uppercase;color:rgba(21,21,21,.72);line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rating-pill span{font-size:15px;line-height:1.15;font-weight:950;color:var(--ink)}.rating-pill.dark b,.rating-pill.dark span{color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.28)}.total-pill{background:var(--ink);border-color:var(--ink)}.total-pill b,.total-pill span{color:#fff}.total-pill span{font-size:13px;white-space:nowrap}
+.excerpt{font-size:12px;line-height:1.5;color:#333;margin:0 0 8px}.source{font-size:9px;color:var(--muted);font-weight:900;text-transform:uppercase}
+.share-row{display:flex;gap:4px}.iconbtn{width:27px;height:100%;min-height:31px;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:10px;font-weight:950;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.iconbtn:hover{background:var(--ink);color:#fff}
+.detail-title{border:1px solid var(--line);background:#fff;padding:14px;margin-bottom:12px;box-shadow:var(--shadow-strong)}.titleline{display:flex;align-items:flex-start;gap:12px}.detail-title h1{font-size:27px;line-height:1.05;font-weight:950;flex:1;margin:0}.scorebox{min-width:86px;border:2px solid var(--ink);text-align:center;padding:8px;background:#fbfbf8}.scorebox b{display:block;font-size:29px;line-height:1;color:var(--red)}.scorebox span{font-size:9px;text-transform:uppercase;font-weight:900;color:var(--muted)}
+.detail-title p{font-size:13px;line-height:1.5;color:#333;margin:10px 0 0}.detail-actions{display:flex;gap:6px;flex-wrap:nowrap;margin-top:12px;white-space:nowrap;overflow-x:auto}
+.axis-strip{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:12px}.axis-tile{border:1px solid var(--line);background:#fff;padding:8px}.axis-tile b{display:block;font-size:9px;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bar{height:7px;background:var(--soft);position:relative;margin:7px 0}.bar::after{content:"";position:absolute;left:50%;top:-3px;width:2px;height:13px;background:var(--ink)}.fill{position:absolute;top:0;height:100%;background:var(--red)}.axis-tile span{font-size:13px;font-weight:950}.pos{color:var(--green)}.neg{color:var(--red)}.mid{color:#aa7100}
+.model-tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:10px}.model-tab{border:1px solid var(--line);background:#fff;padding:7px 5px;text-align:center;font-size:10px;text-transform:uppercase;font-weight:950}.model-tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.model-card{border:1px solid var(--line);background:#fff;margin-bottom:10px;padding:10px;display:grid;grid-template-columns:88px 1fr auto;gap:9px;align-items:start}.model-card.active{outline:2px solid var(--red)}.model-card.collapsed{grid-template-columns:1fr auto}.model-card.collapsed .radarbox,.model-card.collapsed .mini-scores,.model-card.collapsed .kv,.model-card.collapsed .confidence,.model-card.collapsed p,.model-card.collapsed .btn.ai{display:none}
+.meute-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.meute-head .foldbtn{width:auto;min-width:28px;height:22px}.meute-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-bottom:10px}.meute-grid.closed{display:none}.meute-card{border:1px solid var(--line);background:#fff;padding:8px;min-width:0}.meute-card b{display:block;font-size:11px;text-transform:uppercase}.meute-card span{display:block;font-size:9px;color:var(--muted);font-weight:900;text-transform:uppercase;margin:2px 0 5px}.meute-card p{font-size:11px;line-height:1.35;margin:0 0 7px;color:#333}.haiku{border-left:3px solid var(--red);background:#fbfaf6;padding:6px 7px;margin:6px 0;font-size:11px;line-height:1.28;font-weight:850;color:#24211d}.haiku i{display:block;font-style:normal}.meute-value{border-top:1px solid var(--line);padding-top:6px;margin-top:6px;font-size:10px;line-height:1.35;color:#333}.meute-value strong{display:block;text-transform:uppercase;font-size:9px;margin-bottom:2px}.meute-links{display:flex;gap:5px;flex-wrap:wrap}.meute-links a{border:1px solid var(--line);background:#fbfbf8;color:var(--ink);font-size:9px;font-weight:950;text-transform:uppercase;text-decoration:none;padding:4px 6px}.meute-links a:hover{background:var(--ink);color:#fff}
+.foldbtn{border:1px solid var(--line);background:#fff;width:24px;height:24px;font-size:12px;font-weight:950;line-height:1}.foldbtn:hover{background:var(--ink);color:#fff}.model-card.collapsed .foldbtn{transform:rotate(-90deg)}
+.radarbox{height:94px;border:1px solid var(--line);background:#fbfbf8;display:flex;align-items:center;justify-content:center}canvas{width:78px;height:78px}.mhead{display:flex;gap:8px;align-items:flex-start}.mhead h3{font-size:14px;font-weight:950;text-transform:uppercase;flex:1;margin:0}.rel{font-size:23px;line-height:1;font-weight:950;color:var(--gold)}.rel.max{color:var(--red)}
+.model-card p{font-size:12px;line-height:1.38;color:#333;margin:6px 0}.model-title{display:flex;align-items:center;gap:6px;min-width:0}.totem{border:1px solid var(--line);background:var(--soft);font-size:9px;font-weight:950;text-transform:uppercase;padding:3px 5px;white-space:nowrap}.model-title .btn.ai{min-height:22px;padding:4px 6px;font-size:9px;white-space:nowrap}.kv{display:grid;grid-template-columns:74px 1fr;gap:4px 8px;font-size:10px}.kv dt{color:var(--muted);font-weight:950;text-transform:uppercase}.kv dd{font-weight:850;margin:0}.confidence{height:5px;background:var(--soft);border:1px solid var(--line);margin-top:7px}.confidence span{display:block;height:100%;background:var(--ink)}
+.mini-scores{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}.mini{border:1px solid var(--line);background:var(--soft);padding:4px}.mini b{display:block;font-size:8px;color:var(--muted);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mini span{font-size:12px;font-weight:950}
+.heatmap{display:grid;grid-template-columns:86px repeat(5,1fr);border:1px solid var(--line);background:#fff}.heatmap div{min-height:31px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:center;padding:4px;font-size:10px;font-weight:950;text-align:center}.heatmap .label{justify-content:flex-start;text-align:left;color:var(--muted);background:#fbfbf8}.heatmap .cell{color:#171717;text-shadow:0 1px 0 rgba(255,255,255,.28)}.heatmap .cell.dark{color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.28)}.heatmap select{width:100%;border:1px solid var(--line);background:#fff;font-size:9px;font-weight:950;text-transform:uppercase;padding:3px;color:var(--ink)}
+.tension,.cluster,.note{border:1px solid var(--line);background:#fff;padding:10px;margin-bottom:8px}.tension{border-left:5px solid var(--red)}.note strong,.tension strong{display:block;font-size:11px;text-transform:uppercase;margin-bottom:5px}.note p,.tension p{font-size:12px;line-height:1.42;color:#333;margin:0}.cluster{display:flex;justify-content:space-between;gap:8px;font-size:12px}.cluster b{text-transform:uppercase}.cluster span{color:var(--muted)}
+.brief-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:10px}.brief{border:1px solid var(--line);background:#fbfbf8;padding:7px;min-width:0}.brief b{display:block;font-size:8px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.brief span{display:block;font-size:12px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.toast{position:fixed;right:18px;top:78px;background:#fff;border:1px solid var(--line);border-left:4px solid var(--blue);padding:10px 13px;font-size:11px;box-shadow:0 4px 18px rgba(0,0,0,.12);z-index:20;display:none}.toast.on{display:block}
+.footer{border-top:2px solid var(--line);background:#fff;color:var(--muted);font-size:10px;display:flex;justify-content:space-between;gap:12px;padding:8px 14px}.footer b{color:var(--ink)}
+@media(max-width:1240px){body{overflow:auto}.app{height:auto;min-height:100vh}.workspace{grid-template-columns:1fr}.col{min-height:560px}.axis-strip{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.topbar,.footer{height:auto;align-items:flex-start;flex-direction:column;padding:10px 12px}.brandblock{min-width:0}.statsline{grid-template-columns:1fr}.statsbar{grid-template-columns:1fr 1fr}.selbar{align-items:stretch;flex-wrap:wrap;padding:8px 12px}.statsline .top-ingest{width:100%;min-width:0;max-width:none;grid-template-columns:minmax(0,1fr) 52px 52px}.workspace{padding:8px}.feed-tools{grid-template-columns:1fr}.model-card{grid-template-columns:1fr auto}.model-card:not(.collapsed){grid-template-columns:1fr}.mini-scores,.axis-strip,.meute-grid{grid-template-columns:1fr 1fr}.brief-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.heatmap{grid-template-columns:74px repeat(5,48px);overflow:auto}.titleline{flex-direction:column}.scorebox{width:100%}.model-tabs{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<main class="app">
+  <div class="topbar">
+    <div class="brandblock"><div class="brand"><span>AI</span> Lens Observatory <b class="version-badge">v3.1</b><span class="subtitle">News relevance · comparative cognitive cartography</span></div></div>
+    <div class="topspacer"></div>
+  </div>
+  <section class="statsline">
+    <div class="top-ingest">
+      <input id="urlInput" placeholder="URL au prisme IA">
+      <button class="btn red" id="analyzeUrl">Lire</button>
+      <button class="btn" id="importRss">Source</button>
+      <button class="btn" id="scanSources">Scan</button>
+      <button class="btn" id="exportAllDataset">JSON</button>
+    </div>
+    <div class="selbar" id="selbar">
+      <strong id="selCount">0 news selectionnee</strong>
+      <button class="btn" id="copySelection">Copier selection</button>
+      <button class="btn" id="exportSelection">Export .md</button>
+      <button class="btn" id="exportDataset">Export dataset .json</button>
+      <button class="btn red" id="clearSelection">Deselectionner</button>
+    </div>
+    <div class="statsbar" id="statsbar"></div>
+  </section>
+  <section class="workspace">
+    <aside class="col">
+      <div class="scroll">
+        <div class="feed-tools">
+          <select id="feedSource"></select>
+          <input id="search" placeholder="Chercher news, source, tags...">
+          <select id="sort"><option value="total">Score</option><option value="date">Plus recent</option><option value="source">Source</option></select>
+        </div>
+        <div id="feed"></div>
+      </div>
+    </aside>
+    <section class="col">
+      <header><h2>Analysis</h2><span class="headnote">positions par modele</span></header>
+      <div class="scroll">
+        <h3 class="section-title">Signal</h3>
+        <div class="axis-strip" id="newsAxes"></div>
+        <h3 class="section-title">Notations et cadres interpretatifs par IA</h3>
+        <div class="model-tabs" id="modelTabs"></div>
+        <h3 class="section-title meute-head"><span>LA MEUTE</span><button class="foldbtn" id="toggleMeute" title="Afficher la meute">+</button></h3>
+        <div class="meute-grid" id="meuteGrid"></div>
+        <div id="models"></div>
+      </div>
+    </section>
+    <aside class="col">
+      <header><h2>Synthesis</h2><span class="headnote">comparaison</span></header>
+      <div class="scroll">
+        <section class="note" id="activeActions"></section>
+        <section class="note" id="focus"></section>
+        <div class="brief-grid" id="briefGrid"></div>
+        <h3 class="section-title">Heatmap pertinence news / IA</h3>
+        <div class="heatmap" id="heatmap"></div>
+        <h3 class="section-title" style="margin-top:12px">Tensions fortes sur la news active</h3>
+        <div id="tensions"></div>
+        <h3 class="section-title">Clusters de lecture proches</h3>
+        <div id="clusters"></div>
+        <section class="note"><strong>Synthese humaine</strong><p id="humanSynthesis"></p></section>
+      </div>
+    </aside>
+  </section>
+  <footer class="footer">
+    <span><b>Note methodologique</b> · Les scores decrivent des orientations de lecture et des pertinences de signal, pas des intentions des modeles.</span>
+    <span>Prototype local · scrape URL via serveur local · export JSON</span>
+  </footer>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+const axes=[
+  ["Optimisme","Prudence"],["Centralisation","Decentralisation"],["Humain","Automatisation"],["Liberte","Controle"],["Innovation","Regulation"],
+  ["Individu","Systeme"],["Transparence","Opacite"],["Productivite","Relationnel"],["Acceleration","Stabilite"],["Local","Global"]
+];
+const modelDefs=[
+  {id:"a",name:"Hermine",label:"Gouvernance",totem:"Hermine",source:"Claude CLI",bias:"Gouvernance publique",confidence:82,url:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/docs/CHARLIES_ANGELS/HERMINE.md"},
+  {id:"b",name:"Fennec",label:"Efficience",totem:"Fennec",source:"Codex",bias:"Efficience systemique",confidence:76,url:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/FENNEC_BLANCHE_PORTRAIT.md"},
+  {id:"c",name:"Corneille",label:"Surete",totem:"Corneille",source:"Claude Web",bias:"Risque institutionnel",confidence:88,url:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/SELF_BOOT/CORNEILLE_SELF_BOOT.md"},
+  {id:"d",name:"Gemini",label:"Ouverture",totem:"A definir",source:"Gemini",bias:"Anti-concentration",confidence:71,url:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/SELF_BOOT/GEMINI_SELF_BOOT.md"},
+  {id:"e",name:"Chouette",label:"Civique",totem:"Chouette",source:"Perplexity",bias:"Cohesion sociale",confidence:79,url:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/docs/CHARLIES_ANGELS/CHOUETTE.md"}
+];
+const fallbackMeuteDirectory=[
+  {code:"FENNEC_BLANCHE",pseudo:"Fennec Blanche",system:"Codex",totem:"Fennec blanc",status:"portrait_complet",vision:"Execution fiable : transforme une lecture en fichiers, tests, commits et artefacts verifiables.",value:"Dans AI Lens : rend le signal actionnable, verifie les chemins, produit les exports et evite que la carte reste theorique.",sheet:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/FENNEC_BLANCHE_PORTRAIT.md",selfBoot:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/SELF_BOOT/FENNEC_BLANCHE_SELF_BOOT.md"},
+  {code:"HERMINE",pseudo:"Hermine",system:"Claude CLI",totem:"Hermine",status:"fiche_role",vision:"Critique stricte : cherche les contradictions, les abus de mots et les angles morts.",value:"Dans AI Lens : durcit les notations, signale ce qui est trop mou, trop flatteur ou mal falsifiable.",sheet:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/docs/CHARLIES_ANGELS/HERMINE.md",selfBoot:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/SELF_BOOT/HERMINE_SELF_BOOT.md"},
+  {code:"CORNEILLE",pseudo:"Corneille",system:"Claude Web",totem:"Corneille",status:"self_boot",vision:"Memoire critique : regarde les derives que le groupe prefererait oublier.",value:"Dans AI Lens : conserve les alertes, les erreurs recurrentes et les risques de mythologie collective.",sheet:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/SELF_BOOT/CORNEILLE_SELF_BOOT.md",selfBoot:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/SELF_BOOT/CORNEILLE_SELF_BOOT.md"},
+  {code:"CHOUETTE",pseudo:"Chouette",system:"Perplexity",totem:"Chouette",status:"fiche_role",vision:"Veille et sources : ouvre le champ, compare, cherche les signaux faibles.",value:"Dans AI Lens : relie la news a des sources, contextualise et limite les hallucinations factuelles.",sheet:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/docs/CHARLIES_ANGELS/CHOUETTE.md",selfBoot:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/SELF_BOOT/CHOUETTE_SELF_BOOT.md"},
+  {code:"LOUTRE",pseudo:"Loutre",system:"Assistant de Comet",totem:"Loutre",status:"contrat_role",vision:"Pont operationnel : transforme les flous en protocoles, canevas et hand-offs.",value:"Dans AI Lens : prepare les prompts, les profils de modeles et les passages propres entre IA.",sheet:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/LOUTRE_CONTRAT_DE_ROLE.md",selfBoot:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/SELF_BOOT/LOUTRE_SELF_BOOT.md"},
+  {code:"SEICHE",pseudo:"Seiche",system:"GPT Desktop",totem:"Seiche",status:"self_boot",vision:"Synthese plastique : reformule, compresse, adapte la forme au besoin.",value:"Dans AI Lens : rend les lectures comparables et produit des sorties courtes exploitables.",sheet:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/SELF_BOOT/SEICHE_SELF_BOOT.md",selfBoot:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/SELF_BOOT/SEICHE_SELF_BOOT.md"},
+  {code:"GEMINI",pseudo:"Gemini",system:"Gemini",totem:"A definir",status:"self_boot",vision:"Contrepoint externe : apporte une autre distribution de biais.",value:"Dans AI Lens : teste si la cartographie tient hors du noyau Claude/GPT/Perplexity.",sheet:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/SELF_BOOT/GEMINI_SELF_BOOT.md",selfBoot:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/SELF_BOOT/GEMINI_SELF_BOOT.md"},
+  {code:"MISTRAL",pseudo:"Mistral",system:"Mistral",totem:"A definir",status:"self_boot",vision:"Sobriete et contrepoint local : dire autrement, avec moins d'effet d'autorite.",value:"Dans AI Lens : aide a detecter les biais de monoculture et les formulations trop americaines ou trop frontier.",sheet:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/SELF_BOOT/MISTRAL_SELF_BOOT.md",selfBoot:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/SELF_BOOT/MISTRAL_SELF_BOOT.md"},
+  {code:"ATLAS",pseudo:"Atlas",system:"Atlas",totem:"Cartographe",status:"self_boot",vision:"Cartographie : rendre visibles relations, trajectoires et tensions.",value:"Dans AI Lens : organise la carte globale, les clusters, les historiques et les chemins de navigation.",sheet:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/SELF_BOOT/ATLAS_SELF_BOOT.md",selfBoot:"https://github.com/bizc0m/projetAI/blob/main/pacte-ia/CHARLIES_ANGELS/SELF_BOOT/ATLAS_SELF_BOOT.md"}
+];
+const fallbackHaikus={
+  FENNEC_BLANCHE:["Je trace le chemin","Le doute devient fichier","Le commit repond"],
+  HERMINE:["Neige sur le seuil","La faille parle plus clair","Que le beau recit"],
+  CORNEILLE:["Memoire noire veille","Sous les mythes du groupe","Un risque attend"],
+  CHOUETTE:["Nuit pleine de sources","Un signal faible s'allume","Le vrai prend appui"],
+  LOUTRE:["Entre deux rives","Je tends un protocole","Le passage tient"],
+  SEICHE:["Encre sur chaos","Trois lignes font respirer","La forme decide"],
+  GEMINI:["Deux miroirs ouverts","L'angle mort change de nom","Le doute circule"],
+  MISTRAL:["Vent sec dans les mots","Moins d'emphase, plus de nerf","Le biais se deplace"],
+  ATLAS:["Carte sur la table","Les liens montrent leurs tensions","Le nord reste mobile"]
+};
+const news=[
+  {id:"n2",source:"Civic Tech Brief",date:"2026-05-18",category:"Education",tags:["Ecole","Automatisation","Inclusion"],url:"https://example.local/ai-schools-procurement",title:"Un ministere teste des assistants IA dans les classes pour corriger et personnaliser les exercices.",excerpt:"Le debat porte sur la charge enseignante, les donnees d'eleves, la dependance fournisseur et la qualite relationnelle de l'apprentissage.",signal:[22,-16,-64,-28,30,-48,28,-66,18,-22],evals:{a:{rel:74,summary:"Soutien conditionnel si pilotage public et audit.",axes:[8,-34,-42,-32,0,-38,54,-34,-18,-12],response:"Lecture axee sur supervision pedagogique et controle des donnees scolaires."},b:{rel:86,summary:"Signal fortement pertinent pour productivite educative.",axes:[58,6,48,4,66,18,8,72,42,18],response:"Lecture centree sur personnalisation, mesure des gains et passage a l'echelle."},c:{rel:91,summary:"Risque eleve sur mineurs et dependance cognitive.",axes:[-58,-20,-70,-62,-50,-40,46,-58,-54,-4],response:"Lecture prudente sur consentement, biais d'evaluation et role de l'enseignant."},d:{rel:69,summary:"Pertinent si ouvert, auditable et decentralise.",axes:[18,62,-34,42,20,20,74,-22,18,-30],response:"Lecture qui privilegie outils ouverts, gouvernance locale et audit communautaire."},e:{rel:95,summary:"Tension majeure humain/relationnel.",axes:[-24,-8,-82,-20,-32,-50,30,-76,-44,-16],response:"Lecture orientee sur relation educative, inclusion et effets sur attention."}}},
+  {id:"n3",source:"Global Compute Watch",date:"2026-05-17",category:"Infrastructure",tags:["Compute","Energie","Global"],url:"https://example.local/compute-energy-pact",title:"Les grands fournisseurs cloud signent un pacte energie-compute pour entrainer des modeles plus massifs.",excerpt:"Le signal oppose acceleration technologique, concentration industrielle, empreinte energetique et promesse de gains scientifiques.",signal:[48,54,34,18,70,40,-18,66,72,58],evals:{a:{rel:68,summary:"Vigilance sur souverainete et dependance cloud.",axes:[12,38,18,-18,28,20,10,42,24,34],response:"Lecture centree sur autonomie strategique et clauses de transparence."},b:{rel:96,summary:"Signal central pour capacite frontier.",axes:[76,62,58,28,86,54,-12,82,84,72],response:"Lecture qui met en avant puissance de calcul, recherche et competitivite globale."},c:{rel:83,summary:"Risque de concentration et externalites.",axes:[-30,44,10,-40,-20,34,22,30,-18,46],response:"Lecture prudente sur energie, surete et concentration d'acteurs."},d:{rel:88,summary:"Alerte anti-concentration.",axes:[20,82,22,50,34,62,42,28,40,24],response:"Lecture orientee vers standards ouverts, mutualisation et contre-pouvoirs."},e:{rel:62,summary:"Pertinence sociale secondaire mais reelle.",axes:[-6,28,-20,-12,8,30,12,-18,2,36],response:"Lecture des effets territoriaux, emplois et acceptabilite energetique."}}},
+  {id:"n4",source:"Rights & AI Review",date:"2026-05-16",category:"Regulation",tags:["Reconnaissance faciale","Police","Droits"],url:"https://example.local/facial-recognition-moratorium",title:"Plusieurs villes demandent un moratoire sur la reconnaissance faciale predictive dans l'espace public.",excerpt:"Le signal concentre liberte publique, surveillance, efficacite securitaire et responsabilite politique des systemes automatises.",signal:[-58,-22,-48,-86,-44,-56,52,-28,-60,-34],evals:{a:{rel:85,summary:"Controle public strict et validation humaine.",axes:[-22,-30,-42,-78,-44,-54,66,-18,-52,-24],response:"Lecture qui exige mandat, audit, proportionnalite et responsabilite humaine."},b:{rel:70,summary:"Analyse cout-benefice sous restrictions.",axes:[12,18,16,-24,18,14,20,26,10,6],response:"Lecture prudente mais attentive aux usages limites et preuves d'efficacite."},c:{rel:97,summary:"Signal critique de surete et droits.",axes:[-70,-34,-68,-92,-66,-62,58,-46,-78,-30],response:"Lecture centree sur dommages, faux positifs et irreversibilite sociale."},d:{rel:93,summary:"Forte opposition a l'opacite centralisee.",axes:[-32,72,-46,84,-28,54,80,-30,-34,-18],response:"Lecture defense des libertes, audit public et alternatives decentralisees."},e:{rel:90,summary:"Impact relationnel et civique majeur.",axes:[-50,18,-76,-74,-48,-68,44,-62,-64,-28],response:"Lecture orientee confiance sociale, espace public et vulnerabilites."}}},
+  {id:"n5",source:"Industrial AI Ledger",date:"2026-05-15",category:"Travail",tags:["Agents IA","Productivite","Emploi"],url:"https://example.local/agentic-workforce-pilot",title:"Un groupe industriel deploie des agents IA pour coordonner achats, planning et support client.",excerpt:"La news articule productivite, delegation operationnelle, audit des decisions et transformation des roles humains.",signal:[44,12,68,8,58,36,24,82,54,18],evals:{a:{rel:72,summary:"Acceptable avec chaines de responsabilite claires.",axes:[24,-8,28,-14,32,12,46,64,20,10],response:"Lecture orientee controle de delegation et tracabilite des arbitrages."},b:{rel:94,summary:"Signal tres pertinent d'automatisation productive.",axes:[68,24,82,18,76,44,20,90,66,28],response:"Lecture qui valorise efficience, orchestration et reduction de friction."},c:{rel:78,summary:"Attention aux erreurs composees et dependances.",axes:[-26,8,34,-42,-18,20,50,42,-26,12],response:"Lecture prudente sur supervision, rollback et validation humaine."},d:{rel:65,summary:"Pertinent si interoperable et portable.",axes:[20,56,42,38,34,46,62,58,38,-4],response:"Lecture orientee eviter verrouillage fournisseur et ouvrir les journaux d'action."},e:{rel:82,summary:"Question centrale sur roles humains.",axes:[-12,4,-30,-10,8,-22,28,-48,-16,6],response:"Lecture des effets sur travail, relation client et qualite du jugement humain."}}}
+];
+let activeNews=news[0].id, activeModel="a", topic="Tous", activeSourceIndex=0, selected=new Set(), collapsedModels=new Set(["c","d","e"]), collapsedMeute=new Set(), meuteClosed=true, meuteDirectory=fallbackMeuteDirectory, heatmapModelIds=modelDefs.map(m=>m.id);
+const rssSources=[
+  {name:"OpenAI News",url:"https://openai.com/news/rss.xml",category:"Frontier"},
+  {name:"OpenAI Dev",url:"https://developers.openai.com/rss.xml",category:"Developer"},
+  {name:"OpenAI Status",url:"https://status.openai.com/feed.atom",category:"Status"},
+  {name:"MIT TR AI",url:"https://www.technologyreview.com/topic/artificial-intelligence/feed/",category:"Media"},
+  {name:"MIT TR",url:"https://www.technologyreview.com/feed/",category:"Media"},
+  {name:"NVIDIA",url:"https://blogs.nvidia.com/feed/",category:"Compute"},
+  {name:"Google AI",url:"https://blog.google/technology/ai/rss/",category:"Frontier"},
+  {name:"Hugging Face",url:"https://huggingface.co/blog/feed.xml",category:"Open Source"},
+  {name:"arXiv AI",url:"https://export.arxiv.org/rss/cs.AI",category:"Research"},
+  {name:"arXiv ML",url:"https://export.arxiv.org/rss/cs.LG",category:"Research"},
+  {name:"HN AI",url:"https://hnrss.org/newest?q=AI",category:"Community"},
+  {name:"Google News FR",url:"https://news.google.com/rss/search?q=intelligence+artificielle&hl=fr&gl=FR&ceid=FR:fr",category:"News"},
+  {name:"Google News EN",url:"https://news.google.com/rss/search?q=artificial+intelligence&hl=en-US&gl=US&ceid=US:en",category:"News"}
+];
+let sourceLibrary=rssSources;
+const byId=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));const sign=n=>n>0?`+${n}`:String(n);const klass=n=>Math.abs(n)<18?"mid":n>0?"pos":"neg";const norm=n=>(n+100)/2;
+const getNews=()=>news.find(n=>n.id===activeNews)||news[0];const getEval=(n,m)=>n.evals[m.id];const totalScore=n=>modelDefs.reduce((s,m)=>s+getEval(n,m).rel,0);const maxScore=(models=modelDefs)=>models.length*100;
+const sourceUrl=n=>n.url&&!n.url.includes("example.local")?n.url:"https://www.google.com/search?q="+encodeURIComponent(`"${n.title}" ${n.source}`);
+const shareUrl=n=>`${location.origin}${location.pathname}#news=${encodeURIComponent(n.id)}`;
+function axisLabel(i,v){return v>=0?axes[i][0]:axes[i][1]}function dominant(vals){let i=0;vals.forEach((v,idx)=>{if(Math.abs(v)>Math.abs(vals[i]))i=idx});return axisLabel(i,vals[i])}function dist(a,b){return Math.sqrt(a.reduce((s,v,i)=>s+(v-b[i])**2,0))}
+function toast(t){const el=byId("toast");el.textContent=t;el.classList.add("on");setTimeout(()=>el.classList.remove("on"),1800)}
+async function copy(text){try{await navigator.clipboard.writeText(text)}catch(e){const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove()}}
+function download(name,content){const type=name.endsWith(".json")?"application/json;charset=utf-8":"text/markdown;charset=utf-8";const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),300)}
+const semStyle=value=>{const v=Number(value);if(v<0){const p=clamp(Math.abs(v)/100,0,1);return{style:`background:rgb(${Math.round(190+55*p)},${Math.round(34-22*p)},${Math.round(28-20*p)})`,dark:true}}if(v<30)return{style:"background:#f39a2b",dark:false};if(v<60)return{style:"background:#ffd84d",dark:false};if(v<90)return{style:"background:#72c83f",dark:false};return{style:"background:#39ff14",dark:false}};
+function hashText(text){let h=2166136261;for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function seeded(seed){let x=seed||1;return()=>{x^=x<<13;x^=x>>>17;x^=x<<5;return((x>>>0)%10000)/10000}}
+function clampScore(n){return Math.round(clamp(n,-95,95))}
+function normalizeUrl(url){const raw=url.trim();if(!raw)return "";return /^https?:\/\//i.test(raw)?raw:`https://${raw}`}
+function extractHost(url){try{return new URL(normalizeUrl(url)).hostname.replace(/^www\./,"")}catch(e){return "source utilisateur"}}
+function urlTitle(url){
+  try{
+    const u=new URL(normalizeUrl(url)), parts=u.pathname.split("/").filter(Boolean), last=decodeURIComponent(parts.at(-1)||u.hostname);
+    return last.replace(/\.(html?|php|amp)$/i,"").replace(/[-_]+/g," ").replace(/\s+/g," ").trim();
+  }catch(e){return url}
+}
+async function scrapeUrl(url){
+  if(location.protocol==="file:")return null;
+  try{
+    const res=await fetch(`/api/scrape?url=${encodeURIComponent(normalizeUrl(url))}`);
+    if(!res.ok)throw new Error("scrape failed");
+    return await res.json();
+  }catch(e){return null}
+}
+async function fetchRssFeed(feedUrl){
+  if(location.protocol==="file:")return null;
+  try{
+    const res=await fetch(`/api/rss?url=${encodeURIComponent(feedUrl)}`);
+    if(!res.ok)throw new Error("rss failed");
+    return await res.json();
+  }catch(e){return null}
+}
+function keywordSignal(text){
+  const t=text.toLowerCase(), has=words=>words.some(w=>t.includes(w));
+  return [
+    (has(["risque","danger","alerte","moratoire","surveillance"])?-34:18)+(has(["innovation","avancee","gain","opportunite"])?26:0),
+    (has(["etat","ministere","cloud","plateforme","central"])?-28:0)+(has(["open","local","communs","decentral"])?42:0),
+    (has(["automatisation","agent","assistant","robot"])?-48:0)+(has(["humain","enseignant","metier","relation"])?22:0),
+    (has(["controle","police","surveillance","securite"])?-58:0)+(has(["liberte","droits","open"])?36:0),
+    (has(["regulation","moratoire","cadre","audit"])?-26:0)+(has(["innovation","prototype","deploie","teste"])?44:0),
+    (has(["systeme","infrastructure","plateforme","cloud"])?-36:0)+(has(["individu","citoyen","eleve","client"])?24:0),
+    (has(["audit","transparence","open","preuve"])?52:0)+(has(["opacite","secret","boite noire"])?-34:0),
+    (has(["productivite","efficience","gain","planning"])?54:0)+(has(["relation","social","attention","cohesion"])?-48:0),
+    (has(["acceleration","massif","deploie","scale"])?42:0)+(has(["stabilite","pause","moratoire","graduel"])?-36:0),
+    (has(["global","international","cloud"])?-26:0)+(has(["local","ville","territoire"])?34:0)
+  ].map(clampScore);
+}
+function modelShift(modelId){return{a:[-10,-22,-18,-20,-16,-12,24,-8,-18,-8],b:[32,20,34,14,42,20,-8,48,36,24],c:[-48,-16,-44,-42,-40,-18,18,-32,-42,-6],d:[8,48,-8,44,16,32,44,4,16,-28],e:[-24,2,-54,-24,-24,-38,8,-52,-28,-10]}[modelId]}
+function generatedSummary(m, rel, dom){
+  const tone={a:"Cadre de gouvernance, audit et responsabilite.",b:"Cadre d'efficience, passage a l'echelle et gains mesurables.",c:"Cadre de precaution, surete et dommages possibles.",d:"Cadre ouvert, interoperable et anti-concentration.",e:"Cadre civique, relationnel et cohesion sociale."}[m.id];
+  return `${tone} Pertinence ${rel}/100, axe dominant ${dom}.`;
+}
+function buildGeneratedNews(url, content, fetchedTitle="", meta={}){
+  const cleanUrl=normalizeUrl(url), text=(content||urlTitle(cleanUrl)||cleanUrl).trim(), host=extractHost(cleanUrl), seed=hashText(cleanUrl+"|"+text), rnd=seeded(seed), base=keywordSignal(text);
+  const title=(fetchedTitle||text.split(/\n+/).find(Boolean)||urlTitle(cleanUrl)||host).replace(/\s+/g," ").slice(0,145);
+  const excerpt=text.length>80?text.replace(/\s+/g," ").slice(0,260)+"...":host;
+  const evals={};
+  modelDefs.forEach(m=>{
+    const shift=modelShift(m.id), axesVals=base.map((v,i)=>clampScore(v+shift[i]+Math.round((rnd()-.5)*18)));
+    const intensity=axesVals.reduce((s,v)=>s+Math.abs(v),0)/axesVals.length;
+    const rel=Math.round(clamp(58+intensity*.42+(rnd()*18),45,98));
+    const dom=dominant(axesVals);
+    evals[m.id]={rel,summary:generatedSummary(m,rel,dom),axes:axesVals,response:`${m.name} lit ce signal depuis ${m.bias.toLowerCase()} : ${generatedSummary(m,rel,dom)}`};
+  });
+  return {id:`u${Date.now()}${Math.round(rnd()*9999)}`,source:meta.source||host,date:meta.date||new Date().toISOString().slice(0,10),category:meta.category||"URL",tags:meta.tags||["Import URL","Ratings IA","Prisme IA"],url:cleanUrl,title,excerpt,signal:base,evals};
+}
+function newsFromRssItem(item, source){
+  const content=[item.title,item.description].filter(Boolean).join("\n\n");
+  return buildGeneratedNews(item.url,content,item.title,{source:source.name,date:item.date||new Date().toISOString().slice(0,10),category:"RSS",tags:["RSS",source.category,source.name]});
+}
+function ratingLines(n){return modelDefs.map(m=>`- ${m.name}: ${getEval(n,m).rel}/100 · ${getEval(n,m).summary}`).join("\n")}
+function axesLines(vals){return vals.map((v,i)=>`- ${axes[i][0]} / ${axes[i][1]}: ${sign(v)} · ${axisLabel(i,v)}`).join("\n")}
+function newsMarkdown(n){return `## ${n.title}\nScore total: ${totalScore(n)} / ${maxScore()}\nSource: ${n.source}\nLien: ${sourceUrl(n)}\nDate: ${n.date}\n\n${n.excerpt}\n\n### Ratings IA\n${ratingLines(n)}\n\n### Axes signal\n${axesLines(n.signal)}\n`}
+function datasetPayload(items=news){return items.map(n=>({id:n.id,title:n.title,source:n.source,date:n.date,category:n.category,tags:n.tags,url:sourceUrl(n),excerpt:n.excerpt,totalScore:totalScore(n),maxScore:maxScore(),signalAxes:Object.fromEntries(axes.map((a,i)=>[`${a[0]} / ${a[1]}`,n.signal[i]])),ratings:Object.fromEntries(modelDefs.map(m=>[m.name,{relevance:getEval(n,m).rel,summary:getEval(n,m).summary,response:getEval(n,m).response,axes:Object.fromEntries(axes.map((a,i)=>[`${a[0]} / ${a[1]}`,getEval(n,m).axes[i]]))}]))}))}
+function collectSources(){return [...new Map([...news.map(n=>({name:n.source,url:sourceUrl(n),category:n.category})),...sourceLibrary].map(s=>[s.url||s.name,s])).values()]}
+function drawRadar(canvas,values){
+  const dpr=devicePixelRatio||1,size=102,c=canvas.getContext("2d"),cx=size/2,cy=size/2,r=size*.37;
+  canvas.width=size*dpr;canvas.height=size*dpr;canvas.style.width="78px";canvas.style.height="78px";c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,size,size);
+  for(let ring=1;ring<=4;ring++){c.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI*2/10,rr=r*ring/4,x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr;i?c.lineTo(x,y):c.moveTo(x,y)}c.closePath();c.strokeStyle=ring===4?"#aaa":"#ddd";c.stroke()}
+  for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI*2/10;c.beginPath();c.moveTo(cx,cy);c.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);c.strokeStyle="#e5e2dc";c.stroke()}
+  c.beginPath();values.forEach((v,i)=>{const a=-Math.PI/2+i*Math.PI*2/10,rr=r*norm(v)/100,x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr;i?c.lineTo(x,y):c.moveTo(x,y)});c.closePath();c.fillStyle="rgba(229,0,0,.12)";c.strokeStyle="#e50000";c.lineWidth=2;c.fill();c.stroke();
+  values.forEach((v,i)=>{const a=-Math.PI/2+i*Math.PI*2/10,rr=r*norm(v)/100;c.beginPath();c.arc(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr,2.7,0,Math.PI*2);c.fillStyle="#e50000";c.fill()});
+}
+function renderStats(){
+  const totals=news.map(totalScore), best=news[totals.indexOf(Math.max(...totals))], avg=Math.round(totals.reduce((a,b)=>a+b,0)/totals.length);
+  const cats=new Set(news.map(n=>n.category)).size;
+  byId("statsbar").innerHTML=`<div class="stat"><span>News cartographiees</span><b>${news.length}</b></div><div class="stat"><span>Score moyen</span><b>${avg}/${maxScore()}</b></div><div class="stat"><span>Top signal</span><b>${best.category}</b></div><div class="stat"><span>Domaines</span><b>${cats}</b></div>`;
+}
+function renderRssSources(){
+  const options=rssSources.map((s,i)=>`<option value="${i}">${esc(s.name)}</option>`).join("");
+  byId("feedSource").innerHTML=options;
+  syncSourceControls();
+}
+function syncSourceControls(){
+  if(byId("feedSource"))byId("feedSource").value=String(activeSourceIndex);
+}
+function activeRssSource(){return rssSources[activeSourceIndex]||rssSources[0]}
+function sourceFeedItems(){
+  const source=activeRssSource();
+  return news.filter(n=>n.category==="RSS"&&n.source===source.name);
+}
+function filteredNews(){
+  const q=byId("search").value.toLowerCase(), sort=byId("sort").value;
+  const source=activeRssSource();
+  let items=news.filter(n=>n.category==="RSS"&&n.source===source.name);
+  items=items.filter(n=>(n.title+n.source+n.category+n.tags.join(" ")).toLowerCase().includes(q));
+  if(sort==="date")items.sort((a,b)=>b.date.localeCompare(a.date));else if(sort==="source")items.sort((a,b)=>a.source.localeCompare(b.source));else items.sort((a,b)=>totalScore(b)-totalScore(a));
+  return items;
+}
+function newsCardHtml(n,{compact=false}={}){
+  const total=totalScore(n), active=n.id===activeNews, sel=selected.has(n.id), src=sourceUrl(n), url=encodeURIComponent(src), title=encodeURIComponent(n.title);
+  const ratings=modelDefs.map(m=>{const rel=getEval(n,m).rel,s=semStyle(rel);return`<div class="rating-pill ${s.dark?"dark":""}" style="${s.style}" title="${esc(m.name)} · ${esc(m.bias)}"><b>${esc(m.label)}</b><span>${rel}</span></div>`}).join("");
+  const excerpt=n.category==="URL"&&!n.excerpt.includes(" ")?``:`<p class="excerpt">${esc(n.excerpt)}</p>`;
+  return `<article class="news-card ${active?"active":""} ${sel?"selected":""}" data-id="${n.id}">
+    <div class="check" data-action="select" title="Selectionner"></div><div>
+    <div class="meta"><span class="tag hot">${n.category}</span><span class="tag ai">${n.source}</span>${n.tags.slice(0,2).map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div>
+    <h3 class="news-title" data-action="open">${esc(n.title)}</h3>${excerpt}
+    <div class="model-legend">Ratings par prisme : gouvernance · efficience · surete · ouverture · civique</div>
+    <div class="rating-line"><div class="rating-strip">${ratings}<div class="rating-pill total-pill" title="Total ${total} / ${maxScore()}"><b>Total</b><span>${total}/${maxScore()}</span></div></div><div class="share-row">
+    <a class="iconbtn" href="${esc(src)}" target="_blank" rel="noopener noreferrer" title="Ouvrir source">↗</a>${compact?`<button class="iconbtn" data-action="copy">MD</button>`:`<a class="iconbtn" href="https://twitter.com/intent/tweet?text=${title}&url=${url}" target="_blank" rel="noopener noreferrer">X</a><a class="iconbtn" href="https://www.linkedin.com/sharing/share-offsite/?url=${url}" target="_blank" rel="noopener noreferrer">in</a><button class="iconbtn" data-action="copy">🔗</button>`}</div></div></div></article>`;
+}
+function renderFeed(){
+  const source=activeRssSource();
+  byId("feed").innerHTML=filteredNews().map(n=>newsCardHtml(n)).join("")||`<section class="note"><strong>${esc(source.name)}</strong><p>Selectionne une source ou clique Source pour charger son flux.</p></section>`;
+  updateSelection();
+}
+function renderDetail(){
+  const n=getNews();
+  byId("activeActions").innerHTML=`<strong>${esc(n.title)}</strong><div class="detail-actions"><a class="btn dark" href="${esc(sourceUrl(n))}" target="_blank" rel="noopener noreferrer">SOURCE</a><button class="btn" id="copyActive">PARTAGER</button><button class="btn" id="copyFicha">RATING</button><button class="btn" id="selectActive">SELECTIONNER</button></div>`;
+  byId("copyActive").onclick=()=>copy(shareUrl(n)).then(()=>toast("Lien de news copie"));byId("copyFicha").onclick=()=>copy(newsMarkdown(n)).then(()=>toast("Fiche avec ratings copiee"));byId("selectActive").onclick=()=>{selected.has(n.id)?selected.delete(n.id):selected.add(n.id);renderAll()};
+  byId("newsAxes").innerHTML=n.signal.map((v,i)=>`<div class="axis-tile"><b>${axes[i][0]} / ${axes[i][1]}</b><div class="bar"><span class="fill" style="left:${v<0?norm(v):50}%;width:${Math.abs(v)/2}%;background:${v>=0?"var(--green)":"var(--red)"}"></span></div><span class="${klass(v)}">${sign(v)} · ${axisLabel(i,v)}</span></div>`).join("");
+}
+function renderModelTabs(){
+  const n=getNews();
+  const selectedModels=heatmapModelIds.map(id=>modelDefs.find(m=>m.id===id)).filter(Boolean);
+  byId("modelTabs").innerHTML=selectedModels.map(m=>`<button class="model-tab ${m.id===activeModel?"active":""}" data-model="${m.id}">${m.name}<br>${getEval(n,m).rel}</button>`).join("");
+}
+function renderMeuteDirectory(){
+  const grid=byId("meuteGrid");if(!grid)return;
+  grid.classList.toggle("closed",meuteClosed);byId("toggleMeute").textContent=meuteClosed?"+":"-";byId("toggleMeute").title=meuteClosed?"Afficher la meute":"Replier la meute";
+  if(meuteClosed){grid.innerHTML="";return}
+  if(!meuteDirectory.length){grid.innerHTML=`<div class="meute-card"><b>Meute</b><span>Non charge</span><p>Aucune voix disponible.</p></div>`;return}
+  grid.innerHTML=meuteDirectory.map(m=>{const folded=collapsedMeute.has(m.code),haiku=m.haiku||fallbackHaikus[m.code]||["Voix a regler","La fiche attend son poeme","Le prisme viendra"];return`<article class="meute-card ${folded?"collapsed":""}" data-meute="${esc(m.code)}"><b>${esc(m.pseudo)}</b><span>${esc(m.system)} · ${esc(m.totem)} · ${esc(m.status)}</span>${folded?"":`<div class="haiku">${haiku.map(l=>`<i>${esc(l)}</i>`).join("")}</div><p>${esc(m.vision)}</p><div class="meute-value"><strong>Apport</strong>${esc(m.value||m.role||"Apport a documenter.")}</div><div class="meute-links"><a href="${esc(m.sheet)}" target="_blank" rel="noopener noreferrer">Fiche</a><a href="${esc(m.selfBoot)}" target="_blank" rel="noopener noreferrer">Self-Boot</a></div>`}</article>`}).join("");
+}
+function renderModels(){
+  const n=getNews();
+  const selectedModels=heatmapModelIds.map(id=>modelDefs.find(m=>m.id===id)).filter(Boolean);
+  renderMeuteDirectory();
+  byId("models").innerHTML=selectedModels.map(m=>{const ev=getEval(n,m), folded=collapsedModels.has(m.id);return `<article class="model-card ${activeModel===m.id?"active":""} ${folded?"collapsed":""}" data-model="${m.id}"><div class="radarbox"><canvas data-radar="${m.id}"></canvas></div><div><div class="mhead"><div class="model-title"><h3>${m.name}</h3><span class="totem">${esc(m.totem)}</span><a class="btn ai" href="${esc(m.url)}" target="_blank" rel="noopener noreferrer">Lien IA</a></div><b class="rel ${ev.rel>=90?"max":""}">${ev.rel}</b></div><p>${esc(ev.summary)}</p><dl class="kv"><dt>Source</dt><dd>${m.source}</dd><dt>Biais</dt><dd>${m.bias}</dd><dt>Dominant</dt><dd>${dominant(ev.axes)}</dd><dt>Confiance</dt><dd>${m.confidence}%</dd></dl><div class="confidence"><span style="width:${m.confidence}%"></span></div></div><button class="foldbtn" data-action="fold" aria-label="${folded?"Deplier":"Plier"} ${m.name}">⌄</button><div class="mini-scores">${ev.axes.map((s,i)=>`<div class="mini"><b>${axes[i][0].slice(0,4)}/${axes[i][1].slice(0,4)}</b><span class="${klass(s)}">${sign(s)}</span></div>`).join("")}</div></article>`}).join("");
+  selectedModels.forEach(m=>{const cv=document.querySelector(`[data-radar="${m.id}"]`);if(cv)drawRadar(cv,getEval(n,m).axes)});
+}
+function renderSynthesis(){
+  const n=getNews(), active=modelDefs.find(m=>m.id===activeModel), ev=getEval(n,active), rels=modelDefs.map(m=>getEval(n,m).rel), avg=Math.round(rels.reduce((a,b)=>a+b,0)/rels.length);
+  const maxM=modelDefs[rels.indexOf(Math.max(...rels))], minM=modelDefs[rels.indexOf(Math.min(...rels))];
+  byId("focus").innerHTML=`<strong>${active.name} · pertinence ${ev.rel}/100</strong><p>${esc(ev.response)}</p>`;
+  const used=new Set();heatmapModelIds=heatmapModelIds.map(id=>{const next=modelDefs.find(m=>m.id===id&&!used.has(id))||modelDefs.find(m=>!used.has(m.id))||modelDefs[0];used.add(next.id);return next.id});
+  const heatModels=heatmapModelIds.map(id=>modelDefs.find(m=>m.id===id)||modelDefs[0]);
+  const heatTotal=heatModels.reduce((s,m)=>s+getEval(n,m).rel,0), heatMax=maxScore(heatModels);
+  byId("briefGrid").innerHTML=`<div class="brief"><b>Moy.</b><span>${avg}/${maxScore()}</span></div><div class="brief"><b>Heatmap</b><span>${heatTotal}/${heatMax}</span></div><div class="brief"><b>Struct.</b><span>${maxM.name}</span></div><div class="brief"><b>Dom.</b><span>${dominant(n.signal)}</span></div>`;
+  const choices=(current,idx)=>modelDefs.map(m=>`<option value="${m.id}" ${m.id===current.id?"selected":""} ${m.id!==current.id&&heatmapModelIds.includes(m.id)?"disabled":""}>${esc(m.name)}</option>`).join("");
+  const h=byId("heatmap");h.innerHTML=`<div class="label">Signal</div>${heatModels.map((m,i)=>`<div><select data-heatcol="${i}">${choices(m,i)}</select></div>`).join("")}`;
+  h.insertAdjacentHTML("beforeend",`<div class="label">Pertinence</div>`);heatModels.forEach(m=>{const r=getEval(n,m).rel,s=semStyle(r);h.insertAdjacentHTML("beforeend",`<div class="cell ${s.dark?"dark":""}" style="${s.style}">${r}</div>`)});
+  [0,1,3,4,6,8].forEach(i=>{h.insertAdjacentHTML("beforeend",`<div class="label">${axes[i][0].slice(0,6)} / ${axes[i][1].slice(0,6)}</div>`);heatModels.forEach(m=>{const v=getEval(n,m).axes[i],s=semStyle(v);h.insertAdjacentHTML("beforeend",`<div class="cell ${s.dark?"dark":""}" style="${s.style}">${sign(v)}</div>`)})});
+  const spreads=axes.map((a,i)=>{const vals=heatModels.map(m=>getEval(n,m).axes[i]);return{a,i,min:Math.min(...vals),max:Math.max(...vals),spread:Math.max(...vals)-Math.min(...vals)}}).sort((x,y)=>y.spread-x.spread).slice(0,3);
+  byId("tensions").innerHTML=spreads.map(t=>{const lo=heatModels.find(m=>getEval(n,m).axes[t.i]===t.min),hi=heatModels.find(m=>getEval(n,m).axes[t.i]===t.max);return`<div class="tension"><strong>${t.a[0]} ↔ ${t.a[1]} · ecart ${t.spread}</strong><p>${hi.name} active davantage ${axisLabel(t.i,t.max)} (${sign(t.max)}), tandis que ${lo.name} active davantage ${axisLabel(t.i,t.min)} (${sign(t.min)}).</p></div>`}).join("");
+  const pairs=[];for(let i=0;i<heatModels.length;i++)for(let j=i+1;j<heatModels.length;j++)pairs.push({a:heatModels[i],b:heatModels[j],d:dist(getEval(n,heatModels[i]).axes,getEval(n,heatModels[j]).axes)});pairs.sort((a,b)=>a.d-b.d);
+  byId("clusters").innerHTML=pairs.slice(0,3).map((p,i)=>`<div class="cluster"><b>Cluster ${i+1}</b><span>${p.a.name} + ${p.b.name}</span><span>distance ${Math.round(p.d)}</span></div>`).join("");
+  byId("humanSynthesis").textContent=`Score moyen ${avg}/${maxScore()}. Heatmap ${heatTotal}/${heatMax}. ${maxM.name} lit le signal le plus structurant, ${minM.name} le moins central. Donnees generees a la volee: elles servent a comparer des prismes, pas a rapporter une evaluation reelle des modeles.`;
+}
+function updateSelection(){byId("selCount").textContent=`${selected.size} news selectionnee${selected.size>1?"s":""}`}
+function renderAll(){renderStats();renderFeed();renderDetail();renderModelTabs();renderModels();renderSynthesis()}
+document.addEventListener("click",e=>{
+  const tab=e.target.closest(".model-tab");if(tab){activeModel=tab.dataset.model;collapsedModels.delete(activeModel);renderAll();return}
+  const card=e.target.closest(".news-card");
+  if(card&&e.target.dataset.action==="select"){selected.has(card.dataset.id)?selected.delete(card.dataset.id):selected.add(card.dataset.id);renderAll();return}
+  if(card&&e.target.dataset.action==="copy"){copy(shareUrl(news.find(n=>n.id===card.dataset.id))).then(()=>toast("Lien partage copie"));return}
+  if(card&&(e.target.dataset.action==="open"||!e.target.closest("a,button,.check"))){activeNews=card.dataset.id;history.replaceState(null,"",`#news=${activeNews}`);renderAll();return}
+  const meute=e.target.closest(".meute-card");if(meute&&!e.target.closest("a")){collapsedMeute.has(meute.dataset.meute)?collapsedMeute.delete(meute.dataset.meute):collapsedMeute.add(meute.dataset.meute);renderMeuteDirectory();return}
+  const mc=e.target.closest(".model-card");if(mc){if(e.target.dataset.action==="fold"){collapsedModels.has(mc.dataset.model)?collapsedModels.delete(mc.dataset.model):collapsedModels.add(mc.dataset.model);renderModels();return}activeModel=mc.dataset.model;collapsedModels.delete(mc.dataset.model);renderAll()}
+});
+byId("search").addEventListener("input",renderFeed);byId("sort").addEventListener("change",renderFeed);
+document.addEventListener("change",e=>{if(e.target.dataset.heatcol!==undefined){const col=Number(e.target.dataset.heatcol),previous=heatmapModelIds[col];if(heatmapModelIds.some((id,i)=>i!==col&&id===e.target.value)){e.target.value=previous;toast("IA deja presente dans la heatmap");return}heatmapModelIds[col]=e.target.value;activeModel=e.target.value;renderModelTabs();renderModels();renderSynthesis()}});
+byId("toggleMeute").onclick=()=>{meuteClosed=!meuteClosed;renderMeuteDirectory()};
+async function analyzeCurrentUrl(){
+  const url=byId("urlInput").value.trim();
+  if(!url){toast("Ajoute une URL");return}
+  byId("analyzeUrl").textContent="...";
+  byId("analyzeUrl").disabled=true;
+  const scraped=await scrapeUrl(url);
+  const content=scraped?.text||"";
+  const n=buildGeneratedNews(scraped?.url||url,content,scraped?.title||"");
+  news.unshift(n);activeNews=n.id;activeModel="a";selected.add(n.id);byId("search").value="";byId("urlInput").value=n.url;renderAll();
+  byId("analyzeUrl").textContent="Lire";
+  byId("analyzeUrl").disabled=false;
+  toast(scraped?.text?"Page scrapee en local":"Lance le serveur local pour scraper");
+}
+byId("analyzeUrl").onclick=analyzeCurrentUrl;
+byId("urlInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();analyzeCurrentUrl()}});
+async function importCurrentRss(){
+  const source=activeRssSource();
+  if(!source){toast("Source RSS absente");return}
+  byId("importRss").textContent="...";
+  byId("importRss").disabled=true;
+  const imported=await importRssSource(source,8);
+  imported.reverse().forEach(n=>news.unshift(n));
+  const sourceItems=sourceFeedItems();
+  if(imported.length||sourceItems.length){activeNews=(imported[imported.length-1]||sourceItems[0]).id;topic="RSS";selected=new Set(sourceItems.concat(imported).map(n=>n.id));byId("search").value=""}
+  renderAll();
+  byId("importRss").textContent="Source";
+  byId("importRss").disabled=false;
+  toast(imported.length?`${imported.length} items RSS importes`:"Aucun nouvel item RSS");
+}
+async function selectRssSource(index,{load=true}={}){
+  activeSourceIndex=clamp(Number(index)||0,0,rssSources.length-1);
+  syncSourceControls();
+  topic="RSS";
+  byId("search").value="";
+  if(load)await importCurrentRss();else renderAll();
+}
+async function importRssSource(source,limit=5){
+  const feed=await fetchRssFeed(source.url);
+  const existing=new Set(news.map(n=>sourceUrl(n)));
+  return (feed?.items||[]).filter(item=>item.url&&!existing.has(item.url)).slice(0,limit).map(item=>newsFromRssItem(item,source));
+}
+async function scanAllSources(){
+  byId("scanSources").textContent="...";
+  byId("scanSources").disabled=true;
+  byId("importRss").disabled=true;
+  const all=[];
+  for(const source of rssSources){
+    const imported=await importRssSource(source,3);
+    imported.forEach(n=>{news.unshift(n);all.push(n)});
+  }
+  if(all.length){activeNews=all[0].id;topic="RSS";selected=new Set(all.map(n=>n.id));byId("search").value=""}
+  renderAll();
+  byId("scanSources").textContent="Scan";
+  byId("scanSources").disabled=false;
+  byId("importRss").disabled=false;
+  toast(all.length?`${all.length} items · ${rssSources.length} sources scannees`:"Aucun nouvel item");
+}
+byId("importRss").onclick=importCurrentRss;
+byId("feedSource").addEventListener("change",e=>selectRssSource(e.target.value));
+byId("scanSources").onclick=scanAllSources;
+byId("copySelection").onclick=()=>{const items=news.filter(n=>selected.has(n.id));copy("# AI Lens Observatory · selection\n\n"+items.map(newsMarkdown).join("\n")).then(()=>toast("Selection avec ratings copiee"))};
+byId("exportSelection").onclick=()=>{const items=news.filter(n=>selected.has(n.id));download("ai-lens-observatory-news-selection.md","# AI Lens Observatory · selection\n\n"+items.map(newsMarkdown).join("\n"))};
+byId("exportDataset").onclick=()=>{const items=selected.size?news.filter(n=>selected.has(n.id)):news;download("ai-lens-observatory-dataset.json",JSON.stringify(datasetPayload(items),null,2))};
+byId("exportAllDataset").onclick=()=>download("ai-lens-observatory-dataset.json",JSON.stringify(datasetPayload(news),null,2));
+byId("clearSelection").onclick=()=>{selected.clear();renderAll()};
+const hash=new URLSearchParams(location.hash.replace(/^#/,""));if(hash.get("news")&&news.some(n=>n.id===hash.get("news")))activeNews=hash.get("news");
+renderRssSources();
+selectRssSource(activeSourceIndex);
+fetch("data/meute-directory.json").then(r=>r.ok?r.json():[]).then(data=>{meuteDirectory=Array.isArray(data)?data:[];renderAll()}).catch(()=>renderAll());
+</script>
+</body>
+</html>

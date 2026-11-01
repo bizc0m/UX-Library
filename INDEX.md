@@ -123,3 +123,8 @@ Sources primaires et professionnelles : W3C/WAI, Nielsen Norman Group, GOV.UK, A
 L’architecture est reprise exactement de la conversation « Dossier bibliothèque UX ». La copie livrée est préparée dans les sorties de la tâche. La Library utilisateur et ses éventuels contenus existants n’ont pas été localisés : aucun remplacement, import ou contrôle de doublons avec cette destination ne peut être affirmé.
 
 Le catalogue est un socle, pas une encyclopédie de toutes les situations UX ni une certification 8/10. Les patterns Nyx, GroceryNanny, KountR et Mirae sont des propositions de recette, sans audit du code ou des données de ces applications.
+
+
+## Sélecteur des applications et interfaces
+
+[Ouvrir le dossier du sélecteur et ses instructions](98-Selecteur-UX/README.md) — 39 familles, 211 références ; sources HTML et ressources incluses.
